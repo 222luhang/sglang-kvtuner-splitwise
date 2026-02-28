@@ -755,7 +755,8 @@ class FlashAttentionBackend(AttentionBackend):
                 )
                 if not self.use_mla:
                     forward_batch.token_to_kv_pool.set_kv_buffer(
-                        layer, cache_loc, k, v, layer.k_scale, layer.v_scale
+                        layer, cache_loc, k, v, layer.k_scale, layer.v_scale,
+                        forward_batch=forward_batch
                     )
                 else:
                     forward_batch.token_to_kv_pool.set_mla_kv_buffer(
@@ -1095,7 +1096,8 @@ class FlashAttentionBackend(AttentionBackend):
                 )
                 if not self.use_mla:
                     forward_batch.token_to_kv_pool.set_kv_buffer(
-                        layer, cache_loc, k, v, layer.k_scale, layer.v_scale
+                        layer, cache_loc, k, v, layer.k_scale, layer.v_scale,
+                        forward_batch=forward_batch
                     )
                 else:
                     forward_batch.token_to_kv_pool.set_mla_kv_buffer(
@@ -1135,14 +1137,6 @@ class FlashAttentionBackend(AttentionBackend):
         kwargs = {}
         if sinks is not None:
             kwargs["sinks"] = sinks
-
-        flash_attn_with_kvcache_base = flash_attn_with_kvcache_fa3
-
-        flash_attn_with_kvcache = (
-            flash_attn_with_kvcache_fa4
-            if self.fa_impl_ver == 4
-            else flash_attn_with_kvcache_base
-        )
 
         k_descale, v_descale = None, None
         # only use kv scaling if: 1) fp8 kv is explicitly enabled, 2) RadixAttention

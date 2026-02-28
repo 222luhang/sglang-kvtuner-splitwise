@@ -170,21 +170,20 @@ class ModelRunnerKVCacheMixin:
                 mamba_state_intermediate_size / (1 << 30)
             )
 
-        if server_args.max_mamba_cache_size is not None:
-            # Use explicitly set max_mamba_cache_size
+        if (
+            server_args.disable_radix_cache
+            or server_args.max_mamba_cache_size is not None
+        ):
+            # with disable radix cache, sets the max_mamba_cache_size based on the max_running_requests
+            if server_args.max_mamba_cache_size is None:
+                if server_args.max_running_requests is not None:
+                    server_args.max_mamba_cache_size = server_args.max_running_requests
+                else:
+                    server_args.max_mamba_cache_size = 512
             server_args.max_mamba_cache_size = server_args.max_mamba_cache_size // (
                 server_args.dp_size if server_args.enable_dp_attention else 1
             )
-        elif (
-            server_args.disable_radix_cache
-            and server_args.max_running_requests is not None
-        ):
-            # Use explicitly set max_running_requests when radix cache is disabled
-            server_args.max_mamba_cache_size = server_args.max_running_requests // (
-                server_args.dp_size if server_args.enable_dp_attention else 1
-            )
         else:
-            # Use ratio-based calculation to auto-fit available memory
             assert config.mamba2_cache_params.mamba_cache_per_req > 0
 
             # allocate the memory based on the ratio between mamba state memory vs. full kv cache memory
@@ -208,45 +207,6 @@ class ModelRunnerKVCacheMixin:
             / (1 << 30)
         )
         return total_rest_memory - mamba_state_memory
-
-    def calculate_mla_kv_cache_dim(self: ModelRunner) -> int:
-        is_nsa_model = is_deepseek_nsa(self.model_config.hf_config)
-        kv_cache_dtype = self.kv_cache_dtype
-        kv_lora_rank = self.model_config.kv_lora_rank
-        qk_rope_head_dim = self.model_config.qk_rope_head_dim
-        kv_cache_dim = kv_lora_rank + qk_rope_head_dim  # default mla kv cache dim
-
-        # For non-NSA models, MLA kv cache dim is simply kv_lora_rank + qk_rope_head_dim
-        if not is_nsa_model:
-            return kv_cache_dim
-
-        # TRTLLM backend does not override kv_cache_dim for MLA kv cache
-        # Assuming nsa prefill and decode backends are the same when using trtllm MLA backend,
-        # since it is not compatible for trtllm and other mla attn backend due to the different
-        # kv cache layout.
-        if (
-            self.server_args.nsa_prefill_backend == "trtllm"
-            or self.server_args.nsa_decode_backend == "trtllm"
-        ):
-            return kv_cache_dim
-
-        quant_block_size = NSATokenToKVPool.quant_block_size
-        rope_storage_dtype = NSATokenToKVPool.rope_storage_dtype
-        # Calculate override_kv_cache_dim for FP8 storage for non-trtllm attention backends:
-        # kv_lora_rank + scale storage (kv_lora_rank // quant_block_size * 4 bytes) + rope dimension storage
-        # Note: rope dimension is stored in original dtype (bf16), not quantized to fp8
-        if kv_cache_dtype == torch.float8_e4m3fn:
-            assert (
-                kv_lora_rank % quant_block_size == 0
-            ), f"kv_lora_rank {kv_lora_rank} must be multiple of quant_block_size {quant_block_size}"
-
-            return (
-                kv_lora_rank
-                + kv_lora_rank // quant_block_size * 4
-                + qk_rope_head_dim * rope_storage_dtype.itemsize
-            )
-
-        return kv_cache_dim
 
     def set_num_tokens_hybrid_swa(self: ModelRunner):
         page_size = self.server_args.page_size
@@ -445,8 +405,6 @@ class ModelRunnerKVCacheMixin:
                         speculative_num_draft_tokens=self.server_args.speculative_num_draft_tokens,
                         enable_mamba_extra_buffer=self.server_args.enable_mamba_extra_buffer(),
                         pre_alloc_size=pre_alloc_size,
-                        enable_overlap_schedule=not self.server_args.disable_overlap_schedule,
-                        mamba_size=self.server_args.max_mamba_cache_size,
                     )
                 else:
                     self.req_to_token_pool = DecodeReqToTokenPool(
@@ -469,7 +427,6 @@ class ModelRunnerKVCacheMixin:
                     cache_params=config.mamba2_cache_params,
                     enable_mamba_extra_buffer=self.server_args.enable_mamba_extra_buffer(),
                     speculative_num_draft_tokens=self.server_args.speculative_num_draft_tokens,
-                    enable_overlap_schedule=not self.server_args.disable_overlap_schedule,
                 )
             else:
                 self.req_to_token_pool = ReqToTokenPool(
@@ -534,7 +491,6 @@ class ModelRunnerKVCacheMixin:
                 qk_rope_head_dim=self.model_config.qk_rope_head_dim,
                 layer_num=self.num_effective_layers,
                 device=self.device,
-                kv_cache_dim=self.calculate_mla_kv_cache_dim(),
                 enable_memory_saver=self.server_args.enable_memory_saver,
                 start_layer=self.start_layer,
                 end_layer=self.end_layer,
@@ -628,13 +584,7 @@ class ModelRunnerKVCacheMixin:
                     head_dim=self.model_config.head_dim,
                     # if draft worker, we only need 1 attention layer's kv pool
                     full_attention_layer_ids=(
-                        [0]
-                        if self.is_draft_worker
-                        else [
-                            i
-                            for i in config.full_attention_layer_ids
-                            if self.start_layer <= i < self.end_layer
-                        ]
+                        [0] if self.is_draft_worker else config.full_attention_layer_ids
                     ),
                     enable_kvcache_transpose=False,
                     device=self.device,
@@ -664,24 +614,98 @@ class ModelRunnerKVCacheMixin:
                         ),
                     )
                 else:
-                    self.token_to_kv_pool = MHATokenToKVPool(
-                        self.max_total_num_tokens,
-                        page_size=self.page_size,
-                        dtype=self.kv_cache_dtype,
-                        head_num=self.model_config.get_num_kv_heads(
-                            get_attention_tp_size()
-                        ),
-                        head_dim=self.model_config.head_dim,
-                        layer_num=self.num_effective_layers,
-                        device=self.device,
-                        enable_memory_saver=self.server_args.enable_memory_saver,
-                        start_layer=self.start_layer,
-                        end_layer=self.end_layer,
-                        enable_alt_stream=not self.server_args.enable_pdmux,
-                        enable_kv_cache_copy=(
-                            self.server_args.speculative_algorithm is not None
-                        ),
-                    )
+                    # Check if KVTuner quantization is enabled
+                    if self.server_args.enable_kvtuner_quant:
+                        from sglang.srt.mem_cache.kvtuner_kv_pool import (
+                            KVTunerMHATokenToKVPool,
+                            KVTunerModeConfig,
+                        )
+                        from sglang.srt.layers.quantization.kvtuner_quant import (
+                            KVTunerQuantConfig,
+                        )
+                        
+                        # Create base KVTuner config
+                        kvtuner_config = KVTunerQuantConfig(
+                            nbits_key=self.server_args.kvtuner_nbits_key,
+                            nbits_value=self.server_args.kvtuner_nbits_value,
+                            asym=self.server_args.kvtuner_asym,
+                            axis_key=self.server_args.kvtuner_axis_key,
+                            axis_value=self.server_args.kvtuner_axis_value,
+                            q_group_size=self.server_args.kvtuner_q_group_size,
+                            residual_length=self.server_args.kvtuner_residual_length,
+                            compute_dtype=self.kv_cache_dtype,
+                        )
+                        
+                        # Create mode-specific configs if layer-wise quantization is enabled
+                        prefill_config = None
+                        decode_config = None
+                        
+                        if self.server_args.enable_kvtuner_layer_wise:
+                            # Prefill mode: use base config or slightly higher precision
+                            prefill_config = KVTunerModeConfig(
+                                nbits_key=self.server_args.kvtuner_nbits_key,
+                                nbits_value=self.server_args.kvtuner_nbits_value,
+                                residual_length=self.server_args.kvtuner_residual_length,
+                                q_group_size=self.server_args.kvtuner_q_group_size,
+                                enable_quantization=True,
+                            )
+                            
+                            # Decode mode: potentially different config for latency optimization
+                            # For decode, we might want higher precision to reduce dequantization overhead
+                            decode_config = KVTunerModeConfig(
+                                nbits_key=max(4, self.server_args.kvtuner_nbits_key),  # At least 4-bit for decode
+                                nbits_value=max(4, self.server_args.kvtuner_nbits_value),
+                                residual_length=max(32, self.server_args.kvtuner_residual_length // 4),  # Shorter residual for decode
+                                q_group_size=self.server_args.kvtuner_q_group_size,
+                                enable_quantization=True,
+                            )
+                        
+                        self.token_to_kv_pool = KVTunerMHATokenToKVPool(
+                            self.max_total_num_tokens,
+                            page_size=self.page_size,
+                            dtype=self.kv_cache_dtype,
+                            head_num=self.model_config.get_num_kv_heads(
+                                get_attention_tp_size()
+                            ),
+                            head_dim=self.model_config.head_dim,
+                            layer_num=self.num_effective_layers,
+                            device=self.device,
+                            enable_memory_saver=self.server_args.enable_memory_saver,
+                            start_layer=self.start_layer,
+                            end_layer=self.end_layer,
+                            enable_alt_stream=not self.server_args.enable_pdmux,
+                            enable_kv_cache_copy=(
+                                self.server_args.speculative_algorithm is not None
+                            ),
+                            kvtuner_config=kvtuner_config,
+                            prefill_config=prefill_config,
+                            decode_config=decode_config,
+                        )
+                        logger.info(
+                            f"KVTuner quantized KV cache initialized: "
+                            f"nbits_k={kvtuner_config.nbits_key}, "
+                            f"nbits_v={kvtuner_config.nbits_value}, "
+                            f"residual={kvtuner_config.residual_length}"
+                        )
+                    else:
+                        self.token_to_kv_pool = MHATokenToKVPool(
+                            self.max_total_num_tokens,
+                            page_size=self.page_size,
+                            dtype=self.kv_cache_dtype,
+                            head_num=self.model_config.get_num_kv_heads(
+                                get_attention_tp_size()
+                            ),
+                            head_dim=self.model_config.head_dim,
+                            layer_num=self.num_effective_layers,
+                            device=self.device,
+                            enable_memory_saver=self.server_args.enable_memory_saver,
+                            start_layer=self.start_layer,
+                            end_layer=self.end_layer,
+                            enable_alt_stream=not self.server_args.enable_pdmux,
+                            enable_kv_cache_copy=(
+                                self.server_args.speculative_algorithm is not None
+                            ),
+                        )
 
         # Initialize token_to_kv_pool_allocator
         need_sort = self.server_args.disaggregation_mode in ("decode", "prefill")

@@ -814,7 +814,8 @@ class TritonAttnBackend(AttentionBackend):
         # Save KV cache first (must do this before unified kernel)
         if save_kv_cache:
             forward_batch.token_to_kv_pool.set_kv_buffer(
-                layer, forward_batch.out_cache_loc, k, v
+                layer, forward_batch.out_cache_loc, k, v,
+                forward_batch=forward_batch
             )
 
         logits_soft_cap = logit_capping_mod(layer.logit_capping_method, layer.logit_cap)
@@ -1018,7 +1019,8 @@ class TritonAttnBackend(AttentionBackend):
 
         if save_kv_cache:
             forward_batch.token_to_kv_pool.set_kv_buffer(
-                layer, forward_batch.out_cache_loc, k, v
+                layer, forward_batch.out_cache_loc, k, v,
+                forward_batch=forward_batch
             )
 
         if layer.sliding_window_size is not None and layer.sliding_window_size > -1:
