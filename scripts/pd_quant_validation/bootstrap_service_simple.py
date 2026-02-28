@@ -32,13 +32,15 @@ class BootstrapManager:
         self.lock = threading.Lock()
     
     def create_room(self) -> dict:
-        """创建新的 room"""
+        """创建新的 room（使用整数 ID）"""
         with self.lock:
             # 负载均衡
             prefill_node = min(self.prefill_nodes, key=lambda n: self.node_load.get(n, 0))
             decode_node = min(self.decode_nodes, key=lambda n: self.node_load.get(n, 0))
             
-            room_id = str(uuid.uuid4())
+            # 使用整数 room id（SGLang 要求）
+            room_id = int(time.time() * 1000) % 10000000000  # 10 位整数
+            
             now = time.time()
             
             room = {
@@ -54,7 +56,7 @@ class BootstrapManager:
             self.node_load[prefill_node] += 1
             self.node_load[decode_node] += 1
             
-            logger.info(f"Created room {room_id[:8]}... on {prefill_node} → {decode_node}")
+            logger.info(f"Created room {room_id} on {prefill_node} → {decode_node}")
             return room
     
     def get_room(self, room_id: str) -> dict:
