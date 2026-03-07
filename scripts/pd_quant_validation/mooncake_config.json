@@ -1,0 +1,9 @@
+{
+  "standalone_storage": false,
+  "master_server_address": "127.0.0.1:50051",
+  "metadata_server": "http://127.0.0.1:8080/metadata",
+  "protocol": "tcp",
+  "device_name": "",
+  "global_segment_size": "4GB",
+  "threads": 4
+}

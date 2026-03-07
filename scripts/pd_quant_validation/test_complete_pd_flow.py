@@ -160,6 +160,7 @@ def complete_room(room_info):
     print_section("步骤 4: 完成 Room")
     
     room_id = room_info['room_id']
+    room_id_str = str(room_id) if not isinstance(room_id, str) else room_id
     
     try:
         response = requests.post(
@@ -168,7 +169,7 @@ def complete_room(room_info):
         )
         
         if response.json().get('success'):
-            print(f"✓ Room {room_id[:8]}... 标记为完成")
+            print(f"✓ Room {room_id_str[:8]}... 标记为完成")
             return True
         else:
             print(f"✗ 完成 Room 失败")
