@@ -513,6 +513,11 @@ class ServerArgs:
     mooncake_ib_device: Optional[str] = None
     attn_cp_size: int = 1
     moe_dp_size: int = 1
+    enable_streaming_session: bool = False
+    enable_mamba_extra_buffer: bool = False
+    remote_instance_weight_loader_use_transfer_engine: bool = False
+    draft_runner_cache_size: Optional[int] = None
+    max_num_reqs: Optional[int] = None
 
     # Mamba cache
     max_mamba_cache_size: Optional[int] = None
