@@ -509,6 +509,7 @@ class ServerArgs:
     deepep_config: Optional[str] = None
     moe_dense_tp_size: Optional[int] = None
     elastic_ep_backend: Literal[None, "mooncake"] = None
+    enable_elastic_expert_backup: bool = False
     mooncake_ib_device: Optional[str] = None
 
     # Mamba cache
