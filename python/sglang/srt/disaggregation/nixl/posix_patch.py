@@ -57,7 +57,7 @@ def _apply_vram_bridge_monkey_patch():
         
         # Store original methods
         _original_register_buffer = nixl_conn.NixlKVManager.register_buffer_to_engine
-        _original_send_kvcache = nixl_conn.NixlKVSender.send_kvcache
+        _original_send_kvcache = nixl_conn.NixlKVManager.send_kvcache
         
         def patched_register_buffer_to_engine(self):
             """
@@ -127,7 +127,7 @@ def _apply_vram_bridge_monkey_patch():
         
         # Apply patches
         nixl_conn.NixlKVManager.register_buffer_to_engine = patched_register_buffer_to_engine
-        nixl_conn.NixlKVSender.send_kvcache = patched_send_kvcache
+        nixl_conn.NixlKVManager.send_kvcache = patched_send_kvcache
         
         logger.info("NIXL backend patched successfully")
         
