@@ -520,6 +520,8 @@ class ServerArgs:
     mamba_full_memory_ratio: float = 0.9
     mamba_scheduler_strategy: str = "auto"
     mamba_track_interval: int = 256
+    mamba_backend: Optional[str] = None
+    mamba_backend: Optional[str] = None
 
     # Hierarchical cache
     enable_hierarchical_cache: bool = False
