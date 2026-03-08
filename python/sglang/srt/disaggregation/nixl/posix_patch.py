@@ -71,7 +71,11 @@ def _apply_vram_bridge_monkey_patch():
                 return _original_register_buffer(self)
             except Exception as e:
                 error_msg = str(e)
-                if "VRAM_SEG" in error_msg or "no available backends" in error_msg:
+                # Check for POSIX backend VRAM registration failures
+                if ("VRAM_SEG" in error_msg or 
+                    "no available backends" in error_msg or
+                    "NIXL_ERR_NOT_FOUND" in error_msg or
+                    "nixlNotFoundError" in error_msg):
                     logger.warning(
                         f"VRAM registration failed (POSIX backend): {e}. "
                         "Enabling VRAM bridge mode."
@@ -88,6 +92,7 @@ def _apply_vram_bridge_monkey_patch():
                     self._dram_buffers = {}
                     
                     logger.info("VRAM bridge mode enabled successfully")
+                    return  # Don't re-raise, allow continuation
                 else:
                     # Re-raise other errors
                     raise
