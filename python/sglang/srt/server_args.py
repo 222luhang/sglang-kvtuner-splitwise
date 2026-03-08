@@ -511,6 +511,8 @@ class ServerArgs:
     elastic_ep_backend: Literal[None, "mooncake"] = None
     enable_elastic_expert_backup: bool = False
     mooncake_ib_device: Optional[str] = None
+    attn_cp_size: int = 1
+    moe_dp_size: int = 1
 
     # Mamba cache
     max_mamba_cache_size: Optional[int] = None
