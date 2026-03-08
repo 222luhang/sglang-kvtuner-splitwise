@@ -5100,7 +5100,18 @@ class ServerArgs:
         args.ep_size = args.expert_parallel_size
 
         attrs = [attr.name for attr in dataclasses.fields(cls)]
-        return cls(**{attr: getattr(args, attr) for attr in attrs})
+        kwargs = {}
+        for attr in attrs:
+            if hasattr(args, attr):
+                kwargs[attr] = getattr(args, attr)
+            else:
+                # Use default value from dataclass field
+                field = next(f for f in dataclasses.fields(cls) if f.name == attr)
+                if field.default is not dataclasses.MISSING:
+                    kwargs[attr] = field.default
+                elif field.default_factory is not dataclasses.MISSING:
+                    kwargs[attr] = field.default_factory()
+        return cls(**kwargs)
 
     def url(self):
         if is_valid_ipv6_address(self.host):
