@@ -341,7 +341,16 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
         self.seq_lengths[buffer_idx] += num_new_tokens
         
         # Process each token
-        for i, slot_idx in enumerate(loc.tolist()):
+        # Note: During CUDA graph capture, .tolist() is not allowed
+        # We need to check if we're in capture mode and handle accordingly
+        try:
+            loc_list = loc.tolist()
+        except RuntimeError:
+            # CUDA graph capture mode - skip quantization and use parent's implementation
+            super().set_kv_buffer(layer, loc, cache_k, cache_v, k_scale, v_scale, layer_id_override)
+            return
+        
+        for i, slot_idx in enumerate(loc_list):
             # Get token position for residual cache management
             token_position = None
             if positions is not None and i < len(positions):
