@@ -964,6 +964,7 @@ class MHATokenToKVPool(KVCache):
         k_scale: Optional[float] = None,
         v_scale: Optional[float] = None,
         layer_id_override: Optional[int] = None,
+        forward_batch: Optional[Any] = None,  # KVTuner: optional for mode-aware quantization
     ):
         if layer_id_override is not None:
             layer_id = layer_id_override
