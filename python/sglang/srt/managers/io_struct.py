@@ -180,7 +180,8 @@ class GenerateReqInput(BaseReq):
     # For disaggregated inference
     bootstrap_host: Optional[Union[List[str], str]] = None
     bootstrap_port: Optional[Union[List[Optional[int]], int]] = None
-    bootstrap_room: Optional[Union[List[int], int]] = None
+    # bootstrap_room can be int (legacy) or str (UUID format from external bootstrap services)
+    bootstrap_room: Optional[Union[List[Union[int, str]], Union[int, str]]] = None
     bootstrap_pair_key: Optional[Union[List[str], str]] = None
     decode_tp_size: Optional[Union[List[Optional[int]], int]] = None
 
@@ -565,10 +566,16 @@ class GenerateReqInput(BaseReq):
             self.bootstrap_port = self.bootstrap_port * self.parallel_sample_num
 
         # Normalize bootstrap_room
+        # bootstrap_room can be int (legacy) or str (UUID format)
         if self.bootstrap_room is None:
             self.bootstrap_room = [None] * num
         elif not isinstance(self.bootstrap_room, list):
-            self.bootstrap_room = [self.bootstrap_room + i for i in range(num)]
+            if isinstance(self.bootstrap_room, int):
+                # Integer room: increment for each batch item
+                self.bootstrap_room = [self.bootstrap_room + i for i in range(num)]
+            else:
+                # String (UUID) or other type: replicate for each batch item
+                self.bootstrap_room = [self.bootstrap_room for _ in range(num)]
         elif isinstance(self.bootstrap_room, list):
             self.bootstrap_room = self.bootstrap_room * self.parallel_sample_num
 
@@ -701,7 +708,8 @@ class TokenizedGenerateReqInput(BaseReq):
     # For disaggregated inference
     bootstrap_host: Optional[str] = None
     bootstrap_port: Optional[int] = None
-    bootstrap_room: Optional[int] = None
+    # bootstrap_room can be int (legacy) or str (UUID format)
+    bootstrap_room: Optional[Union[int, str]] = None
     bootstrap_pair_key: Optional[str] = None
     decode_tp_size: Optional[int] = None
 

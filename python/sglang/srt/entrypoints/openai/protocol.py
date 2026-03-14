@@ -297,7 +297,8 @@ class CompletionRequest(BaseModel):
     # For PD disaggregation
     bootstrap_host: Optional[Union[List[str], str]] = None
     bootstrap_port: Optional[Union[List[Optional[int]], int]] = None
-    bootstrap_room: Optional[Union[List[int], int]] = None
+    # bootstrap_room can be int (legacy) or str (UUID format from external bootstrap services)
+    bootstrap_room: Optional[Union[List[Union[int, str]], Union[int, str]]] = None
 
     # For DP routing — external router assigns a specific DP worker
     routed_dp_rank: Optional[int] = None
@@ -635,7 +636,8 @@ class ChatCompletionRequest(BaseModel):
     # For PD disaggregation
     bootstrap_host: Optional[Union[List[str], str]] = None
     bootstrap_port: Optional[Union[List[Optional[int]], int]] = None
-    bootstrap_room: Optional[Union[List[int], int]] = None
+    # bootstrap_room can be int (legacy) or str (UUID format from external bootstrap services)
+    bootstrap_room: Optional[Union[List[Union[int, str]], Union[int, str]]] = None
 
     # For DP routing — external router assigns a specific DP worker
     routed_dp_rank: Optional[int] = None
