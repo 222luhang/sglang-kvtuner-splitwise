@@ -685,6 +685,58 @@ class ModelRunnerKVCacheMixin:
                             residual_length=self.server_args.kvtuner_residual_length,
                         )
 
+                        # Load per-layer quantization config if specified
+                        layer_configs: dict = {}
+                        if self.server_args.kvtuner_layer_config_file:
+                            import json
+                            config_path = self.server_args.kvtuner_layer_config_file
+                            with open(config_path, "r") as f:
+                                layer_data = json.load(f)
+                            
+                            # Support two formats:
+                            # 1. {"layers": {"0": {"nbits_key": 4, ...}, ...}}
+                            # 2. {"0": {"nbits_key": 4, ...}, ...}
+                            if "layers" in layer_data:
+                                raw_layers = layer_data["layers"]
+                            else:
+                                raw_layers = layer_data
+                            
+                            for layer_id_str, layer_cfg in raw_layers.items():
+                                layer_id = int(layer_id_str)
+                                layer_configs[layer_id] = KVTunerQuantConfig(
+                                    nbits_key=layer_cfg.get("nbits_key", kvtuner_config.nbits_key),
+                                    nbits_value=layer_cfg.get("nbits_value", kvtuner_config.nbits_value),
+                                    asym=layer_cfg.get("asym", kvtuner_config.asym),
+                                    axis_key=layer_cfg.get("axis_key", kvtuner_config.axis_key),
+                                    axis_value=layer_cfg.get("axis_value", kvtuner_config.axis_value),
+                                    q_group_size=layer_cfg.get("q_group_size", kvtuner_config.q_group_size),
+                                    residual_length=layer_cfg.get("residual_length", kvtuner_config.residual_length),
+                                )
+                            
+                            logger.info(
+                                f"Loaded per-layer KVTuner config from {config_path}: "
+                                f"{len(layer_configs)} layers with custom config"
+                            )
+                        elif self.server_args.kvtuner_layer_bits:
+                            # Parse comma-separated bits: "4,4,4,8,8,..."
+                            bits_list = [int(x.strip()) for x in self.server_args.kvtuner_layer_bits.split(",")]
+                            for i, bits in enumerate(bits_list):
+                                if bits != kvtuner_config.nbits_key:
+                                    layer_configs[i] = KVTunerQuantConfig(
+                                        nbits_key=bits,
+                                        nbits_value=bits,
+                                        asym=kvtuner_config.asym,
+                                        axis_key=kvtuner_config.axis_key,
+                                        axis_value=kvtuner_config.axis_value,
+                                        q_group_size=kvtuner_config.q_group_size,
+                                        residual_length=kvtuner_config.residual_length,
+                                    )
+                            if layer_configs:
+                                logger.info(
+                                    f"Per-layer KVTuner config from --kvtuner-layer-bits: "
+                                    f"{len(layer_configs)} layers with non-default bits"
+                                )
+
                         # Setup mode-aware config for PD disaggregation if enabled
                         if self.server_args.enable_kvtuner_layer_wise:
                             prefill_config = KVTunerModeConfig(
@@ -707,6 +759,7 @@ class ModelRunnerKVCacheMixin:
                             kvtuner_config=kvtuner_config,
                             prefill_config=prefill_config,
                             decode_config=decode_config,
+                            layer_configs=layer_configs if layer_configs else None,
                             size=self.max_total_num_tokens,
                             page_size=self.page_size,
                             dtype=self.kv_cache_dtype,
@@ -728,7 +781,8 @@ class ModelRunnerKVCacheMixin:
                             f"KVTuner quantized KV cache initialized: "
                             f"nbits_k={kvtuner_config.nbits_key}, "
                             f"nbits_v={kvtuner_config.nbits_value}, "
-                            f"residual={kvtuner_config.residual_length}"
+                            f"residual={kvtuner_config.residual_length}, "
+                            f"layer_wise={len(layer_configs) > 0}"
                         )
                     else:
                         self.token_to_kv_pool = MHATokenToKVPool(
