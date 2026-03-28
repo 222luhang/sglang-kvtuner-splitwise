@@ -693,11 +693,18 @@ class ModelRunnerKVCacheMixin:
                             with open(config_path, "r") as f:
                                 layer_data = json.load(f)
                             
-                            # Support two formats:
+                            # Support three formats:
                             # 1. {"layers": {"0": {"nbits_key": 4, ...}, ...}}
                             # 2. {"0": {"nbits_key": 4, ...}, ...}
+                            # 3. {"layer_configs": [{"layer_id": 0, "nbits_key": 4, ...}, ...]}
+                            raw_layers = {}
                             if "layers" in layer_data:
                                 raw_layers = layer_data["layers"]
+                            elif "layer_configs" in layer_data:
+                                # Convert list format to dict format
+                                for item in layer_data["layer_configs"]:
+                                    layer_id = item.pop("layer_id")
+                                    raw_layers[str(layer_id)] = item
                             else:
                                 raw_layers = layer_data
                             
