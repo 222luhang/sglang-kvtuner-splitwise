@@ -771,7 +771,8 @@ class FlashInferAttnBackend(AttentionBackend):
                 assert v is not None
                 if save_kv_cache:
                     forward_batch.token_to_kv_pool.set_kv_buffer(
-                        layer, cache_loc, k, v, layer.k_scale, layer.v_scale
+                        layer, cache_loc, k, v, layer.k_scale, layer.v_scale,
+                        forward_batch=forward_batch
                     )
 
             o = prefill_wrapper_paged.forward(
@@ -812,7 +813,7 @@ class FlashInferAttnBackend(AttentionBackend):
                 or layer.attn_type == AttentionType.ENCODER_ONLY
             ):
                 causal = False
-            if not self.is_dllm_model and layer.attn_type == AttentionType.ENCODER_ONLY:
+            if save_kv_cache and layer.attn_type == AttentionType.ENCODER_ONLY:
                 save_kv_cache = False
 
             if self.forward_metadata.extend_no_prefix:
@@ -854,7 +855,8 @@ class FlashInferAttnBackend(AttentionBackend):
 
             if save_kv_cache:
                 forward_batch.token_to_kv_pool.set_kv_buffer(
-                    layer, cache_loc, k, v, layer.k_scale, layer.v_scale
+                    layer, cache_loc, k, v, layer.k_scale, layer.v_scale,
+                    forward_batch=forward_batch
                 )
 
         return o.view(-1, layer.tp_q_head_num * layer.head_dim)
@@ -881,7 +883,8 @@ class FlashInferAttnBackend(AttentionBackend):
             assert v is not None
             if save_kv_cache:
                 forward_batch.token_to_kv_pool.set_kv_buffer(
-                    layer, cache_loc, k, v, layer.k_scale, layer.v_scale
+                    layer, cache_loc, k, v, layer.k_scale, layer.v_scale,
+                    forward_batch=forward_batch
                 )
 
         # Call the wrapped function

@@ -52,6 +52,14 @@ from sglang.srt.mem_cache.utils import (
     set_mla_kv_buffer_triton,
     set_mla_kv_scale_buffer_triton,
 )
+
+# KVTuner integration: optional mode-aware KV cache quantization pool
+try:
+    from sglang.srt.mem_cache.kvtuner_kv_pool import KVTunerMHATokenToKVPool
+    KVTUNER_POOL_AVAILABLE = True
+except ImportError:
+    KVTUNER_POOL_AVAILABLE = False
+
 from sglang.srt.utils import (
     cpu_has_amx_support,
     is_cpu,
@@ -989,6 +997,7 @@ class MHATokenToKVPool(KVCache):
         k_scale: Optional[float] = None,
         v_scale: Optional[float] = None,
         layer_id_override: Optional[int] = None,
+        forward_batch: Optional[Any] = None,  # KVTuner: optional for mode-aware quantization
     ):
         if layer_id_override is not None:
             layer_id = layer_id_override

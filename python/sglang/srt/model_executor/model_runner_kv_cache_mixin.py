@@ -664,24 +664,91 @@ class ModelRunnerKVCacheMixin:
                         ),
                     )
                 else:
-                    self.token_to_kv_pool = MHATokenToKVPool(
-                        self.max_total_num_tokens,
-                        page_size=self.page_size,
-                        dtype=self.kv_cache_dtype,
-                        head_num=self.model_config.get_num_kv_heads(
-                            get_attention_tp_size()
-                        ),
-                        head_dim=self.model_config.head_dim,
-                        layer_num=self.num_effective_layers,
-                        device=self.device,
-                        enable_memory_saver=self.server_args.enable_memory_saver,
-                        start_layer=self.start_layer,
-                        end_layer=self.end_layer,
-                        enable_alt_stream=not self.server_args.enable_pdmux,
-                        enable_kv_cache_copy=(
-                            self.server_args.speculative_algorithm is not None
-                        ),
-                    )
+                    # Check if KVTuner quantization is enabled
+                    if self.server_args.enable_kvtuner_quant:
+                        from sglang.srt.mem_cache.kvtuner_kv_pool import (
+                            KVTunerMHATokenToKVPool,
+                            KVTunerModeConfig,
+                        )
+                        from sglang.srt.layers.quantization.kvtuner_quant import (
+                            KVTunerQuantConfig,
+                        )
+
+                        # Create base KVTuner config
+                        kvtuner_config = KVTunerQuantConfig(
+                            nbits_key=self.server_args.kvtuner_nbits_key,
+                            nbits_value=self.server_args.kvtuner_nbits_value,
+                            asym=self.server_args.kvtuner_asym,
+                            axis_key=self.server_args.kvtuner_axis_key,
+                            axis_value=self.server_args.kvtuner_axis_value,
+                            q_group_size=self.server_args.kvtuner_q_group_size,
+                            residual_length=self.server_args.kvtuner_residual_length,
+                        )
+
+                        # Setup mode-aware config for PD disaggregation if enabled
+                        if self.server_args.enable_kvtuner_layer_wise:
+                            prefill_config = KVTunerModeConfig(
+                                nbits_key=self.server_args.kvtuner_nbits_key,
+                                nbits_value=self.server_args.kvtuner_nbits_value,
+                                residual_length=self.server_args.kvtuner_residual_length,
+                                q_group_size=self.server_args.kvtuner_q_group_size,
+                            )
+                            decode_config = KVTunerModeConfig(
+                                nbits_key=max(4, self.server_args.kvtuner_nbits_key),
+                                nbits_value=max(4, self.server_args.kvtuner_nbits_value),
+                                residual_length=max(32, self.server_args.kvtuner_residual_length // 4),
+                                q_group_size=self.server_args.kvtuner_q_group_size,
+                            )
+                        else:
+                            prefill_config = None
+                            decode_config = None
+
+                        self.token_to_kv_pool = KVTunerMHATokenToKVPool(
+                            kvtuner_config=kvtuner_config,
+                            prefill_config=prefill_config,
+                            decode_config=decode_config,
+                            size=self.max_total_num_tokens,
+                            page_size=self.page_size,
+                            dtype=self.kv_cache_dtype,
+                            head_num=self.model_config.get_num_kv_heads(
+                                get_attention_tp_size()
+                            ),
+                            head_dim=self.model_config.head_dim,
+                            layer_num=self.num_effective_layers,
+                            device=self.device,
+                            enable_memory_saver=self.server_args.enable_memory_saver,
+                            start_layer=self.start_layer,
+                            end_layer=self.end_layer,
+                            enable_alt_stream=not self.server_args.enable_pdmux,
+                            enable_kv_cache_copy=(
+                                self.server_args.speculative_algorithm is not None
+                            ),
+                        )
+                        logger.info(
+                            f"KVTuner quantized KV cache initialized: "
+                            f"nbits_k={kvtuner_config.nbits_key}, "
+                            f"nbits_v={kvtuner_config.nbits_value}, "
+                            f"residual={kvtuner_config.residual_length}"
+                        )
+                    else:
+                        self.token_to_kv_pool = MHATokenToKVPool(
+                            self.max_total_num_tokens,
+                            page_size=self.page_size,
+                            dtype=self.kv_cache_dtype,
+                            head_num=self.model_config.get_num_kv_heads(
+                                get_attention_tp_size()
+                            ),
+                            head_dim=self.model_config.head_dim,
+                            layer_num=self.num_effective_layers,
+                            device=self.device,
+                            enable_memory_saver=self.server_args.enable_memory_saver,
+                            start_layer=self.start_layer,
+                            end_layer=self.end_layer,
+                            enable_alt_stream=not self.server_args.enable_pdmux,
+                            enable_kv_cache_copy=(
+                                self.server_args.speculative_algorithm is not None
+                            ),
+                        )
 
         # Initialize token_to_kv_pool_allocator
         need_sort = self.server_args.disaggregation_mode in ("decode", "prefill")
