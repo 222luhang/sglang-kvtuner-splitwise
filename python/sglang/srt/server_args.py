@@ -593,6 +593,20 @@ class ServerArgs:
     disable_tokenizer_batch_decode: bool = False
     disable_outlines_disk_cache: bool = False
     disable_custom_all_reduce: bool = False
+    # KVTuner KV Cache Quantization
+    enable_kvtuner_quant: bool = False
+    kvtuner_nbits_key: int = 4
+    kvtuner_nbits_value: int = 4
+    kvtuner_asym: bool = False
+    kvtuner_axis_key: int = 0
+    kvtuner_axis_value: int = 0
+    kvtuner_q_group_size: int = 64
+    kvtuner_residual_length: int = 128
+    # KVTuner Layer-wise Quantization
+    enable_kvtuner_layer_wise: bool = False
+    kvtuner_layer_bits: Optional[str] = None  # JSON string or "4,4,4,8,8,..."
+    kvtuner_layer_config_file: Optional[str] = None  # Path to config JSON
+    memory_aware_strategy: str = "proportional"  # uniform, proportional, custom
     enable_mscclpp: bool = False
     enable_torch_symm_mem: bool = False
     disable_overlap_schedule: bool = False
@@ -4479,6 +4493,84 @@ class ServerArgs:
             "--disable-custom-all-reduce",
             action="store_true",
             help="Disable the custom all-reduce kernel and fall back to NCCL.",
+        )
+        # KVTuner KV Cache Quantization
+        parser.add_argument(
+            "--enable-kvtuner-quant",
+            action="store_true",
+            help="Enable KVTuner KV cache quantization for memory reduction.",
+        )
+        parser.add_argument(
+            "--kvtuner-nbits-key",
+            type=int,
+            default=ServerArgs.kvtuner_nbits_key,
+            help="Number of bits for key quantization (2, 4, or 8). Default: 4",
+        )
+        parser.add_argument(
+            "--kvtuner-nbits-value",
+            type=int,
+            default=ServerArgs.kvtuner_nbits_value,
+            help="Number of bits for value quantization (2, 4, or 8). Default: 4",
+        )
+        parser.add_argument(
+            "--kvtuner-asym",
+            action="store_true",
+            help="Enable asymmetric quantization for KVTuner.",
+        )
+        parser.add_argument(
+            "--kvtuner-axis-key",
+            type=int,
+            default=ServerArgs.kvtuner_axis_key,
+            help="Axis for key quantization (0=per-token, 1=per-channel). Default: 0",
+        )
+        parser.add_argument(
+            "--kvtuner-axis-value",
+            type=int,
+            default=ServerArgs.kvtuner_axis_value,
+            help="Axis for value quantization (0=per-token, 1=per-channel). Default: 0",
+        )
+        parser.add_argument(
+            "--kvtuner-q-group-size",
+            type=int,
+            default=ServerArgs.kvtuner_q_group_size,
+            help="Group size for KVTuner quantization. Default: 64",
+        )
+        parser.add_argument(
+            "--kvtuner-residual-length",
+            type=int,
+            default=ServerArgs.kvtuner_residual_length,
+            help="Number of recent tokens kept in full precision (residual). Default: 128",
+        )
+        # KVTuner Layer-wise Quantization
+        parser.add_argument(
+            "--enable-kvtuner-layer-wise",
+            action="store_true",
+            help="Enable layer-wise quantization with different bits per layer.",
+        )
+        parser.add_argument(
+            "--kvtuner-layer-bits",
+            type=str,
+            default=None,
+            help="Comma-separated bits per layer (e.g., '4,4,4,8,8,...') or JSON dict.",
+        )
+        parser.add_argument(
+            "--kvtuner-layer-config-file",
+            type=str,
+            default=None,
+            help="Path to JSON config file for layer-wise quantization.",
+        )
+        # Memory-aware pipeline parallelism
+        parser.add_argument(
+            "--enable-memory-aware-pp",
+            action="store_true",
+            help="Enable memory-aware pipeline parallelism for P/D disaggregation.",
+        )
+        parser.add_argument(
+            "--memory-aware-strategy",
+            type=str,
+            default="proportional",
+            choices=["uniform", "proportional", "custom"],
+            help="Strategy for memory-aware pipeline parallelism. Default: proportional",
         )
         parser.add_argument(
             "--enable-mscclpp",

@@ -87,17 +87,23 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
         # Mode-specific configs (optional, overrides kvtuner_config)
         prefill_config: Optional[KVTunerModeConfig] = None,
         decode_config: Optional[KVTunerModeConfig] = None,
+        # Layer-wise quantization: per-layer KVTunerQuantConfig overrides
+        layer_configs: Optional[Dict[int, KVTunerQuantConfig]] = None,
     ):
         """Initialize with KVTuner quantization support.
         
         Args:
-            kvtuner_config: Base KVTuner quantization configuration
+            kvtuner_config: Base KVTuner quantization configuration (default for all layers)
             prefill_config: Mode-specific config for Prefill (EXTEND) mode
             decode_config: Mode-specific config for Decode mode
+            layer_configs: Per-layer quantization config overrides.
+                Keys are absolute layer IDs (matching layer.layer_id).
+                Layers not in this dict use kvtuner_config as default.
         """
         # Store KVTuner config before calling parent init
         self.kvtuner_config = kvtuner_config
         self.enable_kvtuner = kvtuner_config is not None
+        self.layer_configs = layer_configs or {}
         
         # Mode-specific configs
         self.prefill_config = prefill_config
@@ -105,6 +111,15 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
         
         if self.enable_kvtuner:
             logger.info(f"Initializing KVTuner quantized KV cache with config: {kvtuner_config}")
+            if self.layer_configs:
+                logger.info(f"  Layer-wise quantization enabled for {len(self.layer_configs)} layers")
+                # Log layer-wise config summary
+                bits_summary = {}
+                for lid, cfg in sorted(self.layer_configs.items()):
+                    key = (cfg.nbits_key, cfg.nbits_value)
+                    bits_summary[key] = bits_summary.get(key, 0) + 1
+                for (bk, bv), count in bits_summary.items():
+                    logger.info(f"    {count} layers: k={bk}-bit, v={bv}-bit")
             if prefill_config:
                 logger.info(f"  Prefill config: nbits_k={prefill_config.nbits_key}, "
                            f"nbits_v={prefill_config.nbits_value}, "
@@ -144,7 +159,40 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
         # Initialize quantization methods for base and mode-specific configs
         self.kvtuner_quant_method = KVTunerQuantizationMethod(self.kvtuner_config)
         
-        # Mode-specific quantizers
+        # Pre-create per-layer quantization methods for layer-wise quantization
+        # Cache: {(layer_id, mode_key): KVTunerQuantizationMethod}
+        self._layer_quant_methods: Dict[tuple, KVTunerQuantizationMethod] = {}
+        for layer_id, layer_cfg in self.layer_configs.items():
+            buffer_idx = layer_id - self.start_layer
+            if 0 <= buffer_idx < self.layer_num:
+                self._layer_quant_methods[(layer_id, "base")] = KVTunerQuantizationMethod(layer_cfg)
+                # Also create mode-specific quantizers for this layer if modes are configured
+                if self.prefill_config:
+                    prefill_layer_cfg = KVTunerQuantConfig(
+                        nbits_key=self.prefill_config.nbits_key if layer_id not in self.layer_configs else layer_cfg.nbits_key,
+                        nbits_value=self.prefill_config.nbits_value if layer_id not in self.layer_configs else layer_cfg.nbits_value,
+                        asym=layer_cfg.asym,
+                        axis_key=layer_cfg.axis_key,
+                        axis_value=layer_cfg.axis_value,
+                        q_group_size=self.prefill_config.q_group_size if layer_id not in self.layer_configs else layer_cfg.q_group_size,
+                        residual_length=self.prefill_config.residual_length,
+                        compute_dtype=layer_cfg.compute_dtype,
+                    )
+                    self._layer_quant_methods[(layer_id, "prefill")] = KVTunerQuantizationMethod(prefill_layer_cfg)
+                if self.decode_config:
+                    decode_layer_cfg = KVTunerQuantConfig(
+                        nbits_key=self.decode_config.nbits_key if layer_id not in self.layer_configs else layer_cfg.nbits_key,
+                        nbits_value=self.decode_config.nbits_value if layer_id not in self.layer_configs else layer_cfg.nbits_value,
+                        asym=layer_cfg.asym,
+                        axis_key=layer_cfg.axis_key,
+                        axis_value=layer_cfg.axis_value,
+                        q_group_size=self.decode_config.q_group_size if layer_id not in self.layer_configs else layer_cfg.q_group_size,
+                        residual_length=self.decode_config.residual_length,
+                        compute_dtype=layer_cfg.compute_dtype,
+                    )
+                    self._layer_quant_methods[(layer_id, "decode")] = KVTunerQuantizationMethod(decode_layer_cfg)
+        
+        # Mode-specific quantizers (for layers without per-layer config)
         self.prefill_quant_method: Optional[KVTunerQuantizationMethod] = None
         self.decode_quant_method: Optional[KVTunerQuantizationMethod] = None
         
@@ -211,7 +259,7 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
                    f"residual_length={self._residual_length}")
     
     def _get_quant_method_for_mode(self, forward_mode: Optional[ForwardMode]) -> KVTunerQuantizationMethod:
-        """Get the appropriate quantization method for the current forward mode."""
+        """Get the appropriate quantization method for the current forward mode (non-layer-wise)."""
         if forward_mode is None:
             return self.kvtuner_quant_method
         
@@ -224,8 +272,39 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
         
         return self.kvtuner_quant_method
     
+    def _get_quant_method_for_layer(self, layer_id: int, forward_mode: Optional[ForwardMode] = None) -> KVTunerQuantizationMethod:
+        """Get the quantization method for a specific layer, considering layer-wise and mode configs.
+        
+        Priority:
+        1. Per-layer config with mode-specific override (highest)
+        2. Per-layer config base
+        3. Mode-specific config
+        4. Global base config (lowest)
+        """
+        # Determine mode key
+        mode_key = "base"
+        if forward_mode is not None:
+            if forward_mode.is_decode_or_idle():
+                mode_key = "decode"
+            elif forward_mode.is_extend() or forward_mode.is_extend_or_draft_extend_or_mixed():
+                mode_key = "prefill"
+        
+        # Check per-layer + mode-specific quantizer
+        layer_mode_key = (layer_id, mode_key)
+        if layer_mode_key in self._layer_quant_methods:
+            return self._layer_quant_methods[layer_mode_key]
+        
+        # Check per-layer base quantizer
+        layer_base_key = (layer_id, "base")
+        if layer_base_key in self._layer_quant_methods:
+            # If we have a per-layer config, use it directly (don't mix with mode configs)
+            return self._layer_quant_methods[layer_base_key]
+        
+        # Fall back to mode-specific or global quantizer
+        return self._get_quant_method_for_mode(forward_mode)
+    
     def _get_residual_length_for_mode(self, forward_mode: Optional[ForwardMode]) -> int:
-        """Get the appropriate residual length for the current forward mode."""
+        """Get the appropriate residual length for the current forward mode (non-layer-wise)."""
         if forward_mode is None:
             return self._residual_length
         
@@ -238,12 +317,20 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
         
         return self._residual_length
     
+    def _get_residual_length_for_layer(self, layer_id: int, forward_mode: Optional[ForwardMode] = None) -> int:
+        """Get residual length for a specific layer."""
+        # Per-layer config takes priority
+        if layer_id in self.layer_configs:
+            return self.layer_configs[layer_id].residual_length
+        return self._get_residual_length_for_mode(forward_mode)
+    
     def _should_quantize_token(
         self, 
         buffer_idx: int, 
         slot_idx: int,
         forward_mode: Optional[ForwardMode] = None,
         token_position: Optional[int] = None,
+        layer_id: Optional[int] = None,
     ) -> bool:
         """Determine if a token should be quantized based on residual length policy.
         
@@ -271,8 +358,8 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
                 if not self.prefill_config.enable_quantization:
                     return False
         
-        # Get effective residual length for current mode
-        residual_length = self._get_residual_length_for_mode(forward_mode)
+        # Get effective residual length for current mode and layer
+        residual_length = self._get_residual_length_for_layer(layer_id, forward_mode)
         
         # If no position info, use simplified policy
         if token_position is None:
@@ -328,8 +415,8 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
         if forward_batch is not None:
             forward_mode = getattr(forward_batch, 'forward_mode', None)
         
-        # Get quantization method for current mode
-        quant_method = self._get_quant_method_for_mode(forward_mode)
+        # Get quantization method for current layer and mode (layer-wise aware)
+        quant_method = self._get_quant_method_for_layer(layer_id, forward_mode)
         
         # Get positions if available (for residual cache management)
         positions = None
@@ -358,7 +445,7 @@ class KVTunerMHATokenToKVPool(MHATokenToKVPool):
             
             # Determine if we should quantize this token
             should_quantize = self._should_quantize_token(
-                buffer_idx, slot_idx, forward_mode, token_position
+                buffer_idx, slot_idx, forward_mode, token_position, layer_id
             )
             
             if should_quantize:
