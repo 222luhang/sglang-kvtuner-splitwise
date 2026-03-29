@@ -802,7 +802,7 @@ class TCPKVSender(CommonKVSender):
             self._layer_sent = False
 
     def poll(self) -> KVPoll:
-        return KVPoll(self.kv_mgr.check_status(self.bootstrap_room))
+        return self.kv_mgr.check_status(self.bootstrap_room)
 
     def failure_exception(self) -> None:
         raise RuntimeError(
