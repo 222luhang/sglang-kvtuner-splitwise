@@ -611,7 +611,6 @@ class ServerArgs:
     enable_kvtuner_layer_wise: bool = False
     kvtuner_layer_bits: Optional[str] = None  # JSON string or "4,4,4,8,8,..."
     kvtuner_layer_config_file: Optional[str] = None  # Path to config JSON
-    enable_memory_aware_pp: bool = False
     memory_aware_strategy: str = "proportional"  # uniform, proportional, custom
     enable_mscclpp: bool = False
     enable_torch_symm_mem: bool = False
