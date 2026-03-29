@@ -764,6 +764,12 @@ class FlashAttentionBackend(AttentionBackend):
                         k,
                         k_rope,
                     )
+                # Layer-wise KV pipeline transfer hook (TCP disaggregation backend).
+                # Invoked after each layer's KV cache is written so that transfer
+                # to the decode node overlaps with the next layer's computation,
+                # hiding transfer latency (pipeline overlap as in vllm PR #2809).
+                if forward_batch.layer_kv_send_fn is not None:
+                    forward_batch.layer_kv_send_fn(layer.layer_id, cache_loc)
 
         # Use precomputed metadata across all layers
         metadata = self.forward_metadata

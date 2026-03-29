@@ -280,6 +280,7 @@ class TransferBackend(Enum):
     NIXL = "nixl"
     ASCEND = "ascend"
     FAKE = "fake"
+    TCP = "tcp"
 
 
 class KVClassType(Enum):
@@ -398,6 +399,23 @@ def get_kv_class(
             KVClassType.MANAGER: FakeKVManager,
             KVClassType.SENDER: FakeKVSender,
             KVClassType.RECEIVER: (FakeKVReceiver),
+        }
+        return class_mapping.get(class_type)
+    elif transfer_backend == TransferBackend.TCP:
+        from sglang.srt.disaggregation.base import KVArgs
+        from sglang.srt.disaggregation.tcp import (
+            TCPKVBootstrapServer,
+            TCPKVManager,
+            TCPKVReceiver,
+            TCPKVSender,
+        )
+
+        class_mapping = {
+            KVClassType.KVARGS: KVArgs,
+            KVClassType.MANAGER: TCPKVManager,
+            KVClassType.SENDER: TCPKVSender,
+            KVClassType.RECEIVER: TCPKVReceiver,
+            KVClassType.BOOTSTRAP_SERVER: TCPKVBootstrapServer,
         }
         return class_mapping.get(class_type)
 
