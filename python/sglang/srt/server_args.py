@@ -606,7 +606,6 @@ class ServerArgs:
     enable_kvtuner_layer_wise: bool = False
     kvtuner_layer_bits: Optional[str] = None  # JSON string or "4,4,4,8,8,..."
     kvtuner_layer_config_file: Optional[str] = None  # Path to config JSON
-    memory_aware_strategy: str = "proportional"  # uniform, proportional, custom
     enable_mscclpp: bool = False
     enable_torch_symm_mem: bool = False
     disable_overlap_schedule: bool = False
@@ -717,16 +716,6 @@ class ServerArgs:
 
     # For forward hooks
     forward_hooks: Optional[List[dict[str, Any]]] = None
-
-    # KVTuner KV Cache Quantization
-    enable_kvtuner_quant: bool = False
-    kvtuner_nbits_key: int = 4
-    kvtuner_nbits_value: int = 4
-    kvtuner_asym: bool = False
-    kvtuner_axis_key: int = 0
-    kvtuner_axis_value: int = 0
-    kvtuner_q_group_size: int = 64
-    kvtuner_residual_length: int = 128
 
     # KVTuner Layer-wise Quantization
     enable_kvtuner_layer_wise: bool = False
@@ -4558,19 +4547,6 @@ class ServerArgs:
             default=None,
             help="Path to JSON config file for layer-wise quantization.",
         )
-        # Memory-aware pipeline parallelism
-        parser.add_argument(
-            "--enable-memory-aware-pp",
-            action="store_true",
-            help="Enable memory-aware pipeline parallelism for P/D disaggregation.",
-        )
-        parser.add_argument(
-            "--memory-aware-strategy",
-            type=str,
-            default="proportional",
-            choices=["uniform", "proportional", "custom"],
-            help="Strategy for memory-aware pipeline parallelism. Default: proportional",
-        )
         parser.add_argument(
             "--enable-mscclpp",
             action="store_true",
@@ -5094,98 +5070,6 @@ class ServerArgs:
             type=json_list_type,
             default=ServerArgs.forward_hooks,
             help="JSON-formatted forward hook specifications to attach to the model.",
-        )
-
-        # KVTuner KV Cache Quantization
-        parser.add_argument(
-            "--enable-kvtuner-quant",
-            action="store_true",
-            help="Enable KVTuner KV cache quantization for memory reduction.",
-        )
-        parser.add_argument(
-            "--kvtuner-nbits-key",
-            type=int,
-            default=ServerArgs.kvtuner_nbits_key,
-            choices=[2, 4, 8],
-            help="Number of bits for key quantization (2, 4, or 8).",
-        )
-        parser.add_argument(
-            "--kvtuner-nbits-value",
-            type=int,
-            default=ServerArgs.kvtuner_nbits_value,
-            choices=[2, 4, 8],
-            help="Number of bits for value quantization (2, 4, or 8).",
-        )
-        parser.add_argument(
-            "--kvtuner-asym",
-            action="store_true",
-            default=ServerArgs.kvtuner_asym,
-            help="Use asymmetric quantization (default is symmetric).",
-        )
-        parser.add_argument(
-            "--kvtuner-axis-key",
-            type=int,
-            default=ServerArgs.kvtuner_axis_key,
-            choices=[0, 1],
-            help="Axis for key quantization: 0=per-token, 1=per-channel.",
-        )
-        parser.add_argument(
-            "--kvtuner-axis-value",
-            type=int,
-            default=ServerArgs.kvtuner_axis_value,
-            choices=[0, 1],
-            help="Axis for value quantization: 0=per-token, 1=per-channel.",
-        )
-        parser.add_argument(
-            "--kvtuner-q-group-size",
-            type=int,
-            default=ServerArgs.kvtuner_q_group_size,
-            help="Group size for quantization.",
-        )
-        parser.add_argument(
-            "--kvtuner-residual-length",
-            type=int,
-            default=ServerArgs.kvtuner_residual_length,
-            help="Number of recent tokens to keep in full precision.",
-        )
-
-        # KVTuner Layer-wise Quantization
-        parser.add_argument(
-            "--enable-kvtuner-layer-wise",
-            action="store_true",
-            help="Enable layer-wise quantization with different bits per layer.",
-        )
-        parser.add_argument(
-            "--kvtuner-layer-bits",
-            type=str,
-            default=ServerArgs.kvtuner_layer_bits,
-            help="Layer-wise bits specification (e.g., '4,4,4,8,8' or path to JSON config).",
-        )
-        parser.add_argument(
-            "--kvtuner-layer-config-file",
-            type=str,
-            default=ServerArgs.kvtuner_layer_config_file,
-            help="Path to JSON config file for layer-wise quantization.",
-        )
-
-        # Memory-Aware Pipeline Parallelism
-        parser.add_argument(
-            "--enable-memory-aware-pp",
-            action="store_true",
-            help="Enable memory-aware pipeline parallelism distribution.",
-        )
-        parser.add_argument(
-            "--node-memory-gb",
-            type=str,
-            default=ServerArgs.node_memory_gb,
-            help="Comma-separated GPU memory per node in GB (e.g., '24,24,48,48').",
-        )
-        parser.add_argument(
-            "--memory-aware-strategy",
-            type=str,
-            default=ServerArgs.memory_aware_strategy,
-            choices=["uniform", "proportional", "custom"],
-            help="Strategy for distributing layers across pipeline stages.",
         )
 
     @classmethod
