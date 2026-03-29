@@ -70,9 +70,20 @@ _HEADER_SIZE = struct.calcsize(_HEADER_FMT)
 # Special layer_id value that signals "all done"
 _MSG_DONE = -1
 
-# How long (seconds) the TCP receiver thread waits for the first byte before
-# considering the connection dead.
+# How long to wait for a TCP connection/receive operation (seconds).
 _RECV_TIMEOUT_S = 120
+
+# Grace period while waiting for the ZMQ descriptor to be registered before
+# the TCP connection arrives (the two channels are independent).
+_PENDING_WAIT_S = 5.0
+
+# How long TCPKVSender waits for the decode side to register its KV indices
+# via ZMQ before declaring a failure.  Shorter than _RECV_TIMEOUT_S because
+# the ZMQ message should arrive almost immediately after the HTTP response.
+_SENDER_WAIT_S = 10.0
+
+# How long (seconds) the TCP receiver thread waits for the first byte before
+# considering the connection dead.  Defined once above as _RECV_TIMEOUT_S.
 
 # ZMQ message field indices sent by TCPKVReceiver → TCPKVSender (over ZMQ PULL)
 # Format (multi-part ZMQ message):
@@ -266,10 +277,10 @@ class TCPKVManager(CommonKVManager):
             logger.debug(f"[TCPKVManager] accepted connection for room={room} from {addr}")
 
             # The ZMQ message from the decode side may arrive slightly after the
-            # TCP connection (ZMQ and TCP use independent channels).  Wait a
-            # short time for the pending transfer to be registered.
+            # TCP connection (ZMQ and TCP use independent channels).  Wait up to
+            # _PENDING_WAIT_S for the pending transfer to be registered.
             pending = None
-            deadline = time.monotonic() + 5.0  # 5 s grace period
+            deadline = time.monotonic() + _PENDING_WAIT_S
             while pending is None and time.monotonic() < deadline:
                 with self._pending_lock:
                     pending = self._pending_transfers.get(room)
@@ -596,8 +607,10 @@ class TCPKVSender(CommonKVSender):
             pending = self.kv_mgr._pending_transfers.get(self.bootstrap_room)
 
         if pending is None:
-            # The receiver hasn't connected yet; wait briefly
-            deadline = time.monotonic() + _RECV_TIMEOUT_S
+            # The receiver hasn't registered its KV indices via ZMQ yet.
+            # Wait up to _SENDER_WAIT_S (much shorter than _RECV_TIMEOUT_S)
+            # because the ZMQ message should arrive almost immediately.
+            deadline = time.monotonic() + _SENDER_WAIT_S
             while pending is None and time.monotonic() < deadline:
                 time.sleep(0.01)
                 with self.kv_mgr._pending_lock:
@@ -770,7 +783,19 @@ class TCPKVReceiver(CommonKVReceiver):
                 return
 
             prefill_ip = binfo["rank_ip"]
-            prefill_tcp_port = binfo.get("tcp_port", binfo.get("rank_port"))
+            tcp_port_raw = binfo.get("tcp_port")
+            if not tcp_port_raw:
+                # Fallback: the bootstrap server did not return a tcp_port field
+                # (e.g. an older server or a non-TCP backend bootstrap server).
+                # Falling back to rank_port (ZMQ port) will almost certainly
+                # fail because ZMQ and TCP use different sockets.
+                tcp_port_raw = binfo.get("rank_port")
+                logger.warning(
+                    f"[TCPKVReceiver] room={self.bootstrap_room}: tcp_port not in "
+                    f"bootstrap info; falling back to rank_port={tcp_port_raw}. "
+                    "Ensure the prefill server uses the TCP backend."
+                )
+            prefill_tcp_port = tcp_port_raw
 
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.settimeout(_RECV_TIMEOUT_S)
@@ -853,11 +878,6 @@ class TCPKVReceiver(CommonKVReceiver):
 # ---------------------------------------------------------------------------
 
 
-# ---------------------------------------------------------------------------
-# Low-level GPU write helpers
-# ---------------------------------------------------------------------------
-
-
 def _write_pages_to_gpu(
     base_ptr: int,
     item_len: int,
@@ -904,9 +924,18 @@ class TCPKVBootstrapServer(CommonKVBootstrapServer):
     Extends CommonKVBootstrapServer to store and serve the prefill TCP port
     alongside the ZMQ port so that decode workers know where to connect.
 
-    The bootstrap route PUT payload now includes an optional ``tcp_port``
-    field.  The route GET response includes a ``tcp_port`` field in addition
-    to the standard ``rank_ip`` / ``rank_port`` fields.
+    The bootstrap route PUT payload accepts an optional ``tcp_port`` field.
+    The route GET response includes a ``tcp_port`` field in addition to the
+    standard ``rank_ip`` / ``rank_port`` fields so that decode workers know
+    which port to open a TCP connection to.
+
+    Design notes
+    ------------
+    The parent class registers a wildcard ``*`` handler for ``/route`` that
+    dispatches to ``_handle_route_put`` and ``_handle_route_get`` based on the
+    HTTP method.  We override those two virtual methods directly so that Python's
+    MRO ensures our versions are called.  No ``_setup_routes`` override is
+    needed (which would conflict with the parent's wildcard registration).
     """
 
     def __init__(self, host: str, port: int):
@@ -914,18 +943,22 @@ class TCPKVBootstrapServer(CommonKVBootstrapServer):
         self._tcp_port_table: Dict[Tuple[int, int, int, int], int] = {}
         super().__init__(host, port)
 
-    def _setup_routes(self):
-        """Extend the parent routes to also handle the GET with tcp_port."""
-        super()._setup_routes()
-        # The existing /route GET is replaced by our augmented handler
-        self.app.router.add_route("GET", "/route", self._handle_tcp_route_get)
-
     async def _handle_route_put(self, request):
-        """Extend the parent PUT handler to also store the tcp_port."""
+        """
+        Extend the parent PUT handler to also store the ``tcp_port`` field.
+
+        We call ``await request.json()`` here first to extract ``tcp_port``.
+        Then we delegate to the parent, which calls ``await request.json()``
+        again internally.  This is safe because aiohttp caches the raw body
+        bytes in ``request._read_bytes`` on the first read; subsequent calls
+        return the same cached data without re-reading the network stream.
+        """
+        from aiohttp import web
+
         data = await request.json()
         tcp_port = int(data.get("tcp_port", 0))
 
-        # Let the parent handler do the heavy lifting
+        # Let the parent handler do the heavy lifting (registration, validation).
         response = await super()._handle_route_put(request)
 
         if response.status == 200 and tcp_port > 0:
@@ -942,8 +975,13 @@ class TCPKVBootstrapServer(CommonKVBootstrapServer):
                 ] = tcp_port
         return response
 
-    async def _handle_tcp_route_get(self, request):
-        """GET /route – same as parent but enriches the response with tcp_port."""
+    async def _handle_route_get(self, request):
+        """
+        Extend the parent GET handler to inject ``tcp_port`` into the JSON
+        response so decode workers know which TCP port to connect to.
+        """
+        import json as _json
+
         from aiohttp import web
 
         prefill_dp_rank = request.query.get("prefill_dp_rank")
@@ -951,20 +989,16 @@ class TCPKVBootstrapServer(CommonKVBootstrapServer):
         target_tp_rank = request.query.get("target_tp_rank")
         target_pp_rank = request.query.get("target_pp_rank")
 
-        # Delegate to parent for validation and standard response
-        response = await self._handle_route_get(request)
+        # Delegate to the parent for all validation and standard response.
+        response = await super()._handle_route_get(request)
 
         if response.status != 200:
             return response
 
-        # For server-info queries (-1 params) no tcp_port is needed
-        if (
-            prefill_dp_rank is None
-            or int(prefill_dp_rank) == -1
-        ):
+        # For server-info queries (all params == -1) no tcp_port is needed.
+        if prefill_dp_rank is None or int(prefill_dp_rank) == -1:
             return response
 
-        # Inject tcp_port into the response payload
         key = (
             int(prefill_dp_rank),
             int(prefill_cp_rank),
@@ -974,12 +1008,9 @@ class TCPKVBootstrapServer(CommonKVBootstrapServer):
         async with self.lock:
             tcp_port = self._tcp_port_table.get(key, 0)
 
-        # Re-build the response JSON with the extra field
-        try:
-            data = await response.json()
-        except Exception:
-            import json as _json
-            data = _json.loads(response.body)
+        # Rebuild the JSON payload with the extra field.  ``web.Response.text``
+        # holds the serialised JSON string returned by the parent.
+        data = _json.loads(response.text)
         data["tcp_port"] = tcp_port
         return web.json_response(data, status=200)
 
