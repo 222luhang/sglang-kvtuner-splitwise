@@ -734,7 +734,6 @@ class ServerArgs:
     kvtuner_layer_config_file: Optional[str] = None  # Path to config JSON
 
     # Memory-Aware Pipeline Parallelism
-    enable_memory_aware_pp: bool = False
     node_memory_gb: Optional[str] = None  # Comma-separated memory per node
     memory_aware_strategy: str = "proportional"  # uniform, proportional, custom
 
