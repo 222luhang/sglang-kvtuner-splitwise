@@ -773,6 +773,11 @@ class FlashInferAttnBackend(AttentionBackend):
                     forward_batch.token_to_kv_pool.set_kv_buffer(
                         layer, cache_loc, k, v, layer.k_scale, layer.v_scale
                     )
+                    # Layer-wise KV pipeline transfer hook (TCP disaggregation backend).
+                    # Called after each layer's KV cache is written so the transfer to the
+                    # decode node can overlap with the next layer's computation.
+                    if forward_batch.layer_kv_send_fn is not None:
+                        forward_batch.layer_kv_send_fn(layer.layer_id, cache_loc)
 
             o = prefill_wrapper_paged.forward(
                 q.view(-1, layer.tp_q_head_num, layer.head_dim),
@@ -856,6 +861,9 @@ class FlashInferAttnBackend(AttentionBackend):
                 forward_batch.token_to_kv_pool.set_kv_buffer(
                     layer, cache_loc, k, v, layer.k_scale, layer.v_scale
                 )
+                # Layer-wise KV pipeline transfer hook (TCP disaggregation backend).
+                if forward_batch.layer_kv_send_fn is not None:
+                    forward_batch.layer_kv_send_fn(layer.layer_id, cache_loc)
 
         return o.view(-1, layer.tp_q_head_num * layer.head_dim)
 
