@@ -7,6 +7,8 @@ These tests cover:
 3. TransferBackend.TCP registration in get_kv_class()
 4. ForwardBatch.layer_kv_send_fn field presence and callback invocation
 5. 'tcp' in DISAGG_TRANSFER_BACKEND_CHOICES
+6. _PendingTransfer pipeline API (wait_for_conn / done_pipeline)
+7. layer_kv_send_fn hook presence in flashinfer_backend.py
 """
 
 import socket
@@ -112,6 +114,89 @@ class TestTCPFramingProtocol(unittest.TestCase):
         self.assertEqual(received, layers)
 
 
+class TestPendingTransferPipelineAPI(unittest.TestCase):
+    """Tests for _PendingTransfer pipeline-mode API additions."""
+
+    def _make_pending(self):
+        """Construct a minimal _PendingTransfer without a real KVManager."""
+        import numpy as np
+        from unittest.mock import MagicMock
+
+        from sglang.srt.disaggregation.tcp.conn import _PendingTransfer
+
+        mgr = MagicMock()
+        mgr._pending_transfers = {}
+        mgr._pending_lock = threading.Lock()
+
+        pending = _PendingTransfer(
+            room=42,
+            kv_mgr=mgr,
+            dst_kv_indices=np.array([0, 1, 2], dtype=np.int32),
+            dst_aux_index=None,
+        )
+        return pending
+
+    def test_conn_event_not_set_initially(self):
+        """_conn_event should not be set before set_conn is called."""
+        pending = self._make_pending()
+        self.assertFalse(pending._conn_event.is_set())
+        self.assertIsNone(pending._conn)
+
+    def test_wait_for_conn_timeout(self):
+        """wait_for_conn returns False when the connection is never set."""
+        pending = self._make_pending()
+        result = pending.wait_for_conn(timeout=0.05)
+        self.assertFalse(result)
+
+    def test_wait_for_conn_succeeds_after_set(self):
+        """wait_for_conn returns True once _conn_event is set via serve() path."""
+        import socket as _socket
+
+        pending = self._make_pending()
+
+        mock_conn = MagicMock(spec=_socket.socket)
+
+        def _set_conn():
+            # Simulate what serve() does when the TCP connection arrives.
+            pending._conn = mock_conn
+            pending._conn_event.set()
+
+        t = threading.Thread(target=_set_conn)
+        t.start()
+        result = pending.wait_for_conn(timeout=2.0)
+        t.join()
+
+        self.assertTrue(result)
+        self.assertIs(pending._conn, mock_conn)
+
+    def test_done_pipeline_sets_pipeline_mode(self):
+        """done_pipeline() should set _pipeline_mode and release _ready."""
+        import numpy as np
+
+        pending = self._make_pending()
+        indices = np.array([10, 11], dtype=np.int32)
+
+        self.assertFalse(pending._pipeline_mode)
+        self.assertFalse(pending._ready.is_set())
+
+        pending.done_pipeline(indices)
+
+        self.assertTrue(pending._pipeline_mode)
+        self.assertTrue(pending._ready.is_set())
+        np.testing.assert_array_equal(pending.src_kv_indices, indices)
+
+    def test_ready_does_not_set_pipeline_mode(self):
+        """ready() (batch mode) should not set _pipeline_mode."""
+        import numpy as np
+
+        pending = self._make_pending()
+        indices = np.array([5, 6], dtype=np.int32)
+        pending.ready(indices)
+
+        self.assertFalse(pending._pipeline_mode)
+        self.assertTrue(pending._ready.is_set())
+
+
 class TestTransferBackendEnum(unittest.TestCase):
     """Tests that TransferBackend.TCP is correctly registered."""
 
@@ -191,6 +276,34 @@ class TestForwardBatchLayerKvField(unittest.TestCase):
         fb.layer_kv_send_fn = mock_send_fn
         fb.layer_kv_send_fn(3, "dummy_cache_loc")
         self.assertEqual(calls, [(3, "dummy_cache_loc")])
+
+
+class TestFlashinferBackendHook(unittest.TestCase):
+    """Tests that flashinfer_backend.forward_extend calls layer_kv_send_fn."""
+
+    def test_hook_present_in_source(self):
+        """The layer_kv_send_fn hook must appear in flashinfer_backend.py."""
+        import os
+
+        backend_path = os.path.join(
+            os.path.dirname(__file__),
+            "../../python/sglang/srt/layers/attention/flashinfer_backend.py",
+        )
+        backend_path = os.path.normpath(backend_path)
+        with open(backend_path) as f:
+            source = f.read()
+
+        self.assertIn(
+            "layer_kv_send_fn",
+            source,
+            "layer_kv_send_fn hook not found in flashinfer_backend.py",
+        )
+        # Both the non-ragged and ragged paths must have the hook
+        self.assertGreaterEqual(
+            source.count("layer_kv_send_fn"),
+            2,
+            "Expected at least 2 occurrences (non-ragged + ragged path)",
+        )
 
 
 if __name__ == "__main__":

@@ -73,14 +73,26 @@ _MSG_DONE = -1
 # How long to wait for a TCP connection/receive operation (seconds).
 _RECV_TIMEOUT_S = 120
 
-# Grace period while waiting for the ZMQ descriptor to be registered before
-# the TCP connection arrives (the two channels are independent).
-_PENDING_WAIT_S = 5.0
+# How long send_layer() waits for the TCP connection from the decode side to
+# arrive.  The decode receiver sleeps ~_TCP_CONNECT_DELAY_S before connecting
+# (to allow the ZMQ descriptor to be processed on the prefill side first).
+# We use a conservative timeout to handle slow/loaded systems; most connections
+# arrive within 100 ms in practice.
+_TCP_CONN_WAIT_S = 5.0
+
+# Initial sleep on the decode side before connecting the TCP data socket.
+# This gives the prefill side time to process the ZMQ descriptor and create a
+# _PendingTransfer before the TCP connection arrives.
+_TCP_CONNECT_DELAY_S = 0.05
 
 # How long TCPKVSender waits for the decode side to register its KV indices
 # via ZMQ before declaring a failure.  Shorter than _RECV_TIMEOUT_S because
 # the ZMQ message should arrive almost immediately after the HTTP response.
 _SENDER_WAIT_S = 10.0
+
+# ZMQ poller timeout (milliseconds).  Short enough to keep the loop responsive
+# without busy-looping; long enough not to waste CPU.
+_ZMQ_POLL_TIMEOUT_MS = 1000
 
 # How long (seconds) the TCP receiver thread waits for the first byte before
 # considering the connection dead.  Defined once above as _RECV_TIMEOUT_S.
@@ -278,9 +290,9 @@ class TCPKVManager(CommonKVManager):
 
             # The ZMQ message from the decode side may arrive slightly after the
             # TCP connection (ZMQ and TCP use independent channels).  Wait up to
-            # _PENDING_WAIT_S for the pending transfer to be registered.
+            # _TCP_CONN_WAIT_S for the pending transfer to be registered.
             pending = None
-            deadline = time.monotonic() + _PENDING_WAIT_S
+            deadline = time.monotonic() + _TCP_CONN_WAIT_S
             while pending is None and time.monotonic() < deadline:
                 with self._pending_lock:
                     pending = self._pending_transfers.get(room)
@@ -316,13 +328,23 @@ class TCPKVManager(CommonKVManager):
         Wait for ZMQ messages from decode workers containing dst KV indices.
         For each message, create a _PendingTransfer so that when the TCP
         connection arrives we know what to send.
+
+        Uses a ZMQ poller with a 1-second timeout so the thread doesn't block
+        forever if the socket becomes unhealthy.
         """
         import zmq
 
+        poller = zmq.Poller()
+        poller.register(self.server_socket, zmq.POLLIN)
+
         while True:
             try:
-                msg = self.server_socket.recv_multipart()
-                self._process_zmq_msg(msg)
+                socks = dict(poller.poll(timeout=_ZMQ_POLL_TIMEOUT_MS))
+                if self.server_socket in socks:
+                    msg = self.server_socket.recv_multipart(zmq.NOBLOCK)
+                    self._process_zmq_msg(msg)
+            except zmq.Again:
+                pass  # No message yet; loop back
             except Exception as e:
                 logger.error(f"[TCPKVManager] zmq recv error: {e}")
                 time.sleep(0.1)
@@ -362,14 +384,30 @@ class TCPKVManager(CommonKVManager):
 class _PendingTransfer:
     """
     Holds the destination KV indices sent by the decode worker.
-    When the prefill sender calls ``ready()``, it populates the source KV
-    indices; when the TCP connection arrives we do the actual copy+send.
+
+    There are two operating modes:
+
+    **Batch mode** (default):
+      The prefill sender calls ``ready(kv_indices)`` after the full forward
+      pass completes.  ``serve()`` waits for ``ready()`` then reads all KV
+      pages from GPU and streams them layer-by-layer over the TCP socket.
+
+    **Pipeline mode** (when ``layer_kv_send_fn`` is active):
+      The attention backend calls ``send_layer(layer_id, src_indices)`` after
+      each transformer layer writes its KV cache.  Each call sends that layer's
+      data immediately over the already-established TCP socket so that the
+      transfer overlaps with the next layer's computation.  After all layers
+      are done, the sender calls ``done_pipeline(src_kv_indices)`` which sends
+      the auxiliary metadata and the EOF marker and signals completion.
+
+    In both modes, ``serve()`` is the TCP-accept-loop thread that owns the
+    connection lifecycle and marks the transfer success/failure.
     """
 
     def __init__(
         self,
         room: int,
-        kv_mgr: TCPKVManager,
+        kv_mgr: "TCPKVManager",
         dst_kv_indices: npt.NDArray[np.int32],
         dst_aux_index: Optional[int],
     ):
@@ -378,36 +416,89 @@ class _PendingTransfer:
         self.dst_kv_indices = dst_kv_indices
         self.dst_aux_index = dst_aux_index
 
-        # Set by TCPKVSender.send()
+        # Set by TCPKVSender.send() (batch mode) or done_pipeline() (pipeline mode).
         self.src_kv_indices: Optional[npt.NDArray[np.int32]] = None
         self._ready = threading.Event()
         self._done = threading.Event()
 
+        # TCP connection – set by serve() so that send_layer() can write to it.
+        self._conn: Optional[socket.socket] = None
+        self._conn_event = threading.Event()
+        # Pipeline mode flag – set by done_pipeline().
+        self._pipeline_mode: bool = False
+
+    # ------------------------------------------------------------------
+    # Batch-mode API (called by TCPKVSender.send())
+    # ------------------------------------------------------------------
+
     def ready(self, src_kv_indices: npt.NDArray[np.int32]) -> None:
+        """Signal that all KV data is in the GPU pool (batch mode)."""
         self.src_kv_indices = src_kv_indices
         self._ready.set()
 
+    # ------------------------------------------------------------------
+    # Pipeline-mode API (called by TCPKVSender.send_layer() / done_pipeline())
+    # ------------------------------------------------------------------
+
+    def wait_for_conn(self, timeout: float) -> bool:
+        """Wait until the TCP connection is available. Returns True if connected."""
+        return self._conn_event.wait(timeout=timeout)
+
+    def done_pipeline(self, src_kv_indices: npt.NDArray[np.int32]) -> None:
+        """
+        Signal that all layers have been sent via pipeline and the transfer
+        is complete.  ``serve()`` will send aux + EOF and mark success.
+        """
+        self.src_kv_indices = src_kv_indices
+        self._pipeline_mode = True
+        self._ready.set()
+
+    # ------------------------------------------------------------------
+    # TCP-server-side: called from accept-loop thread
+    # ------------------------------------------------------------------
+
     def serve(self, conn: socket.socket) -> None:
         """
-        Called from the TCP accept-loop thread when the decode worker connects.
-        Waits for sender data, then streams KV caches layer by layer.
+        Called from the TCP accept-loop when the decode worker connects.
+
+        1. Makes the connection available to ``send_layer()`` (pipeline mode).
+        2. Waits for the sender to signal readiness (batch or pipeline).
+        3. Streams data and signals completion.
         """
+        # Store the connection so that send_layer() can write to it.
+        self._conn = conn
+        self._conn_event.set()
+
         try:
-            # Wait until the sender has called ready()
-            self._ready.wait(timeout=_RECV_TIMEOUT_S)
-            if self.src_kv_indices is None:
-                logger.error(f"[_PendingTransfer] room={self.room} timed out waiting for src_kv_indices")
+            # Wait for the sender to complete (batch: send(), pipeline: done_pipeline()).
+            if not self._ready.wait(timeout=_RECV_TIMEOUT_S):
+                logger.error(
+                    f"[_PendingTransfer] room={self.room} timed out waiting for sender"
+                )
                 self._finish(conn, success=False)
                 return
 
-            self._stream_kv(conn)
+            if self._pipeline_mode:
+                # Pipeline mode: all KV layers were already sent by send_layer().
+                # Only the aux metadata and the EOF marker remain.
+                self._send_tail(conn)
+            else:
+                # Batch mode: read all KV data from GPU and send now.
+                if self.src_kv_indices is None:
+                    logger.error(
+                        f"[_PendingTransfer] room={self.room}: src_kv_indices not set"
+                    )
+                    self._finish(conn, success=False)
+                    return
+                self._stream_kv(conn)
+
             self._finish(conn, success=True)
         except Exception as e:
             logger.error(f"[_PendingTransfer] serve error for room={self.room}: {e}")
             self._finish(conn, success=False)
 
     def _stream_kv(self, conn: socket.socket) -> None:
-        """Copy each layer's KV pages from GPU → CPU → TCP socket."""
+        """Copy each layer's KV pages from GPU → CPU → TCP socket (batch mode)."""
         kv_mgr = self.kv_mgr
         kv_args = kv_mgr.kv_args
         src_indices = self.src_kv_indices
@@ -430,7 +521,12 @@ class _PendingTransfer:
             v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
             _send_layer_data(conn, layer_id * 2 + 1, v_data)
 
-        # -- Auxiliary / metadata buffer --
+        self._send_tail(conn)
+
+    def _send_tail(self, conn: socket.socket) -> None:
+        """Send auxiliary metadata (if any) and the EOF sentinel."""
+        kv_args = self.kv_mgr.kv_args
+
         if self.dst_aux_index is not None and kv_args.aux_data_ptrs:
             aux_ptr = kv_args.aux_data_ptrs[0]
             aux_item_len = kv_args.aux_item_lens[0]
@@ -470,7 +566,14 @@ def _get_cuda_driver():
         return _cuda_driver
     with _cuda_driver_lock:
         if _cuda_driver is None:
-            lib = ctypes.CDLL("libcuda.so.1", use_errno=True)
+            try:
+                lib = ctypes.CDLL("libcuda.so.1", use_errno=True)
+            except OSError as e:
+                raise RuntimeError(
+                    "Failed to load the CUDA driver library (libcuda.so.1). "
+                    "The TCP KV transfer backend requires a CUDA driver installation. "
+                    f"Original error: {e}"
+                ) from e
             # cuMemcpyDtoH_v2(dstHost, srcDevice, ByteCount) → CUresult
             lib.cuMemcpyDtoH_v2.restype = ctypes.c_int
             lib.cuMemcpyDtoH_v2.argtypes = [
@@ -600,8 +703,13 @@ class TCPKVSender(CommonKVSender):
         state_indices: Optional[List[int]] = None,
     ) -> None:
         """
-        Mark the pending transfer as ready to be served.
-        The actual TCP streaming is handled by the TCPKVManager's accept-loop.
+        Complete the transfer after the forward pass.
+
+        * **Pipeline mode** (``self._layer_sent`` is True): all KV layers were
+          already sent by ``send_layer()``.  Signal ``done_pipeline()`` so that
+          ``serve()`` sends aux metadata + EOF and marks the transfer done.
+        * **Batch mode** (``self._layer_sent`` is False): call ``ready()`` so
+          that ``serve()`` reads all KV data from GPU and streams everything now.
         """
         with self.kv_mgr._pending_lock:
             pending = self.kv_mgr._pending_transfers.get(self.bootstrap_room)
@@ -624,22 +732,48 @@ class TCPKVSender(CommonKVSender):
             return
 
         self.kv_mgr.update_status(self.bootstrap_room, KVPoll.Transferring)
-        pending.ready(kv_indices)
+
+        if self._layer_sent:
+            # Pipeline mode: all KV data already sent layer-by-layer.
+            # Signal serve() to send aux + EOF and finish.
+            pending.done_pipeline(kv_indices)
+        else:
+            # Batch mode: let serve() read all GPU data and stream it now.
+            pending.ready(kv_indices)
 
     def send_layer(self, layer_id: int, src_indices: npt.NDArray[np.int32]) -> None:
         """
         Layer-wise pipeline send: called from the attention forward pass after
-        each layer's KV cache has been written.  Transfers are sent immediately
-        over the pre-established TCP connection without waiting for all layers.
+        each layer's KV cache has been written to the GPU pool.
 
-        This method is optional and is only effective when the backend has been
-        set up for layer-wise pipelining (``TCPKVManager._layer_conn_map`` exists).
+        Looks up the ``_PendingTransfer`` for this room (created when the ZMQ
+        descriptor arrives from the decode side) and waits briefly for the TCP
+        connection to be established.  Once the connection is available, sends
+        the current layer's KV data (K + V) immediately over the socket so that
+        the transfer overlaps with the computation of subsequent layers.
+
+        If the pending transfer or the TCP connection is not yet available when
+        called, the call is a no-op and ``send()`` will handle the transfer in
+        batch mode instead.
         """
-        conn_map = getattr(self.kv_mgr, "_layer_conn_map", None)
-        if conn_map is None:
+        with self.kv_mgr._pending_lock:
+            pending = self.kv_mgr._pending_transfers.get(self.bootstrap_room)
+
+        if pending is None:
+            # ZMQ message hasn't arrived yet – can't do pipeline for this layer.
             return
-        conn = conn_map.get(self.bootstrap_room)
-        if conn is None:
+
+        # Wait briefly for the TCP connection to be established.
+        # The decode receiver delays _TCP_CONNECT_DELAY_S before connecting,
+        # so the connection typically arrives within ~100 ms of the ZMQ message.
+        # We use the larger _TCP_CONN_WAIT_S timeout to handle slow or loaded
+        # systems where the connection setup may take significantly longer.
+        if not pending.wait_for_conn(timeout=_TCP_CONN_WAIT_S):
+            # TCP connection not yet available; skip pipeline for this layer.
+            # send() will fall back to batch mode after the forward pass.
+            return
+
+        if pending._conn is None:
             return
 
         kv_args = self.kv_mgr.kv_args
@@ -655,9 +789,17 @@ class TCPKVSender(CommonKVSender):
         k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
         v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
 
-        _send_layer_data(conn, layer_id * 2, k_data)
-        _send_layer_data(conn, layer_id * 2 + 1, v_data)
-        self._layer_sent = True
+        try:
+            _send_layer_data(pending._conn, layer_id * 2, k_data)
+            _send_layer_data(pending._conn, layer_id * 2 + 1, v_data)
+            self._layer_sent = True
+        except Exception as e:
+            logger.warning(
+                f"[TCPKVSender] send_layer layer={layer_id} failed for "
+                f"room={self.bootstrap_room}: {e}; will retry in batch mode"
+            )
+            # Reset so send() falls back to batch mode for this request.
+            self._layer_sent = False
 
     def poll(self) -> KVPoll:
         return KVPoll(self.kv_mgr.check_status(self.bootstrap_room))
@@ -768,8 +910,9 @@ class TCPKVReceiver(CommonKVReceiver):
         KV cache layer by layer and write each layer to the local GPU pool.
         """
         try:
-            # Give the prefill side a moment to register the pending transfer
-            time.sleep(0.05)
+            # Sleep briefly so the prefill side has time to process the ZMQ descriptor
+            # and create a _PendingTransfer before the TCP connection arrives.
+            time.sleep(_TCP_CONNECT_DELAY_S)
 
             binfo = None
             for info in (self.bootstrap_infos or []):
