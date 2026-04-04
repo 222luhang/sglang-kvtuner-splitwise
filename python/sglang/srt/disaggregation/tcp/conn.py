@@ -842,6 +842,10 @@ class TCPKVReceiver(CommonKVReceiver):
             bootstrap_room=bootstrap_room,
             prefill_dp_rank=prefill_dp_rank,
         )
+        # Transition from Bootstrapping to WaitingForInput now that bootstrap
+        # info has been fetched (same pattern as MooncakeKVReceiver).
+        if self.bootstrap_infos is not None:
+            self.kv_mgr.update_status(self.bootstrap_room, KVPoll.WaitingForInput)
         self._transfer_done = threading.Event()
         self._transfer_ok = True
 
