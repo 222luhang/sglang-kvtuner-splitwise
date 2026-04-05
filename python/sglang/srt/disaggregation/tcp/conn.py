@@ -465,6 +465,9 @@ class _PendingTransfer:
         2. Waits for the sender to signal readiness (batch or pipeline).
         3. Streams data and signals completion.
         """
+        # Ensure this thread has a valid CUDA context for GPU reads.
+        torch.cuda.set_device(self.kv_mgr.kv_args.gpu_id)
+
         # Store the connection so that send_layer() can write to it.
         self._conn = conn
         self._conn_event.set()
@@ -846,6 +849,7 @@ class TCPKVReceiver(CommonKVReceiver):
         # info has been fetched (same pattern as MooncakeKVReceiver).
         if self.bootstrap_infos is not None:
             self.kv_mgr.update_status(self.bootstrap_room, KVPoll.WaitingForInput)
+        self._transfer_started = False
         self._transfer_done = threading.Event()
         self._transfer_ok = True
 
@@ -861,6 +865,7 @@ class TCPKVReceiver(CommonKVReceiver):
         """
         self._kv_indices = kv_indices
         self._aux_index = aux_index
+        self._transfer_started = True
 
         if self.bootstrap_infos is None:
             return
@@ -914,6 +919,10 @@ class TCPKVReceiver(CommonKVReceiver):
         KV cache layer by layer and write each layer to the local GPU pool.
         """
         try:
+            # Ensure this background thread has a valid CUDA context so that
+            # cuMemcpyHtoD_v2 calls in _write_pages_to_gpu succeed.
+            torch.cuda.set_device(self.kv_mgr.kv_args.gpu_id)
+
             # Sleep briefly so the prefill side has time to process the ZMQ descriptor
             # and create a _PendingTransfer before the TCP connection arrives.
             time.sleep(_TCP_CONNECT_DELAY_S)
@@ -1006,6 +1015,8 @@ class TCPKVReceiver(CommonKVReceiver):
             received += 1
 
     def poll(self) -> KVPoll:
+        if not self._transfer_started:
+            return KVPoll.WaitingForInput
         if not self._transfer_done.is_set():
             return KVPoll.Transferring
         return KVPoll.Success if self._transfer_ok else KVPoll.Failed
