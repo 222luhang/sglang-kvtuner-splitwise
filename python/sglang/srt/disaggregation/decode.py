@@ -24,7 +24,7 @@ import logging
 from collections import deque
 from dataclasses import dataclass
 from http import HTTPStatus
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Deque, List, Optional, Tuple, Union
 
 import torch
 from torch.distributed import ProcessGroup
@@ -66,13 +66,14 @@ from sglang.srt.observability.req_time_stats import (
     set_time_batch,
 )
 from sglang.srt.utils import get_int_env_var
+from sglang.srt.utils.common import DynamicGradMode
 from sglang.srt.utils.torch_memory_saver_adapter import TorchMemorySaverAdapter
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from sglang.srt.managers.schedule_batch import Req
-    from sglang.srt.managers.scheduler import Scheduler
+    from sglang.srt.managers.scheduler import EmbeddingBatchResult, Scheduler
     from sglang.srt.server_args import ServerArgs
 
 CLIP_MAX_NEW_TOKEN = get_int_env_var("SGLANG_CLIP_MAX_NEW_TOKENS_ESTIMATION", 4096)
@@ -994,21 +995,42 @@ class SchedulerDisaggregationDecodeMixin:
             # Update last_batch
             self.last_batch = batch
 
-    @torch.no_grad()
+    @DynamicGradMode()
     def event_loop_overlap_disagg_decode(self: Scheduler):
-        self.result_queue = deque()
-        self.last_batch: Optional[ScheduleBatch] = None
+        """A scheduler loop that overlaps CPU processing and GPU computation
+        for decode worker in disaggregation mode.
+
+        Aligned with the standard ``event_loop_overlap`` to include the
+        ``is_disable_overlap_for_batch`` guard and ``_engine_paused`` check
+        that were previously missing, which could cause result_queue /
+        future_map state corruption and native segfaults.
+        """
+        self.result_queue: Deque[
+            Tuple[ScheduleBatch, Union[GenerationBatchResult, EmbeddingBatchResult]]
+        ] = deque()
+
+        def pop_and_process():
+            tmp_batch, tmp_result = self.result_queue.popleft()
+            self.process_batch_result(tmp_batch, tmp_result)
 
         while True:
             # Receive requests
             recv_reqs = self.recv_requests()
             self.process_input_requests(recv_reqs)
+            if self._engine_paused:
+                continue
             # polling and allocating kv cache
             self.process_decode_queue()
 
             # Get the next batch to run
             batch = self.get_next_disagg_decode_batch_to_run()
             self.cur_batch = batch
+            disable_overlap_for_batch = self.is_disable_overlap_for_batch(batch)
+
+            # If we do not need to overlap the current batch with the last batch,
+            # we can process the last batch immediately.
+            if disable_overlap_for_batch:
+                pop_and_process()
 
             # Launch the current batch
             if batch:
@@ -1019,14 +1041,16 @@ class SchedulerDisaggregationDecodeMixin:
 
             # Process the last batch
             if self.last_batch:
-                tmp_batch, tmp_result = self.result_queue.popleft()
-                self.process_batch_result(tmp_batch, tmp_result)
+                if not disable_overlap_for_batch:
+                    pop_and_process()
             elif batch is None:
+                # When the server is idle, do self-check and re-init some states
                 self.self_check_during_idle()
 
             # Run sample of the current batch
             # It depends on the result of the last batch (e.g., grammar), so we run it after the last batch is processed.
-            self.launch_batch_sample_if_needed(batch_result)
+            if self.is_generation:
+                self.launch_batch_sample_if_needed(batch_result)
 
             # Update last_batch
             self.last_batch = batch
