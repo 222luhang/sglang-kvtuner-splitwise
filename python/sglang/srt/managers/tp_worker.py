@@ -428,6 +428,31 @@ class TpModelWorker(BaseTpWorker):
             self.model_runner.remote_instance_transfer_engine_weight_info,
         )
 
+    def _build_layer_kv_send_fn(self, reqs):
+        """Build a layer_kv_send_fn closure for pipeline KV transfer.
+
+        Each req's disagg_kv_sender.send_layer() is called with that req's
+        slice of cache_loc after each transformer layer writes its KV cache.
+        """
+        entries = []
+        offset = 0
+        for req in reqs:
+            length = req.extend_input_len
+            sender = getattr(req, "disagg_kv_sender", None)
+            if sender is not None and hasattr(sender, "send_layer"):
+                entries.append((sender, offset, length))
+            offset += length
+
+        if not entries:
+            return None
+
+        def layer_kv_send_fn(layer_id: int, cache_loc):
+            for sender, off, length in entries:
+                indices = cache_loc[off : off + length]
+                sender.send_layer(layer_id, indices)
+
+        return layer_kv_send_fn
+
     def forward_batch_generation(
         self,
         model_worker_batch: ModelWorkerBatch,
@@ -445,6 +470,17 @@ class TpModelWorker(BaseTpWorker):
             self.set_hicache_consumer(model_worker_batch.hicache_consumer_index)
 
             forward_batch = ForwardBatch.init_new(model_worker_batch, self.model_runner)
+
+            # Pipeline KV transfer: inject layer_kv_send_fn for prefill disagg
+            if (
+                self.server_args.disaggregation_mode == "prefill"
+                and self.server_args.disaggregation_transfer_backend == "tcp"
+                and model_worker_batch.reqs
+                and forward_batch.forward_mode.is_extend()
+            ):
+                forward_batch.layer_kv_send_fn = self._build_layer_kv_send_fn(
+                    model_worker_batch.reqs
+                )
         else:
             # FIXME(lsyin): unify the interface of forward_batch
             assert forward_batch is not None

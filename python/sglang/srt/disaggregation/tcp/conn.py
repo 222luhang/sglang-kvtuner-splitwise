@@ -722,6 +722,7 @@ class TCPKVSender(CommonKVSender):
         self.aux_index: Optional[int] = None
         self.num_kv_indices: Optional[int] = None
         self._layer_sent: bool = False
+        self._pipeline_aborted: bool = False
 
         if getattr(self.kv_mgr, "is_dummy_cp_rank", False):
             self.kv_mgr.update_status(self.bootstrap_room, KVPoll.WaitingForInput)
@@ -789,7 +790,7 @@ class TCPKVSender(CommonKVSender):
             # Batch mode: let serve() read all GPU data and stream it now.
             pending.ready(kv_indices)
 
-    def send_layer(self, layer_id: int, src_indices: npt.NDArray[np.int32]) -> None:
+    def send_layer(self, layer_id: int, src_indices) -> None:
         """
         Layer-wise pipeline send: called from the attention forward pass after
         each layer's KV cache has been written to the GPU pool.
@@ -804,6 +805,13 @@ class TCPKVSender(CommonKVSender):
         called, the call is a no-op and ``send()`` will handle the transfer in
         batch mode instead.
         """
+        if self._pipeline_aborted:
+            return
+
+        # Accept both torch.Tensor and np.ndarray
+        if isinstance(src_indices, torch.Tensor):
+            src_indices = src_indices.cpu().numpy().astype(np.int32)
+
         with self.kv_mgr._pending_lock:
             pending = self.kv_mgr._pending_transfers.get(self.bootstrap_room)
 
@@ -812,13 +820,7 @@ class TCPKVSender(CommonKVSender):
             return
 
         # Wait briefly for the TCP connection to be established.
-        # The decode receiver delays _TCP_CONNECT_DELAY_S before connecting,
-        # so the connection typically arrives within ~100 ms of the ZMQ message.
-        # We use the larger _TCP_CONN_WAIT_S timeout to handle slow or loaded
-        # systems where the connection setup may take significantly longer.
         if not pending.wait_for_conn(timeout=_TCP_CONN_WAIT_S):
-            # TCP connection not yet available; skip pipeline for this layer.
-            # send() will fall back to batch mode after the forward pass.
             return
 
         if pending._conn is None:
@@ -846,8 +848,12 @@ class TCPKVSender(CommonKVSender):
                 f"[TCPKVSender] send_layer layer={layer_id} failed for "
                 f"room={self.bootstrap_room}: {e}; will retry in batch mode"
             )
-            # Reset so send() falls back to batch mode for this request.
-            self._layer_sent = False
+            self._pipeline_aborted = True
+            # If we already sent some layers successfully, keep _layer_sent True
+            # so send() calls done_pipeline() instead of batch mode (which would
+            # duplicate already-sent layers). Decode will timeout on missing layers.
+            if not self._layer_sent:
+                self._layer_sent = False
 
     def poll(self) -> KVPoll:
         return self.kv_mgr.check_status(self.bootstrap_room)
