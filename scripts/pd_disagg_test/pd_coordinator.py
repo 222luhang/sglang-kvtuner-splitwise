@@ -173,7 +173,7 @@ def main():
             errors.append(f"Prefill: {result['error']}")
             print(f"  <- Prefill: ERROR ({elapsed:.1f}s) {result['error']}", flush=True)
         else:
-            text = result[0].get("text", "")[:50] if result else "(empty)"
+            text = result.get("text", "")[:50] if isinstance(result, dict) else (result[0].get("text", "")[:50] if result else "(empty)")
             print(f"  <- Prefill: OK ({elapsed:.1f}s) text={text!r}", flush=True)
 
     def send_decode():
@@ -191,7 +191,7 @@ def main():
             errors.append(f"Decode: {result['error']}")
             print(f"  <- Decode: ERROR ({elapsed:.1f}s) {result['error']}", flush=True)
         else:
-            text = result[0].get("text", "")[:100] if result else "(empty)"
+            text = result.get("text", "")[:100] if isinstance(result, dict) else (result[0].get("text", "")[:100] if result else "(empty)")
             print(f"  <- Decode: OK ({elapsed:.1f}s) text={text!r}", flush=True)
 
     t1 = threading.Thread(target=send_prefill)
@@ -209,16 +209,18 @@ def main():
         sys.exit(1)
     else:
         print("=== SUCCESS ===")
-        if "decode" in results:
-            decoded = results["decode"]
-            for item in decoded:
-                print(f"  Text: {item.get('text', '(empty)')}")
-                meta = item.get("meta_info", {})
-                print(f"  Tokens: prompt={meta.get('prompt_tokens')}, completion={meta.get('completion_tokens')}")
-                print(f"  Finish: {meta.get('finish_reason')}")
-        elif "prefill" in results:
-            for item in results["prefill"]:
-                print(f"  Text (prefill only): {item.get('text', '(empty)')}")
+        for role in ("decode", "prefill"):
+            if role in results:
+                r = results[role]
+                if isinstance(r, list):
+                    for item in r:
+                        print(f"  [{role}] Text: {item.get('text', '(empty)')}")
+                        meta = item.get("meta_info", {})
+                        print(f"  [{role}] Tokens: prompt={meta.get('prompt_tokens')}, completion={meta.get('completion_tokens')}")
+                elif isinstance(r, dict):
+                    print(f"  [{role}] Text: {r.get('text', '(empty)')}")
+                    meta = r.get("meta_info", {})
+                    print(f"  [{role}] Tokens: prompt={meta.get('prompt_tokens')}, completion={meta.get('completion_tokens')}")
 
 
 if __name__ == "__main__":

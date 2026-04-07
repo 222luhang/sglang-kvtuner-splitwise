@@ -5,12 +5,13 @@
 #
 # 用法:
 #   ./pd_test.sh full          # 全自动一条龙
-#   ./pd_test.sh start         # 启动所有服务
+#   ./pd_test.sh start         # 启动 Prefill + Decode
 #   ./pd_test.sh stop          # 停止所有服务
 #   ./pd_test.sh status        # 探活检查
-#   ./pd_test.sh test          # 推理测试
+#   ./pd_test.sh test          # 通过 pd_coordinator.py 推理测试
 #   ./pd_test.sh logs          # 拉取日志到本地
 #   ./pd_test.sh setup         # 检查两台机器环境
+#   ./pd_test.sh sync          # 同步代码到两台机器
 #   ./pd_test.sh clean         # 停服务 + 清日志
 # ============================================================================
 
@@ -28,7 +29,7 @@ fi
 SSH_OPTS="-o ConnectTimeout=10 -o StrictHostKeyChecking=no"
 
 # 远程机器上设置的环境变量（传递给 remote_worker.sh）
-REMOTE_ENV="SGLANG_REPO=${SGLANG_REPO} VENV_DIR=${VENV_DIR} PREFILL_IP=${PREFILL_IP} DECODE_IP=${DECODE_IP} PREFILL_PORT=${PREFILL_PORT} DECODE_PORT=${DECODE_PORT} ROUTER_PORT=${ROUTER_PORT} DIST_INIT_PORT=${DIST_INIT_PORT} MODEL_PATH=${MODEL_PATH} TRANSFER_BACKEND=${TRANSFER_BACKEND} DISABLE_CUSTOM_ALL_REDUCE=${DISABLE_CUSTOM_ALL_REDUCE} HEALTH_TIMEOUT=${HEALTH_TIMEOUT} TEST_TIMEOUT=${TEST_TIMEOUT} LOG_DIR=${REMOTE_LOG_DIR}"
+REMOTE_ENV="SGLANG_REPO=${SGLANG_REPO} VENV_DIR=${VENV_DIR} PREFILL_IP=${PREFILL_IP} DECODE_IP=${DECODE_IP} PREFILL_PORT=${PREFILL_PORT} DECODE_PORT=${DECODE_PORT} DIST_INIT_PORT=${DIST_INIT_PORT} MODEL_PATH=${MODEL_PATH} TRANSFER_BACKEND=${TRANSFER_BACKEND} DISABLE_OVERLAP=${DISABLE_OVERLAP} LOG_LEVEL=${LOG_LEVEL} HEALTH_TIMEOUT=${HEALTH_TIMEOUT} LOG_DIR=${REMOTE_LOG_DIR}"
 
 # 颜色
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; BOLD='\033[1m'; NC='\033[0m'
@@ -42,41 +43,34 @@ log_fail()  { echo -e "${RED}${BOLD}[FAIL]${NC} $1"; }
 
 # ---- 内置函数 ----
 
-# 在远程机器上执行 remote_worker.sh 的某个子命令
 _remote_exec() {
     local host=$1
     shift
     ssh ${SSH_OPTS} "${host}" "bash ${REMOTE_WORKER_PATH} $@"
 }
 
-# 在远程机器上执行 remote_worker.sh（传递环境变量）
 _remote_exec_env() {
     local host=$1
     shift
     ssh ${SSH_OPTS} "${host}" "export ${REMOTE_ENV} && bash ${REMOTE_WORKER_PATH} $@"
 }
 
-# 部署 remote_worker.sh 到远程机器
 _deploy_worker() {
     local host=$1
     log_info "部署 remote_worker.sh → ${host}"
     scp ${SSH_OPTS} "${SCRIPT_DIR}/remote_worker.sh" "${host}:${REMOTE_WORKER_PATH}"
 }
 
-# 停止指定远程机器的所有服务
 _stop_remote() {
     local host=$1 name=$2
     log_info "停止 ${name} (${host}) ..."
     _remote_exec "${host}" stop 2>/dev/null || true
 }
 
-# ---- 探活（通过 SSH 在远程机器上执行 curl，避免本地无法访问内网 IP）----
-
+# 探活（通过 SSH 在远程机器上执行 curl，避免本地无法访问内网 IP）
 _check_service() {
-    local name=$1 host=$2 port=$3 path=${4:-/health}
-    local url="http://${host}:${port}${path}"
-    # 使用 SSH 到 Prefill 节点做探活（Prefill 能访问两台机器的内网 IP）
-    if ssh ${SSH_OPTS} "${PREFILL_HOST}" "curl -s --max-time 5 '${url}'" > /dev/null 2>&1; then
+    local name=$1 host=$2 port=$3
+    if ssh ${SSH_OPTS} "${PREFILL_HOST}" "curl -s --max-time 5 http://${host}:${port}/health" > /dev/null 2>&1; then
         log_ok "${name} (${host}:${port}) UP"
         return 0
     else
@@ -98,6 +92,16 @@ cmd_setup() {
     log_ok "环境检查完成"
 }
 
+cmd_sync() {
+    log_step "同步代码到两台机器"
+    for host_name in "${PREFILL_HOST}:Prefill" "${DECODE_HOST}:Decode"; do
+        IFS=':' read -r host name <<< "${host_name}"
+        log_info "同步 → ${name} (${host})"
+        _remote_exec_env "${host}" sync-code
+    done
+    log_ok "代码同步完成"
+}
+
 cmd_start() {
     log_step "===== 启动 P/D Disaggregation 服务 ====="
 
@@ -113,24 +117,13 @@ cmd_start() {
 
     # 3. 并行启动 Prefill 和 Decode
     log_step "并行启动 Prefill + Decode"
-    _remote_exec_env "${PREFILL_HOST}" start-prefill-only &
+    _remote_exec_env "${PREFILL_HOST}" start-prefill &
     local pid_prefill=$!
-    _remote_exec_env "${DECODE_HOST}" start-decode-only &
+    _remote_exec_env "${DECODE_HOST}" start-decode &
     local pid_decode=$!
 
-    wait $pid_prefill
-    local rc_prefill=$?
-    wait $pid_decode
-    local rc_decode=$?
-
-    if [ $rc_prefill -ne 0 ]; then
-        log_error "Prefill 启动失败"
-        return 1
-    fi
-    if [ $rc_decode -ne 0 ]; then
-        log_error "Decode 启动失败"
-        return 1
-    fi
+    wait $pid_prefill || log_warn "Prefill SSH 会话结束"
+    wait $pid_decode || log_warn "Decode SSH 会话结束"
 
     # 4. 等待 Prefill 和 Decode 就绪（并行等待）
     log_step "等待服务就绪..."
@@ -153,17 +146,11 @@ cmd_start() {
         return 1
     fi
 
-    # 5. 启动 Router
-    log_step "启动 Router"
-    _remote_exec_env "${PREFILL_HOST}" start-router
-    sleep 3
-    _remote_exec_env "${PREFILL_HOST}" wait-router
-
     log_ok "所有服务已就绪"
     echo ""
     echo "  Prefill: http://${PREFILL_IP}:${PREFILL_PORT}"
     echo "  Decode:  http://${DECODE_IP}:${DECODE_PORT}"
-    echo "  Router:  http://${PREFILL_IP}:${ROUTER_PORT}"
+    echo "  Bootstrap: ${PREFILL_IP}:${BOOTSTRAP_PORT}"
 }
 
 cmd_stop() {
@@ -179,7 +166,6 @@ cmd_status() {
 
     _check_service "Prefill" "${PREFILL_IP}" "${PREFILL_PORT}" || all_ok=false
     _check_service "Decode" "${DECODE_IP}" "${DECODE_PORT}" || all_ok=false
-    _check_service "Router" "${PREFILL_IP}" "${ROUTER_PORT}" || all_ok=false
 
     echo ""
     if $all_ok; then
@@ -192,20 +178,31 @@ cmd_status() {
 }
 
 cmd_test() {
-    log_step "推理测试"
+    log_step "推理测试 (pd_coordinator.py)"
 
-    # 先通过 SSH 检查 Router 是否可达
-    if ! ssh ${SSH_OPTS} "${PREFILL_HOST}" "curl -s --max-time 5 http://${PREFILL_IP}:${ROUTER_PORT}/health" > /dev/null 2>&1; then
-        log_error "Router 不可达 (${PREFILL_IP}:${ROUTER_PORT})，请先启动服务"
+    # 检查 Prefill 和 Decode 是否可达
+    if ! ssh ${SSH_OPTS} "${PREFILL_HOST}" "curl -s --max-time 5 http://${PREFILL_IP}:${PREFILL_PORT}/health" > /dev/null 2>&1; then
+        log_error "Prefill 不可达，请先启动服务"
+        return 1
+    fi
+    if ! ssh ${SSH_OPTS} "${PREFILL_HOST}" "curl -s --max-time 5 http://${DECODE_IP}:${DECODE_PORT}/health" > /dev/null 2>&1; then
+        log_error "Decode 不可达，请先启动服务"
         return 1
     fi
 
-    # 通过 SSH 到 Prefill 节点执行推理测试（因为 Router 监听在 Prefill 节点上）
-    local test_output
-    test_output=$(ssh ${SSH_OPTS} "${PREFILL_HOST}" "export ${REMOTE_ENV}; bash ${REMOTE_WORKER_PATH} test" 2>&1)
-    local rc=$?
+    # 部署 coordinator 到 Prefill 节点并执行
+    log_info "部署 pd_coordinator.py → ${PREFILL_HOST}"
+    scp ${SSH_OPTS} "${SCRIPT_DIR}/pd_coordinator.py" "${PREFILL_HOST}:${SGLANG_REPO}/pd_coordinator.py"
 
-    echo "${test_output}"
+    log_info "执行推理测试..."
+    ssh ${SSH_OPTS} "${PREFILL_HOST}" \
+        "${VENV_DIR}/bin/python ${SGLANG_REPO}/pd_coordinator.py \
+            --prefill-host ${PREFILL_IP} --prefill-port ${PREFILL_PORT} \
+            --decode-host ${DECODE_IP} --decode-port ${DECODE_PORT} \
+            --bootstrap-port ${BOOTSTRAP_PORT} \
+            --no-wait \
+            --timeout ${TEST_TIMEOUT}" 2>&1
+    local rc=${PIPESTATUS[0]}
 
     if [ $rc -eq 0 ]; then
         log_ok "推理测试通过"
@@ -226,8 +223,8 @@ cmd_logs() {
 
     log_info "日志目录: ${target_dir}"
 
-    # 拉取 Prefill 节点日志（prefill + router）
-    for logfile in prefill router; do
+    # 拉取 Prefill 节点日志
+    for logfile in prefill; do
         scp ${SSH_OPTS} "${PREFILL_HOST}:${REMOTE_LOG_DIR}/${logfile}.log" \
             "${target_dir}/${logfile}.log" 2>/dev/null && \
             log_info "  ${logfile}.log → ${target_dir}/${logfile}.log" || \
@@ -242,9 +239,9 @@ cmd_logs() {
             log_warn "  ${logfile}.log 未找到"
     done
 
-    # 同步输出日志尾部
+    # 输出日志尾部
     echo ""
-    for logfile in prefill decode router; do
+    for logfile in prefill decode; do
         if [ -f "${target_dir}/${logfile}.log" ]; then
             echo "--- ${logfile}.log (tail -20) ---"
             tail -20 "${target_dir}/${logfile}.log"
@@ -273,7 +270,7 @@ cmd_full() {
     echo ""
     echo "  Prefill: ${PREFILL_HOST} (${PREFILL_IP}:${PREFILL_PORT})"
     echo "  Decode:  ${DECODE_HOST} (${DECODE_IP}:${DECODE_PORT})"
-    echo "  Router:  ${PREFILL_IP}:${ROUTER_PORT}"
+    echo "  Bootstrap: ${PREFILL_IP}:${BOOTSTRAP_PORT}"
     echo "  Model:   ${MODEL_PATH}"
     echo "  Backend: ${TRANSFER_BACKEND}"
     echo ""
@@ -331,10 +328,11 @@ usage() {
     echo "命令:"
     echo "  full       全自动一条龙 (停旧→启动→探活→测试→拉日志)"
     echo "  setup      检查两台机器环境"
-    echo "  start      启动 Prefill + Decode + Router"
+    echo "  sync       同步代码到两台机器"
+    echo "  start      启动 Prefill + Decode"
     echo "  stop       停止所有服务"
     echo "  status     探活检查"
-    echo "  test       推理测试"
+    echo "  test       推理测试 (pd_coordinator.py)"
     echo "  logs       拉取日志到本地 ./logs/"
     echo "  clean      停服务 + 清理日志"
     echo ""
@@ -346,10 +344,11 @@ usage() {
     echo "当前配置:"
     echo "  PREFILL_HOST=${PREFILL_HOST}  DECODE_HOST=${DECODE_HOST}"
     echo "  PREFILL_IP=${PREFILL_IP}:${PREFILL_PORT}  DECODE_IP=${DECODE_IP}:${DECODE_PORT}"
-    echo "  ROUTER_PORT=${ROUTER_PORT}"
+    echo "  BOOTSTRAP_PORT=${BOOTSTRAP_PORT}"
     echo "  MODEL_PATH=${MODEL_PATH}"
     echo "  TRANSFER_BACKEND=${TRANSFER_BACKEND}"
     echo "  VENV_DIR=${VENV_DIR}"
+    echo "  DISABLE_OVERLAP=${DISABLE_OVERLAP}"
 }
 
 # ---- 入口 ----
@@ -357,6 +356,7 @@ usage() {
 case "${1:-}" in
     full)   cmd_full ;;
     setup)  cmd_setup ;;
+    sync)   cmd_sync ;;
     start)  cmd_start ;;
     stop)   cmd_stop ;;
     status) cmd_status ;;

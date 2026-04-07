@@ -474,12 +474,19 @@ class _PendingTransfer:
 
         try:
             # Wait for the sender to complete (batch: send(), pipeline: done_pipeline()).
+            logger.warning(
+                f"[_PendingTransfer.serve] room={self.room} waiting for _ready..."
+            )
             if not self._ready.wait(timeout=_RECV_TIMEOUT_S):
                 logger.error(
                     f"[_PendingTransfer] room={self.room} timed out waiting for sender"
                 )
                 self._finish(conn, success=False)
                 return
+
+            logger.warning(
+                f"[_PendingTransfer.serve] room={self.room} _ready set! pipeline={self._pipeline_mode}"
+            )
 
             if self._pipeline_mode:
                 # Pipeline mode: all KV layers were already sent by send_layer().
@@ -508,10 +515,19 @@ class _PendingTransfer:
         page_size = kv_args.page_size
         num_layers = len(kv_args.kv_data_ptrs) // 2  # k_layers + v_layers
 
+        logger.warning(
+            f"[_stream_kv] room={self.room} starting, layers={num_layers}, "
+            f"src_indices={src_indices}, page_size={page_size}"
+        )
+
         # Synchronise the GPU so we read fully-written KV caches
         torch.cuda.synchronize()
 
+        logger.warning(f"[_stream_kv] room={self.room} cuda sync done, sending layers...")
+
         for layer_id in range(num_layers):
+            if layer_id % 7 == 0:
+                logger.warning(f"[_stream_kv] room={self.room} sending layer {layer_id}/{num_layers}")
             # -- Key buffer --
             k_ptr = kv_args.kv_data_ptrs[layer_id]
             k_item_len = kv_args.kv_item_lens[layer_id]
@@ -705,6 +721,10 @@ class TCPKVSender(CommonKVSender):
         kv_indices: npt.NDArray[np.int32],
         state_indices: Optional[List[int]] = None,
     ) -> None:
+        logger.warning(
+            f"[TCPKVSender.send] room={self.bootstrap_room} "
+            f"kv_indices={len(kv_indices)} _layer_sent={self._layer_sent}"
+        )
         """
         Complete the transfer after the forward pass.
 
@@ -716,6 +736,10 @@ class TCPKVSender(CommonKVSender):
         """
         with self.kv_mgr._pending_lock:
             pending = self.kv_mgr._pending_transfers.get(self.bootstrap_room)
+
+        logger.warning(
+            f"[TCPKVSender.send] room={self.bootstrap_room} pending={'found' if pending else 'None'}"
+        )
 
         if pending is None:
             # The receiver hasn't registered its KV indices via ZMQ yet.
@@ -735,6 +759,10 @@ class TCPKVSender(CommonKVSender):
             return
 
         self.kv_mgr.update_status(self.bootstrap_room, KVPoll.Transferring)
+
+        logger.warning(
+            f"[TCPKVSender.send] room={self.bootstrap_room} calling ready() kv_indices={len(kv_indices)}"
+        )
 
         if self._layer_sent:
             # Pipeline mode: all KV data already sent layer-by-layer.
@@ -922,6 +950,11 @@ class TCPKVReceiver(CommonKVReceiver):
             # Ensure this background thread has a valid CUDA context so that
             # cuMemcpyHtoD_v2 calls in _write_pages_to_gpu succeed.
             torch.cuda.set_device(self.kv_mgr.kv_args.gpu_id)
+
+            logger.warning(
+                f"[_recv_loop] room={self.bootstrap_room} started, "
+                f"bootstrap_infos={'yes' if self.bootstrap_infos else 'None'}"
+            )
 
             # Sleep briefly so the prefill side has time to process the ZMQ descriptor
             # and create a _PendingTransfer before the TCP connection arrives.

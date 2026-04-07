@@ -1,6 +1,6 @@
 # P/D Disaggregation TCP KV Transfer 调试进展报告
 
-> 最后更新: 2026-04-04
+> 最后更新: 2026-04-06
 
 ## 1. 目标
 
@@ -16,171 +16,197 @@
 - 代码路径: `/home/ubuntu/sglang-kvtuner-splitwise/`
 - 必须设置 `PYTHONPATH=/home/ubuntu/sglang-kvtuner-splitwise/python` 才能加载本地 TCP backend 代码
 - 分支: `sglang-integrate-pd-scheduling-kvcache`
+- 启动参数: `--disable-overlap-schedule` (scheduler 在 overlap 模式下会 segfault)
 
-## 3. 架构理解（已确认正确）
+## 3. 今日新增代码修复 (fac2127ef, 62dca923d)
 
-### TCP KV Transfer 完整流程
-
-```
-[Client Request via Router]
-        |
-        v
-[Router] -- 分配 bootstrap_room, 转发请求到 P 和 D
-        |
-   ┌────┴────┐
-   v         v
-[Prefill]  [Decode]
-   |         |
-   |         |-- _resolve_pending_reqs() → ensure_parallel_info() → GET bootstrap server
-   |         |-- 获取 Prefill 注册信息 (tcp_port 等)
-   |         |-- pop_preallocated() → _create_receiver_and_enqueue() → 创建 TCPKVReceiver
-   |         |   TCPKVReceiver.__init__() 调用 update_status(bootstrap_room, WaitingForInput) ★
-   |         |   TCPKVReceiver.init() 通过 ZMQ 发送连接描述符给 Prefill ★
-   |         |
-   |-- 注册到 bootstrap server (PUT, 包含 tcp_port)
-   |-- TCPKVSender 创建, 状态 = Bootstrapping
-   |-- 等待 Decode 的 ZMQ 消息...
-   |         |
-   |    [TCPKVManager._process_zmq_msg() 收到 ZMQ]
-   |         |-- 创建 _PendingTransfer
-   |         |-- 调用 update_status(bootstrap_room, WaitingForInput) ★
-   |
-   |-- send() 发现有 _PendingTransfer, 开始 TCP 传输
-   |-- 状态: WaitingForInput → Transferring → Success
-   |
-   v
-[Decode 收到 KV cache, 继续生成 token]
-```
-
-### 关键状态机 (KVPoll)
-
-```
-Failed(0) → Bootstrapping(1) → WaitingForInput(2) → Transferring(3) → Success(4)
-```
-
-### 请求路由
-
-- **Prefill 侧**: `_add_request_to_queue()` 将请求放入 `disagg_prefill_bootstrap_queue`（不是 `waiting_queue`！）
-  - `pop_bootstrapped()` 轮询 sender 状态，只有 `poll() != Bootstrapping` 才移入 bootstrapped 列表
-- **Decode 侧**: 请求先进 `pending_reqs`，`_resolve_pending_reqs()` 获取 prefill 信息后创建 TCPKVReceiver
-
-### Event Loop 选择
-
-- `disable_overlap_schedule=False`（默认）→ Prefill 用 `event_loop_overlap_disagg_prefill()`
-- `disable_overlap_schedule=True` → Prefill 用 `event_loop_normal_disagg_prefill()`
-- 之前调试时加日志加错了 event loop，浪费了不少时间
-
-## 4. 已应用的代码修改
-
-### 4.1 TCPKVReceiver WaitingForInput 转换（唯一保留的修改）
+### 3.1 TCPKVReceiver WaitingForInput 转换 (4844b6c24)
 
 **文件**: `python/sglang/srt/disaggregation/tcp/conn.py` — TCPKVReceiver.__init__()
 
-**问题**: CommonKVReceiver.__init__() 获取 bootstrap 信息后不会将状态从 Bootstrapping 转换为 WaitingForInput。Decode 侧创建 receiver 后，`pop_preallocated()` 调用 `kv_receiver.init()` 发送 ZMQ，但 sender 端的 `send()` 方法在等待 `_PendingTransfer` 存在。如果 Decode 端的 receiver 初始化在 ZMQ 消息发送前没有正确更新状态，可能导致时序问题。
+在获取 bootstrap 信息后立即调用 `update_status(bootstrap_room, KVPoll.WaitingForInput)`，与 MooncakeKVReceiver 保持一致。
 
-**修复**: 在 TCPKVReceiver.__init__() 中，获取 bootstrap 信息后立即调用 `update_status(bootstrap_room, KVPoll.WaitingForInput)`，与 MooncakeKVReceiver 保持一致的模式。
+### 3.2 CUDA 上下文初始化 + transfer_started 守卫 (fac2127ef)
 
-```python
-def __init__(self, mgr, bootstrap_addr, bootstrap_room=None, prefill_dp_rank=None):
-    super().__init__(
-        mgr=mgr,
-        bootstrap_addr=bootstrap_addr,
-        bootstrap_room=bootstrap_room,
-        prefill_dp_rank=prefill_dp_rank,
-    )
-    # Transition from Bootstrapping to WaitingForInput now that bootstrap
-    # info has been fetched (same pattern as MooncakeKVReceiver).
-    if self.bootstrap_infos is not None:
-        self.kv_mgr.update_status(self.bootstrap_room, KVPoll.WaitingForInput)
-    self._transfer_done = threading.Event()
-    self._transfer_ok = True
+**文件**: `python/sglang/srt/disaggregation/tcp/conn.py`
+
+- `_PendingTransfer.run()`: 添加 `torch.cuda.set_device()` 确保 CUDA 上下文可用
+- `_receive_layer()`: 添加 `torch.cuda.set_device()` 确保 GPU 写入
+- `TCPKVReceiver.__init__()`: 新增 `_transfer_started = False`
+- `TCPKVReceiver.init()`: 设置 `_transfer_started = True`
+- `TCPKVReceiver.poll()`: `_transfer_started` 为 False 时返回 `WaitingForInput`
+
+### 3.3 对齐 disagg decode overlap loop (62dca923d)
+
+**文件**: `python/sglang/srt/disaggregation/decode.py`
+
+将 `event_loop_overlap_disagg_decode` 对齐标准 `event_loop_overlap`，新增:
+- `_engine_paused` 守卫
+- `is_disable_overlap_for_batch` 判断
+- `self_check_during_idle()` 空闲检查
+- `is_generation` 守卫在 `launch_batch_sample_if_needed`
+
+## 4. 已验证的 TCP 传输流程
+
+### 4.1 完整流程追踪结果
+
+```
+[Decode scheduler] recv_requests() → process_input_requests()
+    ✅ 请求从 ZMQ 接收到 scheduler
+    ✅ handle_generate_request() 正确处理
+    ✅ disagg_decode_prealloc_queue.add() 加入 pending_reqs
+
+[Decode] _resolve_pending_reqs()
+    ✅ ensure_parallel_info() 从 bootstrap server 获取 prefill 信息
+    ✅ _resolve_prefill_dp_rank() 返回 dp_rank
+    ✅ _create_receiver_and_enqueue() 创建 TCPKVReceiver
+
+[Decode] pop_preallocated()
+    ✅ _pre_alloc() 分配 KV 内存
+    ✅ kv_receiver.init() 发送 ZMQ 描述符给 Prefill
+
+[Prefill] _process_zmq_msg()
+    ✅ ZMQ 消息到达 Prefill
+    ✅ _PendingTransfer 创建，状态设为 WaitingForInput
+
+[Prefill] pop_bootstrapped()
+    ✅ sender 状态从 Bootstrapping 变为 WaitingForInput
+    ✅ 请求移入 bootstrapped 列表
+
+[Prefill] get_next_disagg_prefill_batch_to_run() + run_batch()
+    ✅ Forward pass 执行完成
+
+[Prefill] send_kv_chunk() → TCPKVSender.send()
+    ✅ send_kv_chunk 被调用 (pages=2)
+    ✅ send() 找到 _PendingTransfer (pending=found)
+    ✅ ready() 被调用
+
+[Prefill] _PendingTransfer.serve()
+    ✅ TCP accept-loop 接受连接
+    ✅ _ready.wait() 被唤醒 (_ready set! pipeline=False)
+    ✅ _stream_kv 开始: cuda sync done, sending layers...
+    ✅ 发送 layer 0/28, 7/28, 14/28, 21/28
+
+[Decode] _recv_loop() (后台线程)
+    ✅ 线程启动 (bootstrap_infos=yes)
+    ❌ 无后续日志 — 卡在 TCP 接收或 GPU 写入
 ```
 
-## 5. 已验证的中间结果
+### 4.2 未完成的关键步骤
 
-| 验证项 | 结果 |
-|--------|------|
-| gpu1 ↔ gpu2 网络连通性 | ✅ 通过 |
-| ZMQ 端口（默认 20123）可达 | ✅ 通过 |
-| TCP 端口可达 | ✅ 通过 |
-| Bootstrap server 返回正确 tcp_port 字段 | ✅ 通过 |
-| Prefill 服务启动 + /health 探活 | ✅ 通过 |
-| Decode 服务启动 + /health 探活 | ✅ 通过 |
-| Prefill 正确注册到 bootstrap server | ✅ 通过 |
-| Bootstrap server 查询 Decode 侧 | ✅ 通过 |
-| TCP backend 代码结构正确 | ✅ 通过 |
-| Coordinator 发送请求到 P/D | ✅ 请求到达 |
+| 步骤 | 状态 | 问题 |
+|------|------|------|
+| Prefill `_stream_kv` 完成 28 层发送 | ⚠️ 部分 | 输出到 layer 21/28 后卡住 |
+| Prefill `_send_tail` + `_finish` | ❌ | 依赖上层完成 |
+| Decode `_recv_loop` TCP 连接 | ❓ | 线程启动了但无后续日志 |
+| Decode `_recv_kv` 接收数据 | ❌ | 无日志 |
+| Decode `_write_pages_to_gpu` GPU 写入 | ❌ | 无日志 |
+| Decode poll() 返回 Success | ❌ | 整个流程未完成 |
 
-## 6. 主要阻塞问题（未解决）
+## 5. 已解决的关键问题
 
-### 6.1 ★★★ Decode Scheduler 线程崩溃（核心阻塞）
+### 5.1 ★★★ Scheduler 线程 segfault (部分解决)
 
-**现象**:
-- `--enable-overlap-schedule`（默认）: Decode 的 scheduler 线程在 warmup 后变成 `<defunct>` zombie。无 Python traceback，无 core dump，静默 native segfault。
-- `--disable-overlap-schedule`: scheduler 线程存活，但 CPU 86% 空转，不处理外部请求。ZMQ recv 无数据。
+**现象**: Scheduler 线程在运行 2-5 分钟后变成 `<defunct>` zombie。无 Python traceback，无 core dump，静默 native segfault。
 
-**影响**:
-- Decode scheduler 崩溃 → 不处理请求 → 不创建 TCPKVReceiver → 不发送 ZMQ 描述符 → Prefill sender 永远停留在 Bootstrapping 状态 → 整个 KV transfer 流程死锁
+**影响**: Scheduler 进程 defunct 后，整个进程（包括所有子线程）被内核回收，导致所有进行中的传输中断。
 
-**排查记录**:
-1. 用 `fake` backend 测试 Decode: scheduler 存活，但发请求报 `AttributeError: 'FakeKVManager' object has no attribute 'prefill_info_table'`（scheduler 没崩但功能不完整）
-2. 用 `tcp` backend + `--disable-overlap-schedule`: scheduler 存活但空转，日志无任何请求处理痕迹
-3. 尝试在 Decode 上启用 core dump (`ulimit -c unlimited`)，SSH 连接超时
+**排查结论**:
+- 不是 TCP backend 修改导致的（原版 sglang 也有此问题）
+- 与 overlap schedule 模式无关（`--disable-overlap-schedule` 下同样发生）
+- 触发条件尚不明确，可能与 GPU 计算的时序有关
 
-**初步判断**: 这可能是 sglang 分支的 pre-existing 问题，不是 TCP backend 修改导致的。需要进一步验证。
+**当前绕过**: `--disable-overlap-schedule` 可延长 scheduler 存活时间（~3-5 分钟），但最终仍会崩溃。
 
-### 6.2 Prefill Sender 在 Bootstrapping 状态卡住
+### 5.2 Decode 侧 bootstrap_infos 缓存导致 TCP 连接失败
 
-**现象**: Coordinator 发送请求后，Prefill 侧的 sender 状态始终为 Bootstrapping。
+**现象**: Decode 首次连接正确，但 Prefill 重启后 Decode 缓存了旧的 tcp_port，导致 `Connection refused`。
 
-**根因**: 这是 6.1 的直接后果 — Decode 没有发送 ZMQ，`_process_zmq_msg()` 没有被触发，没有 `_PendingTransfer` 被创建。
+**解决**: 每次重启 Decode 时清除 `connection_pool` 缓存。
 
-## 7. 已排除的误判
+### 5.3 Prefill scheduler CPU 空转 (Tight Loop)
 
-| 误判 | 实际情况 |
-|------|----------|
-| "请求没有进入 waiting_queue 是 bug" | 不是 bug，prefill 模式下请求进 `bootstrap_queue`，这是设计如此 |
-| "Debug 日志没有输出 = 代码没执行" | 日志用了 `sys.stderr.write()`，输出到 scheduler 进程的 stderr，不被日志重定向捕获 |
-| "加了日志但 overlap loop 没执行" | 日志加到了 `event_loop_normal`，实际用的是 `event_loop_overlap` |
-| "巨大的日志文件 (973K 行) 是异常" | overlap event loop 轮询极快，每次迭代都打日志，几秒就 973K 行 |
+**现象**: Scheduler 进程在 while True 循环中 90%+ CPU，`recv_requests()` 每次返回空列表（ZMQ NOBLOCK）。
 
-## 8. 下一步建议
+**分析**: 这是预期行为 — 没有请求时 event loop 空转。标准 `event_loop_overlap` 也有相同行为。`maybe_sleep_on_idle()` 在 Decode 模式下，当各队列为空时会 sleep。
 
-### 优先级 P0: 解决 Decode Scheduler 崩溃
+### 5.4 Debug 日志输出到 stderr 不被捕获
 
-1. **验证是否为 pre-existing 问题**: 在原版 sglang（不含 TCP 修改）上用 decode disaggregation 模式启动，看 scheduler 是否同样崩溃
-2. **启用 core dump 并分析**:
-   ```bash
-   # 在 gpu2 上
-   ulimit -c unlimited
-   echo '/tmp/core.%e.%p' | sudo tee /proc/sys/kernel/core_pattern
-   # 启动 Decode，等崩溃后用 gdb 分析 core
-   ```
-3. **检查 dmesg**: `dmesg | tail -20` 看 segfault 信息
-4. **降低 scheduler 频率**: `--scheduler-recv-interval 2` 减慢循环
-5. **检查 sglang 分支更新**: 看是否有更新的 commit 修复了此问题
-6. **尝试 Rust Router**: 当前用 Python coordinator 绕过 Router，原版 Rust Router 可能有不同的行为
+**解决**: 使用 `logger.warning()` 替代 `sys.stderr.write()`。
 
-### 优先级 P1: 端到端验证
+### 5.5 Debug 日志加到错误的 event loop
 
-一旦 Decode scheduler 稳定：
-1. 用 coordinator 发送请求，验证完整 ZMQ → TCP transfer 流程
-2. 检查 Prefill 日志：sender 是否从 Bootstrapping → WaitingForInput → Transferring → Success
-3. 检查 Decode 日志：receiver 是否成功接收 KV cache
-4. 验证最终生成的 token 正确性
+**解决**: Prefill 默认用 `event_loop_overlap_disagg_prefill`（不是 `event_loop_normal`）。
 
-### 优先级 P2: 自动化测试脚本
+## 6. 架构理解总结
 
-按照 `crystalline-mapping-horizon.md` 计划创建 `pd_test.sh` 自动化脚本。
+### 6.1 进程架构
 
-## 9. 参考文件
+```
+Main Process (launch_server)
+├── HTTP Server (uvicorn)  ← /health, /generate API
+├── Tokenizer Manager     ← tokenize, send_to_scheduler (ZMQ PUSH)
+├── Scheduler Process (fork)
+│   ├── event_loop_*()     ← recv_requests (ZMQ PULL), process, forward
+│   ├── TCP Accept Loop  ← accept TCP connections from Decode
+│   ├── _PendingTransfer.serve() ← _stream_kv (GPU→CPU→TCP)
+│   └── Detokenizer Process
+└── Bootstrap Server (aiohttp) ← /route PUT/GET for registration
+```
 
-| 文件 | 作用 |
+### 6.2 ZMQ 通信
+
+- tokenizer_manager → scheduler: ZMQ PUSH/PULL (IPC)
+- scheduler_recv_skipper: `scheduler_recv_interval <= 1` 时为 None（每次都 recv）
+
+### 6.3 TCP KV Transfer 数据流
+
+```
+Decode init() → ZMQ descriptor → Prefill _process_zmq_msg()
+                                          → _PendingTransfer 创建
+Decode _recv_loop() → TCP connect → Prefill accept-loop
+                                          → _PendingTransfer.serve()
+
+Prefill send_kv_chunk() → TCPKVSender.send() → _PendingTransfer.ready()
+                                    → _stream_kv() → GPU→CPU→TCP → socket.sendall()
+
+Decode _recv_loop() → TCP recv → _recv_kv() → socket.recv()
+                                    → _write_pages_to_gpu() → cuMemcpyHtoD
+```
+
+## 7. 下一步计划
+
+### P0: 解决 Decode `_recv_loop` 卡住问题
+
+可能的调试方向:
+1. 在 `_recv_loop` 的 TCP 连接、数据接收、GPU 写入各步骤加 logger.warning
+2. 检查 TCP 连接是否真的建立（`conn.connect()` 是否成功）
+3. 检查 Prefill 的 `_stream_kv` 是否在 `_send_layer_data` 中卡住
+4. 增加 socket timeout 避免无限阻塞
+
+### P0: 解决 Scheduler 线程 segfault
+
+1. 启用 core dump: `ulimit -c unlimited` + `echo '/tmp/core.%e.%p' | sudo tee /proc/sys/kernel/core_pattern`
+2. 用 gdb attach 到 scheduler 进程在 crash 前分析
+3. 检查 sglang 上游是否有相关 issue/fix
+
+### P1: 端到端验证
+
+一旦 scheduler 稳定 + `_recv_loop` 卡住问题修复:
+1. 验证 Prefill 传输完整（28 层 + _send_tail + _finish）
+2. 验证 Decode 接收完整并写入 GPU
+3. 验证 Decode 调度接收 KV cache 后正确生成 token
+
+### P2: 自动化测试
+
+创建一键测试脚本，自动重启服务 + 发送请求 + 收集日志。
+
+## 8. 测试脚本和文档
+
+| 文件 | 说明 |
 |------|------|
-| `python/sglang/srt/disaggregation/tcp/conn.py` | TCP backend 核心实现 (~1180 行) |
-| `python/sglang/srt/disaggregation/prefill.py` | Prefill 侧事件循环和 bootstrap queue |
-| `python/sglang/srt/disaggregation/decode.py` | Decode 侧 prealloc queue 和请求处理 |
-| `python/sglang/srt/managers/scheduler.py` | 调度器，请求路由，event loop 选择 |
-| `python/sglang/srt/disaggregation/common/conn.py` | 公共 KV 管理器基类 |
-| `python/sglang/srt/disaggregation/base/conn.py` | KVPoll 状态枚举定义 |
 | `scripts/pd_disagg_test/pd_coordinator.py` | Python PD coordinator（绕过 Rust Router） |
+| `scripts/pd_disagg_test/pd_test.sh` | 自动化测试部署脚本 |
+| `scripts/pd_disagg_test/remote_worker.sh` | 远程工作进程管理 |
+| `scripts/pd_disagg_test/configs/default.sh` | 默认配置 |
+| `scripts/pd_disagg_test/PROGRESS_REPORT.md` | 本调试进展报告 |

@@ -680,6 +680,10 @@ class DecodePreallocQueue:
             )
             assert decode_req.metadata_buffer_index is not None
             page_indices = kv_to_page_indices(kv_indices, page_size)
+            logger.warning(
+                f"[pop_preallocated] room={decode_req.req.bootstrap_room} "
+                f"rid={decode_req.req.rid} calling kv_receiver.init()"
+            )
             decode_req.kv_receiver.init(
                 page_indices, decode_req.metadata_buffer_index, state_indices
             )
