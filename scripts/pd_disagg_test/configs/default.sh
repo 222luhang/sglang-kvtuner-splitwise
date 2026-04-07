@@ -4,8 +4,8 @@
 # ============================================================================
 
 # SSH 配置（对应 ~/.ssh/config 中的 Host 别名）
-PREFILL_HOST="${PREFILL_HOST:-gpu1}"
-DECODE_HOST="${DECODE_HOST:-gpu2}"
+PREFILL_HOST="${PREFILL_HOST:-ubuntu@10.60.23.70}"
+DECODE_HOST="${DECODE_HOST:-ubuntu@10.60.30.66}"
 
 # 内网 IP（用于服务 --host 和 --dist-init-addr）
 PREFILL_IP="${PREFILL_IP:-10.60.23.70}"

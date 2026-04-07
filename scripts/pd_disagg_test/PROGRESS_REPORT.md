@@ -1,6 +1,6 @@
 # P/D Disaggregation TCP KV Transfer 调试进展报告
 
-> 最后更新: 2026-04-06
+> 最后更新: 2026-04-08
 
 ## 1. 目标
 
@@ -18,7 +18,19 @@
 - 分支: `sglang-integrate-pd-scheduling-kvcache`
 - 启动参数: `--disable-overlap-schedule` (scheduler 在 overlap 模式下会 segfault)
 
-## 3. 今日新增代码修复 (fac2127ef, 62dca923d)
+## 3. 代码修复历史
+
+### 3.0 ★★★ 修复 aux metadata 只传输第一个 buffer 的 bug (2026-04-08)
+
+**文件**: `python/sglang/srt/disaggregation/tcp/conn.py`
+
+**根本原因**: `_send_tail()` 只发送了 `aux_data_ptrs[0]`（output_ids），但 `MetadataBuffers` 有 10 个 buffer（output_ids, cached_tokens, logprobs, ..., bootstrap_room）。Decode 侧 `_commit_transfer_to_req()` 检查 `bootstrap_room[0].item() == 0` 时认为 metadata 还没准备好，导致请求永远卡在 TransferQueue。
+
+**修复**:
+- `_send_tail()`: 遍历所有 `aux_data_ptrs`，拼接成一个 blob 发送
+- `_recv_kv()`: 按 `aux_item_lens` 拆分 blob，写入所有 aux buffers
+
+**验证**: 端到端测试通过，Decode 在 0.7s 内完成 KV 接收 + 32 token generation。
 
 ### 3.1 TCPKVReceiver WaitingForInput 转换 (4844b6c24)
 
@@ -92,16 +104,17 @@
     ❌ 无后续日志 — 卡在 TCP 接收或 GPU 写入
 ```
 
-### 4.2 未完成的关键步骤
+### 4.2 端到端验证结果 (2026-04-08)
 
-| 步骤 | 状态 | 问题 |
+| 步骤 | 状态 | 备注 |
 |------|------|------|
-| Prefill `_stream_kv` 完成 28 层发送 | ⚠️ 部分 | 输出到 layer 21/28 后卡住 |
-| Prefill `_send_tail` + `_finish` | ❌ | 依赖上层完成 |
-| Decode `_recv_loop` TCP 连接 | ❓ | 线程启动了但无后续日志 |
-| Decode `_recv_kv` 接收数据 | ❌ | 无日志 |
-| Decode `_write_pages_to_gpu` GPU 写入 | ❌ | 无日志 |
-| Decode poll() 返回 Success | ❌ | 整个流程未完成 |
+| Prefill `_stream_kv` 完成 28 层发送 | ✅ | 全部 28 层在 <1s 内发送完成 |
+| Prefill `_send_tail` + `_finish` | ✅ | aux metadata (10 buffers) + EOF 发送成功 |
+| Decode `_recv_loop` TCP 连接 | ✅ | TCP connect 成功 |
+| Decode `_recv_kv` 接收数据 | ✅ | 56 条消息全部接收 |
+| Decode `_write_pages_to_gpu` GPU 写入 | ✅ | 所有 KV pages 写入 GPU |
+| Decode poll() 返回 Success | ✅ | bootstrap_room 验证通过 |
+| Decode generation 输出 | ✅ | 32 tokens 生成，0.7s 完成 |
 
 ## 5. 已解决的关键问题
 
@@ -176,26 +189,20 @@ Decode _recv_loop() → TCP recv → _recv_kv() → socket.recv()
 
 ## 7. 下一步计划
 
-### P0: 解决 Decode `_recv_loop` 卡住问题
-
-可能的调试方向:
-1. 在 `_recv_loop` 的 TCP 连接、数据接收、GPU 写入各步骤加 logger.warning
-2. 检查 TCP 连接是否真的建立（`conn.connect()` 是否成功）
-3. 检查 Prefill 的 `_stream_kv` 是否在 `_send_layer_data` 中卡住
-4. 增加 socket timeout 避免无限阻塞
-
 ### P0: 解决 Scheduler 线程 segfault
 
 1. 启用 core dump: `ulimit -c unlimited` + `echo '/tmp/core.%e.%p' | sudo tee /proc/sys/kernel/core_pattern`
 2. 用 gdb attach 到 scheduler 进程在 crash 前分析
 3. 检查 sglang 上游是否有相关 issue/fix
 
-### P1: 端到端验证
+### P1: 清理 debug 日志
 
-一旦 scheduler 稳定 + `_recv_loop` 卡住问题修复:
-1. 验证 Prefill 传输完整（28 层 + _send_tail + _finish）
-2. 验证 Decode 接收完整并写入 GPU
-3. 验证 Decode 调度接收 KV cache 后正确生成 token
+端到端验证通过后，将 `logger.warning` debug 日志降级为 `logger.debug` 或移除。
+
+### P1: 性能优化
+
+1. 评估 TCP 传输延迟，考虑 pipeline mode 优化
+2. 评估是否需要 pinned memory 加速 HtoD/DtoH 传输
 
 ### P2: 自动化测试
 

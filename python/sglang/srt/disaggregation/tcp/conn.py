@@ -306,6 +306,9 @@ class TCPKVManager(CommonKVManager):
                 conn.close()
                 return
 
+            logger.warning(
+                f"[_handle_connection] room={room} from {addr} → pending found, calling serve()"
+            )
             pending.serve(conn)
         except Exception as e:
             logger.error(f"[TCPKVManager] connection handler error: {e}")
@@ -540,6 +543,7 @@ class _PendingTransfer:
             v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
             _send_layer_data(conn, layer_id * 2 + 1, v_data)
 
+        logger.warning(f"[_stream_kv] room={self.room} all {num_layers} layers sent, calling _send_tail")
         self._send_tail(conn)
 
     def _send_tail(self, conn: socket.socket) -> None:
@@ -547,16 +551,29 @@ class _PendingTransfer:
         kv_args = self.kv_mgr.kv_args
 
         if self.dst_aux_index is not None and kv_args.aux_data_ptrs:
-            aux_ptr = kv_args.aux_data_ptrs[0]
-            aux_item_len = kv_args.aux_item_lens[0]
-            aux_data = _read_aux_from_cpu(aux_ptr, aux_item_len, self.dst_aux_index)
+            # Send ALL aux buffers (output_ids, cached_tokens, ..., bootstrap_room)
+            # so that the decode side receives the complete metadata.
+            chunks = []
+            for i, (aux_ptr, aux_item_len) in enumerate(
+                zip(kv_args.aux_data_ptrs, kv_args.aux_item_lens)
+            ):
+                chunk = _read_aux_from_cpu(aux_ptr, aux_item_len, self.dst_aux_index)
+                chunks.append(chunk)
+            aux_data = b"".join(chunks)
+            logger.warning(
+                f"[_send_tail] room={self.room} sending aux metadata, "
+                f"buffers={len(kv_args.aux_data_ptrs)} total_len={len(aux_data)}"
+            )
             _send_layer_data(conn, _MSG_DONE - 1, aux_data)  # layer_id = -2
 
         # Signal end of transfer
+        logger.warning(f"[_send_tail] room={self.room} sending EOF marker")
         _send_layer_data(conn, _MSG_DONE, b"")
+        logger.warning(f"[_send_tail] room={self.room} done!")
 
     def _finish(self, conn: socket.socket, success: bool) -> None:
         status = KVPoll.Success if success else KVPoll.Failed
+        logger.warning(f"[_PendingTransfer._finish] room={self.room} success={success}")
         self.kv_mgr.update_status(self.room, status)
         with self.kv_mgr._pending_lock:
             self.kv_mgr._pending_transfers.pop(self.room, None)
@@ -958,6 +975,7 @@ class TCPKVReceiver(CommonKVReceiver):
 
             # Sleep briefly so the prefill side has time to process the ZMQ descriptor
             # and create a _PendingTransfer before the TCP connection arrives.
+            logger.warning(f"[_recv_loop] room={self.bootstrap_room} sleeping {_TCP_CONNECT_DELAY_S}s before connect")
             time.sleep(_TCP_CONNECT_DELAY_S)
 
             binfo = None
@@ -974,10 +992,6 @@ class TCPKVReceiver(CommonKVReceiver):
             prefill_ip = binfo["rank_ip"]
             tcp_port_raw = binfo.get("tcp_port")
             if not tcp_port_raw:
-                # Fallback: the bootstrap server did not return a tcp_port field
-                # (e.g. an older server or a non-TCP backend bootstrap server).
-                # Falling back to rank_port (ZMQ port) will almost certainly
-                # fail because ZMQ and TCP use different sockets.
                 tcp_port_raw = binfo.get("rank_port")
                 logger.warning(
                     f"[TCPKVReceiver] room={self.bootstrap_room}: tcp_port not in "
@@ -986,14 +1000,21 @@ class TCPKVReceiver(CommonKVReceiver):
                 )
             prefill_tcp_port = tcp_port_raw
 
+            logger.warning(
+                f"[_recv_loop] room={self.bootstrap_room} connecting to "
+                f"{prefill_ip}:{prefill_tcp_port} (timeout={_RECV_TIMEOUT_S}s)"
+            )
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.settimeout(_RECV_TIMEOUT_S)
             conn.connect((prefill_ip, int(prefill_tcp_port)))
+            logger.warning(f"[_recv_loop] room={self.bootstrap_room} TCP connected!")
 
             # Introduce ourselves
             conn.sendall(struct.pack("!Q", self.bootstrap_room))
+            logger.warning(f"[_recv_loop] room={self.bootstrap_room} sent room id, starting _recv_kv")
 
             self._recv_kv(conn, dst_kv_indices, dst_aux_index)
+            logger.warning(f"[_recv_loop] room={self.bootstrap_room} _recv_kv completed!")
             conn.close()
             self._transfer_ok = True
         except Exception as e:
@@ -1017,21 +1038,37 @@ class TCPKVReceiver(CommonKVReceiver):
         expected_msgs = num_layers * 2  # K + V per layer
         received = 0
 
+        logger.warning(
+            f"[_recv_kv] room={self.bootstrap_room} expecting {expected_msgs} msgs "
+            f"(layers={num_layers}), dst_kv_indices={len(dst_kv_indices)}"
+        )
+
         while True:
             layer_id, data = _recv_layer_data(conn)
 
             if layer_id == _MSG_DONE:
+                logger.warning(
+                    f"[_recv_kv] room={self.bootstrap_room} got EOF, "
+                    f"received={received}/{expected_msgs}"
+                )
                 break
 
             if layer_id == _MSG_DONE - 1:
-                # Auxiliary metadata
+                # Auxiliary metadata — contains ALL aux buffers concatenated
+                logger.warning(
+                    f"[_recv_kv] room={self.bootstrap_room} got aux metadata, "
+                    f"len={len(data)}"
+                )
                 if dst_aux_index is not None and kv_args.aux_data_ptrs and data:
-                    _write_aux_to_cpu(
-                        kv_args.aux_data_ptrs[0],
-                        kv_args.aux_item_lens[0],
-                        dst_aux_index,
-                        data,
-                    )
+                    # Split the concatenated blob back into individual aux buffers
+                    offset = 0
+                    for i, (aux_ptr, aux_item_len) in enumerate(
+                        zip(kv_args.aux_data_ptrs, kv_args.aux_item_lens)
+                    ):
+                        chunk = data[offset : offset + aux_item_len]
+                        if chunk:
+                            _write_aux_to_cpu(aux_ptr, aux_item_len, dst_aux_index, chunk)
+                        offset += aux_item_len
                 continue
 
             # Determine whether this is K or V
@@ -1044,6 +1081,12 @@ class TCPKVReceiver(CommonKVReceiver):
                 base_ptr = kv_args.kv_data_ptrs[num_layers + actual_layer]
                 item_len = kv_args.kv_item_lens[num_layers + actual_layer]
 
+            if received % 7 == 0:
+                logger.warning(
+                    f"[_recv_kv] room={self.bootstrap_room} writing layer_id={layer_id} "
+                    f"(actual_layer={actual_layer}, {'K' if layer_id % 2 == 0 else 'V'}) "
+                    f"data_len={len(data)} received={received}/{expected_msgs}"
+                )
             _write_pages_to_gpu(base_ptr, item_len, dst_kv_indices, page_size, data)
             received += 1
 
