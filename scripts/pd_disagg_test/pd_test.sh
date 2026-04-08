@@ -180,6 +180,8 @@ cmd_status() {
 cmd_test() {
     log_step "推理测试 (pd_coordinator.py)"
 
+    local test_args="${*:-}"
+
     # 检查 Prefill 和 Decode 是否可达
     if ! ssh ${SSH_OPTS} "${PREFILL_HOST}" "curl -s --max-time 5 http://${PREFILL_IP}:${PREFILL_PORT}/health" > /dev/null 2>&1; then
         log_error "Prefill 不可达，请先启动服务"
@@ -201,7 +203,8 @@ cmd_test() {
             --decode-host ${DECODE_IP} --decode-port ${DECODE_PORT} \
             --bootstrap-port ${BOOTSTRAP_PORT} \
             --no-wait \
-            --timeout ${TEST_TIMEOUT}" 2>&1
+            --timeout ${TEST_TIMEOUT} \
+            ${test_args}" 2>&1
     local rc=${PIPESTATUS[0]}
 
     if [ $rc -eq 0 ]; then
@@ -273,6 +276,7 @@ cmd_full() {
     echo "  Bootstrap: ${PREFILL_IP}:${BOOTSTRAP_PORT}"
     echo "  Model:   ${MODEL_PATH}"
     echo "  Backend: ${TRANSFER_BACKEND}"
+    echo "  Overlap: ${DISABLE_OVERLAP}"
     echo ""
 
     # 1. 停旧服务
@@ -333,6 +337,8 @@ usage() {
     echo "  stop       停止所有服务"
     echo "  status     探活检查"
     echo "  test       推理测试 (pd_coordinator.py)"
+    echo "  test --batch-tests              运行多种输入/输出长度组合测试"
+    echo "  test --num-requests N           并发 N 个请求"
     echo "  logs       拉取日志到本地 ./logs/"
     echo "  clean      停服务 + 清理日志"
     echo ""
@@ -360,7 +366,7 @@ case "${1:-}" in
     start)  cmd_start ;;
     stop)   cmd_stop ;;
     status) cmd_status ;;
-    test)   cmd_test ;;
+    test)   shift; cmd_test "${@:-}" ;;
     logs)   cmd_logs ;;
     clean)  cmd_clean ;;
     -h|--help|help|"")

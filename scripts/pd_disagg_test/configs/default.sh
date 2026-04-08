@@ -26,7 +26,7 @@ VENV_DIR="${VENV_DIR:-/home/ubuntu/sglang-env}"
 
 # 服务参数
 TRANSFER_BACKEND="${TRANSFER_BACKEND:-tcp}"
-DISABLE_OVERLAP="${DISABLE_OVERLAP:-true}"
+DISABLE_OVERLAP="${DISABLE_OVERLAP:-false}"
 LOG_LEVEL="${LOG_LEVEL:-warning}"
 
 # 超时（秒）
