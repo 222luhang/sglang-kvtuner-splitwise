@@ -384,11 +384,17 @@ class SchedulerDisaggregationPrefillMixin:
     @torch.no_grad()
     def event_loop_overlap_disagg_prefill(self: Scheduler) -> None:
         self.result_queue = deque()
+        _loop_cnt = [0]
 
         while True:
             # Receive requests
             recv_reqs = self.recv_requests()
+            if recv_reqs:
+                logger.warning(f"[prefill_loop] recv_requests got {len(recv_reqs)} reqs, queue_size={len(self.disagg_prefill_bootstrap_queue.queue)}")
             self.process_input_requests(recv_reqs)
+            _loop_cnt[0] += 1
+            if _loop_cnt[0] % 500000 == 0:
+                logger.warning(f"[prefill_loop] still alive, iterations={_loop_cnt[0]}, bootstrap_queue={len(self.disagg_prefill_bootstrap_queue.queue)}")
             self.waiting_queue.extend(
                 self.disagg_prefill_bootstrap_queue.pop_bootstrapped()
             )
@@ -740,8 +746,12 @@ class SchedulerDisaggregationPrefillMixin:
 
         page_indices = kv_to_page_indices(kv_indices, page_size)
         if len(page_indices) == 0:
-            logger.info(
-                f"Skip sending kv chunk for request {req.rid=} {req.bootstrap_room=} because page_indices is empty"
+            logger.warning(
+                f"[send_kv_chunk] SKIP room={req.bootstrap_room} rid={req.rid} page_indices empty"
             )
             return
+        logger.warning(
+            f"[send_kv_chunk] room={req.bootstrap_room} rid={req.rid} "
+            f"pages={len(page_indices)} last_chunk={last_chunk}"
+        )
         req.disagg_kv_sender.send(page_indices, state_indices)

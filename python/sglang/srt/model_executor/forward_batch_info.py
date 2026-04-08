@@ -32,7 +32,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import IntEnum, auto
 from functools import total_ordering
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 import triton
@@ -376,6 +376,12 @@ class ForwardBatch(ForwardBatchDeepSeekMHAMixin):
 
     # For dumper: request IDs for cross-step sequence tracking
     rids: Optional[List[str]] = None
+
+    # For layer-wise KV pipeline transfer (TCP disaggregation backend).
+    # When set, the attention backend calls this after writing each layer's KV
+    # cache so that the transfer can be overlapped with subsequent layer compute.
+    # Signature: (layer_id: int, out_cache_loc: torch.Tensor) -> None
+    layer_kv_send_fn: Optional[Callable[[int, torch.Tensor], None]] = None
 
     @classmethod
     def init_new(
