@@ -6,8 +6,8 @@
 
 SGLANG_REPO="${SGLANG_REPO:-/home/ubuntu/sglang-kvtuner-splitwise}"
 VENV_DIR="${VENV_DIR:-/home/ubuntu/sglang-env}"
-PREFILL_IP="${PREFILL_IP:-10.60.23.70}"
-DECODE_IP="${DECODE_IP:-10.60.30.66}"
+PREFILL_IP="${PREFILL_IP:-117.50.192.238}"
+DECODE_IP="${DECODE_IP:-117.50.189.89}"
 PREFILL_PORT="${PREFILL_PORT:-30000}"
 DECODE_PORT="${DECODE_PORT:-30001}"
 DIST_INIT_PORT="${DIST_INIT_PORT:-5000}"
@@ -56,7 +56,8 @@ _launch_args() {
 --nnodes 1 --node-rank 0 \
 --disable-custom-all-reduce \
 --log-level ${LOG_LEVEL} \
-${DISABLE_OVERLAP:+--disable-overlap-schedule}"
+${DISABLE_OVERLAP:+--disable-overlap-schedule} \
+${ENABLE_KVTUNER:+--enable-kvtuner-quant --kvtuner-layer-config ${KVTUNER_LAYER_CONFIG} --disable-cuda-graph}"
 }
 
 _remote_start_prefill() {

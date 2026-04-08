@@ -717,15 +717,6 @@ class ServerArgs:
     # For forward hooks
     forward_hooks: Optional[List[dict[str, Any]]] = None
 
-    # KVTuner Layer-wise Quantization
-    enable_kvtuner_layer_wise: bool = False
-    kvtuner_layer_bits: Optional[str] = None  # JSON string or "4,4,4,8,8,..."
-    kvtuner_layer_config_file: Optional[str] = None  # Path to config JSON
-
-    # Memory-Aware Pipeline Parallelism
-    node_memory_gb: Optional[str] = None  # Comma-separated memory per node
-    memory_aware_strategy: str = "proportional"  # uniform, proportional, custom
-
     def __post_init__(self):
         """
         Orchestrates the handling of various server arguments, ensuring proper configuration and validation.
