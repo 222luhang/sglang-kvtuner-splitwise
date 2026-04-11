@@ -52,6 +52,10 @@ from sglang.srt.disaggregation.common.conn import (
     CommonKVReceiver,
     CommonKVSender,
 )
+from sglang.srt.disaggregation.tcp.transfer_quant import (
+    dequantize_from_transfer,
+    quantize_for_transfer,
+)
 from sglang.srt.disaggregation.utils import DisaggregationMode
 from sglang.srt.server_args import ServerArgs
 from sglang.srt.utils import maybe_wrap_ipv6_address
@@ -428,6 +432,10 @@ class _PendingTransfer:
         self._ready = threading.Event()
         self._done = threading.Event()
 
+        # Transfer quantization: callable (layer_id) → nbits or None.
+        # Set by TCPKVSender.ready() so _stream_kv can quantize per-layer.
+        self._get_quant_bits: Optional[object] = None  # Callable[[int], Optional[int]]
+
         # TCP connection – set by serve() so that send_layer() can write to it.
         self._conn: Optional[socket.socket] = None
         self._conn_event = threading.Event()
@@ -438,9 +446,10 @@ class _PendingTransfer:
     # Batch-mode API (called by TCPKVSender.send())
     # ------------------------------------------------------------------
 
-    def ready(self, src_kv_indices: npt.NDArray[np.int32]) -> None:
+    def ready(self, src_kv_indices: npt.NDArray[np.int32], get_quant_bits=None) -> None:
         """Signal that all KV data is in the GPU pool (batch mode)."""
         self.src_kv_indices = src_kv_indices
+        self._get_quant_bits = get_quant_bits
         self._ready.set()
 
     # ------------------------------------------------------------------
@@ -522,9 +531,15 @@ class _PendingTransfer:
         page_size = kv_args.page_size
         num_layers = len(kv_args.kv_data_ptrs) // 2  # k_layers + v_layers
 
+        # Transfer quantization setup
+        get_quant_bits = self._get_quant_bits
+        kv_dtype = getattr(kv_mgr.server_args, "kv_cache_dtype", "auto")
+        is_bf16 = kv_dtype in ("auto", "bf16", "bfloat16")
+
         logger.warning(
             f"[_stream_kv] room={self.room} starting, layers={num_layers}, "
-            f"src_indices={src_indices}, page_size={page_size}"
+            f"src_indices={src_indices}, page_size={page_size}, "
+            f"quant={'on' if get_quant_bits else 'off'}"
         )
 
         # Synchronise the GPU so we read fully-written KV caches
@@ -539,13 +554,25 @@ class _PendingTransfer:
             k_ptr = kv_args.kv_data_ptrs[layer_id]
             k_item_len = kv_args.kv_item_lens[layer_id]
             k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
-            _send_layer_data(conn, layer_id * 2, k_data)
 
             # -- Value buffer --
             v_ptr = kv_args.kv_data_ptrs[num_layers + layer_id]
             v_item_len = kv_args.kv_item_lens[num_layers + layer_id]
             v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
-            _send_layer_data(conn, layer_id * 2 + 1, v_data)
+
+            # Quantize if enabled
+            nbits = get_quant_bits(layer_id) if get_quant_bits else None
+            if nbits is not None:
+                k_data = quantize_for_transfer(k_data, 2, is_bf16, nbits=nbits)
+                v_data = quantize_for_transfer(v_data, 2, is_bf16, nbits=nbits)
+                k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
+                v_lid = (layer_id * 2 + 1) | _MSG_QUANT_FLAG
+            else:
+                k_lid = layer_id * 2
+                v_lid = layer_id * 2 + 1
+
+            _send_layer_data(conn, k_lid, k_data)
+            _send_layer_data(conn, v_lid, v_data)
 
         logger.warning(f"[_stream_kv] room={self.room} all {num_layers} layers sent, calling _send_tail")
         self._send_tail(conn)
@@ -803,7 +830,7 @@ class TCPKVSender(CommonKVSender):
             pending.done_pipeline(kv_indices)
         else:
             # Batch mode: let serve() read all GPU data and stream it now.
-            pending.ready(kv_indices)
+            pending.ready(kv_indices, get_quant_bits=self._get_layer_quant_bits)
 
     def send_layer(self, layer_id: int, src_indices) -> None:
         """
@@ -854,9 +881,22 @@ class TCPKVSender(CommonKVSender):
         k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
         v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
 
+        # Quantize if enabled
+        nbits = self._get_layer_quant_bits(layer_id)
+        if nbits is not None:
+            kv_dtype = getattr(self.kv_mgr.server_args, "kv_cache_dtype", "auto")
+            is_bf16 = kv_dtype in ("auto", "bf16", "bfloat16")
+            k_data = quantize_for_transfer(k_data, 2, is_bf16, nbits=nbits)
+            v_data = quantize_for_transfer(v_data, 2, is_bf16, nbits=nbits)
+            k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
+            v_lid = (layer_id * 2 + 1) | _MSG_QUANT_FLAG
+        else:
+            k_lid = layer_id * 2
+            v_lid = layer_id * 2 + 1
+
         try:
-            _send_layer_data(pending._conn, layer_id * 2, k_data)
-            _send_layer_data(pending._conn, layer_id * 2 + 1, v_data)
+            _send_layer_data(pending._conn, k_lid, k_data)
+            _send_layer_data(pending._conn, v_lid, v_data)
             self._layer_sent = True
         except Exception as e:
             logger.warning(
@@ -869,6 +909,32 @@ class TCPKVSender(CommonKVSender):
             # duplicate already-sent layers). Decode will timeout on missing layers.
             if not self._layer_sent:
                 self._layer_sent = False
+
+    # ------------------------------------------------------------------
+    # Transfer quantization helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _parse_layer_bits(server_args: "ServerArgs") -> Optional[Dict[int, int]]:
+        """Parse kvtuner_layer_bits into a {layer_id: nbits} map."""
+        raw = getattr(server_args, "kvtuner_layer_bits", None)
+        if not raw:
+            return None
+        try:
+            import json as _json
+            bits_list = _json.loads(raw) if raw.strip().startswith("[") else [int(x) for x in raw.split(",")]
+            return {i: b for i, b in enumerate(bits_list)}
+        except Exception as e:
+            logger.warning(f"[TCPKVSender] failed to parse kvtuner_layer_bits: {e}")
+            return None
+
+    def _get_layer_quant_bits(self, layer_id: int) -> Optional[int]:
+        """Return quantization bits for a given layer, or the global default."""
+        if self._transfer_quant_bits is None:
+            return None
+        if self._transfer_quant_layer_map and layer_id in self._transfer_quant_layer_map:
+            return self._transfer_quant_layer_map[layer_id]
+        return self._transfer_quant_bits
 
     def poll(self) -> KVPoll:
         return self.kv_mgr.check_status(self.bootstrap_room)
@@ -1092,6 +1158,11 @@ class TCPKVReceiver(CommonKVReceiver):
                         offset += aux_item_len
                 continue
 
+            # Check and strip quantization flag
+            is_quantized = bool(layer_id & _MSG_QUANT_FLAG)
+            if is_quantized:
+                layer_id &= ~_MSG_QUANT_FLAG
+
             # Determine whether this is K or V
             if layer_id % 2 == 0:
                 actual_layer = layer_id // 2
@@ -1102,11 +1173,16 @@ class TCPKVReceiver(CommonKVReceiver):
                 base_ptr = kv_args.kv_data_ptrs[num_layers + actual_layer]
                 item_len = kv_args.kv_item_lens[num_layers + actual_layer]
 
+            # Dequantize if the sender quantized this layer
+            if is_quantized:
+                expected_nbytes = item_len * len(dst_kv_indices)
+                data = dequantize_from_transfer(data, expected_nbytes)
+
             if received % 7 == 0:
                 logger.warning(
                     f"[_recv_kv] room={self.bootstrap_room} writing layer_id={layer_id} "
                     f"(actual_layer={actual_layer}, {'K' if layer_id % 2 == 0 else 'V'}) "
-                    f"data_len={len(data)} received={received}/{expected_msgs}"
+                    f"data_len={len(data)} quant={is_quantized} received={received}/{expected_msgs}"
                 )
             _write_pages_to_gpu(base_ptr, item_len, dst_kv_indices, page_size, data)
             received += 1
