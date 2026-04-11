@@ -70,6 +70,10 @@ _HEADER_SIZE = struct.calcsize(_HEADER_FMT)
 # Special layer_id value that signals "all done"
 _MSG_DONE = -1
 
+# Bit flag OR'd into layer_id to indicate the payload is quantized.
+# The receiver strips this flag and dequantizes before writing to GPU.
+_MSG_QUANT_FLAG = 0x40000000
+
 # How long to wait for a TCP connection/receive operation (seconds).
 _RECV_TIMEOUT_S = 120
 
@@ -723,6 +727,17 @@ class TCPKVSender(CommonKVSender):
         self.num_kv_indices: Optional[int] = None
         self._layer_sent: bool = False
         self._pipeline_aborted: bool = False
+
+        # Transfer quantization config
+        server_args: Optional[ServerArgs] = getattr(mgr, "server_args", None)
+        if server_args and getattr(server_args, "enable_transfer_quant", False):
+            self._transfer_quant_bits: Optional[int] = server_args.transfer_quant_bits
+            self._transfer_quant_layer_map: Optional[Dict[int, int]] = (
+                self._parse_layer_bits(server_args)
+            )
+        else:
+            self._transfer_quant_bits = None
+            self._transfer_quant_layer_map = None
 
         if getattr(self.kv_mgr, "is_dummy_cp_rank", False):
             self.kv_mgr.update_status(self.bootstrap_room, KVPoll.WaitingForInput)

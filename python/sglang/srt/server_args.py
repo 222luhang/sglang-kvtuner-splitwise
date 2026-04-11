@@ -606,6 +606,9 @@ class ServerArgs:
     enable_kvtuner_layer_wise: bool = False
     kvtuner_layer_bits: Optional[str] = None  # JSON string or "4,4,4,8,8,..."
     kvtuner_layer_config_file: Optional[str] = None  # Path to config JSON
+    # KVTuner Transfer Quantization (quantize KV before TCP transfer)
+    enable_transfer_quant: bool = False
+    transfer_quant_bits: int = 8  # default 8-bit; per-layer override via kvtuner_layer_bits
     enable_mscclpp: bool = False
     enable_torch_symm_mem: bool = False
     disable_overlap_schedule: bool = False
@@ -4537,6 +4540,17 @@ class ServerArgs:
             type=str,
             default=None,
             help="Path to JSON config file for layer-wise quantization.",
+        )
+        parser.add_argument(
+            "--enable-transfer-quant",
+            action="store_true",
+            help="Quantize KV cache before TCP transfer to reduce data size.",
+        )
+        parser.add_argument(
+            "--transfer-quant-bits",
+            type=int,
+            default=8,
+            help="Default quantization bit-width for transfer (4 or 8). Per-layer override via --kvtuner-layer-bits.",
         )
         parser.add_argument(
             "--enable-mscclpp",
