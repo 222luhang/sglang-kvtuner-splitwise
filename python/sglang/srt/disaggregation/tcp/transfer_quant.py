@@ -111,11 +111,18 @@ def quantize_for_transfer(
     ).astype(np.int8)
 
     # Trim padding from quantized values
-    total_q = num_elements  # only keep original elements
-    q_flat = quantized.ravel()[:total_q]
+    q_flat = quantized.ravel()[:num_elements]
 
     dtype_code = _DTYPE_CODE_BF16 if is_bf16 else _DTYPE_CODE_FP16
     header = struct.pack(_HEADER_FMT, nbits, group_size, num_elements, dtype_code)
+
+    if nbits == 4:
+        # Pack two int4 values into one uint8: low nibble first, high nibble second
+        q_u8 = q_flat.view(np.uint8) & 0x0F
+        if num_elements % 2:
+            q_u8 = np.append(q_u8, np.uint8(0))
+        packed = q_u8[0::2] | (q_u8[1::2] << 4)
+        return header + scales.tobytes() + packed.astype(np.uint8).tobytes()
 
     return header + scales.tobytes() + q_flat.tobytes()
 
@@ -160,7 +167,26 @@ def dequantize_from_transfer(
 
     # Parse quantized values
     q_offset = scales_offset + scales_nbytes
-    q_flat = np.frombuffer(packed[q_offset : q_offset + num_elements], dtype=np.int8)
+    if nbits == 4:
+        # Unpack: each uint8 holds two signed 4-bit values (low nibble, high nibble)
+        packed_len = (num_elements + 1) // 2
+        packed_bytes = np.frombuffer(
+            packed[q_offset : q_offset + packed_len], dtype=np.uint8
+        )
+        low = (packed_bytes & 0x0F).astype(np.int8)
+        high = (packed_bytes >> 4).astype(np.int8)
+        # Sign-extend: values >= 8 are negative in signed 4-bit
+        low = np.where(low >= 8, low - 16, low).astype(np.int8)
+        high = np.where(high >= 8, high - 16, high).astype(np.int8)
+        # Interleave back: [low0, high0, low1, high1, ...]
+        q_flat = np.empty(packed_len * 2, dtype=np.int8)
+        q_flat[0::2] = low
+        q_flat[1::2] = high
+        q_flat = q_flat[:num_elements]
+    else:
+        q_flat = np.frombuffer(
+            packed[q_offset : q_offset + num_elements], dtype=np.int8
+        )
 
     # Re-pad for group reshape
     if pad:
@@ -191,5 +217,9 @@ def transfer_compression_ratio(
     pad = (group_size - remainder) if remainder else 0
     num_groups = (num_elements + pad) // group_size
 
-    packed_size = _HEADER_SIZE + num_groups * 2 + num_elements  # header + scales + q
+    if nbits == 4:
+        q_bytes = (num_elements + 1) // 2
+    else:
+        q_bytes = num_elements
+    packed_size = _HEADER_SIZE + num_groups * 2 + q_bytes  # header + scales + q
     return original_nbytes / packed_size

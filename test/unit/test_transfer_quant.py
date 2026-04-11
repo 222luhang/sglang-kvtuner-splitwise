@@ -104,18 +104,29 @@ class TestCompressionRatio:
         assert ratio > 1.8  # should be close to 2x
 
     def test_4bit_ratio(self):
-        # 4-bit still stores int8 per element in current impl, so ratio ~ 2x
-        # (true 4-bit packing would give ~4x, but we use int8 storage)
+        # True 4-bit packing: ~3.77x compression
         ratio = transfer_compression_ratio(2048, nbits=4, group_size=64)
-        assert ratio > 1.8
+        assert ratio > 3.5
 
     def test_actual_packed_size(self):
         """Verify actual packed size matches expectation."""
         n = 1024
         raw = _make_fp16_bytes(n)
-        packed = quantize_for_transfer(raw, 2, False, nbits=8)
-        # packed should be roughly half the original + small overhead
-        assert len(packed) < len(raw)
+        packed_8 = quantize_for_transfer(raw, 2, False, nbits=8)
+        packed_4 = quantize_for_transfer(raw, 2, False, nbits=4)
+        # 8-bit: roughly half the original + small overhead
+        assert len(packed_8) < len(raw)
+        # 4-bit: roughly quarter the original + small overhead
+        assert len(packed_4) < len(packed_8)
+        assert len(packed_4) < len(raw) * 0.35
+
+    def test_4bit_odd_elements(self):
+        """4-bit packing with odd element count (nibble padding)."""
+        n = 101  # odd
+        raw = _make_fp16_bytes(n)
+        packed = quantize_for_transfer(raw, 2, False, nbits=4, group_size=64)
+        restored = dequantize_from_transfer(packed, len(raw))
+        assert len(restored) == len(raw)
 
 
 # ── cosine similarity metric ─────────────────────────────────────────────────
