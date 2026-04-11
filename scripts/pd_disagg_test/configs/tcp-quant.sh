@@ -1,7 +1,7 @@
 # TCP + Transfer Quantization 配置
 # 用法: CONFIG_FILE=configs/tcp-quant.sh ./pd_test.sh full
 
-source "$(dirname "$0")/default.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/default.sh"
 
 TRANSFER_BACKEND="${TRANSFER_BACKEND:-tcp}"
 VENV_DIR="${VENV_DIR:-/home/ubuntu/sglang-env}"
