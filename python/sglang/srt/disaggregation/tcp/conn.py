@@ -436,6 +436,11 @@ class _PendingTransfer:
         # Set by TCPKVSender.ready() so _stream_kv can quantize per-layer.
         self._get_quant_bits: Optional[object] = None  # Callable[[int], Optional[int]]
 
+        # Prefill-side metadata buffer index — set by ready()/done_pipeline().
+        # _send_tail() must read aux data from this index (where set_buf() wrote),
+        # NOT from dst_aux_index (which is the decode side's allocation).
+        self.src_aux_index: Optional[int] = None
+
         # TCP connection – set by serve() so that send_layer() can write to it.
         self._conn: Optional[socket.socket] = None
         self._conn_event = threading.Event()
@@ -446,10 +451,11 @@ class _PendingTransfer:
     # Batch-mode API (called by TCPKVSender.send())
     # ------------------------------------------------------------------
 
-    def ready(self, src_kv_indices: npt.NDArray[np.int32], get_quant_bits=None) -> None:
+    def ready(self, src_kv_indices: npt.NDArray[np.int32], get_quant_bits=None, src_aux_index=None) -> None:
         """Signal that all KV data is in the GPU pool (batch mode)."""
         self.src_kv_indices = src_kv_indices
         self._get_quant_bits = get_quant_bits
+        self.src_aux_index = src_aux_index
         self._ready.set()
 
     # ------------------------------------------------------------------
@@ -460,12 +466,13 @@ class _PendingTransfer:
         """Wait until the TCP connection is available. Returns True if connected."""
         return self._conn_event.wait(timeout=timeout)
 
-    def done_pipeline(self, src_kv_indices: npt.NDArray[np.int32]) -> None:
+    def done_pipeline(self, src_kv_indices: npt.NDArray[np.int32], src_aux_index=None) -> None:
         """
         Signal that all layers have been sent via pipeline and the transfer
         is complete.  ``serve()`` will send aux + EOF and mark success.
         """
         self.src_kv_indices = src_kv_indices
+        self.src_aux_index = src_aux_index
         self._pipeline_mode = True
         self._ready.set()
 
@@ -581,14 +588,19 @@ class _PendingTransfer:
         """Send auxiliary metadata (if any) and the EOF sentinel."""
         kv_args = self.kv_mgr.kv_args
 
-        if self.dst_aux_index is not None and kv_args.aux_data_ptrs:
+        # Read aux data from the PREFILL's metadata buffer index (src_aux_index),
+        # where set_buf() wrote the bootstrap_room and other metadata.
+        # dst_aux_index is the DECODE side's index — only used to decide whether
+        # the decode side expects aux data at all.
+        read_index = self.src_aux_index if self.src_aux_index is not None else self.dst_aux_index
+        if read_index is not None and kv_args.aux_data_ptrs:
             # Send ALL aux buffers (output_ids, cached_tokens, ..., bootstrap_room)
             # so that the decode side receives the complete metadata.
             chunks = []
             for i, (aux_ptr, aux_item_len) in enumerate(
                 zip(kv_args.aux_data_ptrs, kv_args.aux_item_lens)
             ):
-                chunk = _read_aux_from_cpu(aux_ptr, aux_item_len, self.dst_aux_index)
+                chunk = _read_aux_from_cpu(aux_ptr, aux_item_len, read_index)
                 chunks.append(chunk)
             aux_data = b"".join(chunks)
             logger.warning(
@@ -827,10 +839,10 @@ class TCPKVSender(CommonKVSender):
         if self._layer_sent:
             # Pipeline mode: all KV data already sent layer-by-layer.
             # Signal serve() to send aux + EOF and finish.
-            pending.done_pipeline(kv_indices)
+            pending.done_pipeline(kv_indices, src_aux_index=self.aux_index)
         else:
             # Batch mode: let serve() read all GPU data and stream it now.
-            pending.ready(kv_indices, get_quant_bits=self._get_layer_quant_bits)
+            pending.ready(kv_indices, get_quant_bits=self._get_layer_quant_bits, src_aux_index=self.aux_index)
 
     def send_layer(self, layer_id: int, src_indices) -> None:
         """
