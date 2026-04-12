@@ -563,6 +563,12 @@ class _PendingTransfer:
 
         logger.warning(f"[_stream_kv] room={self.room} cuda sync done, sending layers...")
 
+        t_stream_start = time.perf_counter()
+        total_quant_ms = 0.0
+        total_send_ms = 0.0
+        total_gather_ms = 0.0
+        total_transfer_bytes = 0
+
         for layer_id in range(num_layers):
             if layer_id % 7 == 0:
                 logger.warning(f"[_stream_kv] room={self.room} sending layer {layer_id}/{num_layers}")
@@ -574,6 +580,7 @@ class _PendingTransfer:
 
             nbits = get_quant_bits(layer_id) if get_quant_bits else None
 
+            t_gather = time.perf_counter()
             if nbits is not None:
                 # GPU path: gather → quantize on GPU → DtoH compressed bytes
                 k_tensor = _read_pages_as_gpu_tensor(
@@ -582,19 +589,46 @@ class _PendingTransfer:
                 v_tensor = _read_pages_as_gpu_tensor(
                     v_ptr, v_item_len, src_indices, page_size, torch_dtype
                 )
+                t_quant = time.perf_counter()
+                total_gather_ms += (t_quant - t_gather) * 1000
                 k_data = quantize_on_gpu(k_tensor, nbits=nbits)
                 v_data = quantize_on_gpu(v_tensor, nbits=nbits)
+                torch.cuda.synchronize()
+                quant_ms = (time.perf_counter() - t_quant) * 1000
+                total_quant_ms += quant_ms
                 k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
                 v_lid = (layer_id * 2 + 1) | _MSG_QUANT_FLAG
             else:
                 # Legacy CPU path (no quantization)
                 k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
                 v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
+                quant_ms = 0.0
+                total_gather_ms += (time.perf_counter() - t_gather) * 1000
                 k_lid = layer_id * 2
                 v_lid = layer_id * 2 + 1
 
+            layer_bytes = len(k_data) + len(v_data)
+            total_transfer_bytes += layer_bytes
+
+            t_send = time.perf_counter()
             _send_layer_data(conn, k_lid, k_data)
             _send_layer_data(conn, v_lid, v_data)
+            send_ms = (time.perf_counter() - t_send) * 1000
+            total_send_ms += send_ms
+
+            logger.info(
+                f"[TIMING] room={self.room} side=sender layer={layer_id} "
+                f"quant_ms={quant_ms:.2f} send_ms={send_ms:.2f} "
+                f"bytes={layer_bytes} nbits={nbits or 16}"
+            )
+
+        total_ms = (time.perf_counter() - t_stream_start) * 1000
+        logger.warning(
+            f"[TIMING_SUMMARY] room={self.room} side=sender total_ms={total_ms:.2f} "
+            f"layers={num_layers} total_gather_ms={total_gather_ms:.2f} "
+            f"total_quant_ms={total_quant_ms:.2f} total_send_ms={total_send_ms:.2f} "
+            f"transfer_bytes={total_transfer_bytes}"
+        )
 
         logger.warning(f"[_stream_kv] room={self.room} all {num_layers} layers sent, calling _send_tail")
         self._send_tail(conn)
@@ -972,6 +1006,7 @@ class TCPKVSender(CommonKVSender):
 
         # Quantize if enabled (GPU path: gather on GPU → quantize → DtoH compressed)
         nbits = self._get_layer_quant_bits(layer_id)
+        t_gather = time.perf_counter()
         if nbits is not None:
             kv_dtype = getattr(self.kv_mgr.server_args, "kv_cache_dtype", "auto")
             is_bf16 = kv_dtype in ("auto", "bf16", "bfloat16")
@@ -982,21 +1017,35 @@ class TCPKVSender(CommonKVSender):
             v_tensor = _read_pages_as_gpu_tensor(
                 v_ptr, v_item_len, src_indices, page_size, torch_dtype
             )
+            t_quant = time.perf_counter()
+            gather_ms = (t_quant - t_gather) * 1000
             k_data = quantize_on_gpu(k_tensor, nbits=nbits)
             v_data = quantize_on_gpu(v_tensor, nbits=nbits)
+            torch.cuda.synchronize()
+            quant_ms = (time.perf_counter() - t_quant) * 1000
             k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
             v_lid = (layer_id * 2 + 1) | _MSG_QUANT_FLAG
         else:
             # No quantization: legacy DtoH path
             k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
             v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
+            gather_ms = (time.perf_counter() - t_gather) * 1000
+            quant_ms = 0.0
             k_lid = layer_id * 2
             v_lid = layer_id * 2 + 1
 
+        layer_bytes = len(k_data) + len(v_data)
         try:
+            t_send = time.perf_counter()
             _send_layer_data(pending._conn, k_lid, k_data)
             _send_layer_data(pending._conn, v_lid, v_data)
+            send_ms = (time.perf_counter() - t_send) * 1000
             self._layer_sent = True
+            logger.info(
+                f"[TIMING] room={self.bootstrap_room} side=sender_pipeline layer={layer_id} "
+                f"gather_ms={gather_ms:.2f} quant_ms={quant_ms:.2f} send_ms={send_ms:.2f} "
+                f"bytes={layer_bytes} nbits={nbits or 16}"
+            )
         except Exception as e:
             logger.warning(
                 f"[TCPKVSender] send_layer layer={layer_id} failed for "
@@ -1229,13 +1278,28 @@ class TCPKVReceiver(CommonKVReceiver):
             f"(layers={num_layers}), dst_kv_indices={len(dst_kv_indices)}"
         )
 
+        t_recv_start = time.perf_counter()
+        total_recv_ms = 0.0
+        total_dequant_ms = 0.0
+        total_write_ms = 0.0
+
         while True:
+            t_recv = time.perf_counter()
             layer_id, data = _recv_layer_data(conn)
+            recv_ms = (time.perf_counter() - t_recv) * 1000
 
             if layer_id == _MSG_DONE:
+                total_ms = (time.perf_counter() - t_recv_start) * 1000
                 logger.warning(
                     f"[_recv_kv] room={self.bootstrap_room} got EOF, "
                     f"received={received}/{expected_msgs}"
+                )
+                logger.warning(
+                    f"[TIMING_SUMMARY] room={self.bootstrap_room} side=receiver "
+                    f"total_ms={total_ms:.2f} layers={num_layers} "
+                    f"total_recv_ms={total_recv_ms:.2f} "
+                    f"total_dequant_ms={total_dequant_ms:.2f} "
+                    f"total_write_ms={total_write_ms:.2f}"
                 )
                 break
 
@@ -1257,6 +1321,8 @@ class TCPKVReceiver(CommonKVReceiver):
                         offset += aux_item_len
                 continue
 
+            total_recv_ms += recv_ms
+
             # Check and strip quantization flag
             is_quantized = bool(layer_id & _MSG_QUANT_FLAG)
             if is_quantized:
@@ -1273,18 +1339,26 @@ class TCPKVReceiver(CommonKVReceiver):
                 item_len = kv_args.kv_item_lens[num_layers + actual_layer]
 
             # Dequantize on GPU and scatter to KV pool, or write raw bytes
+            dequant_ms = 0.0
             if is_quantized:
                 gpu_device = torch.device("cuda", self.kv_mgr.kv_args.gpu_id)
+                t_dequant = time.perf_counter()
                 tensor = dequantize_on_gpu(data, gpu_device)
+                torch.cuda.synchronize()
+                dequant_ms = (time.perf_counter() - t_dequant) * 1000
+                total_dequant_ms += dequant_ms
                 if received % 7 == 0:
                     logger.warning(
                         f"[_recv_kv] room={self.bootstrap_room} writing layer_id={layer_id} "
                         f"(actual_layer={actual_layer}, {'K' if layer_id % 2 == 0 else 'V'}) "
                         f"tensor={tensor.shape} quant=True received={received}/{expected_msgs}"
                     )
+                t_write = time.perf_counter()
                 _write_gpu_tensor_to_pages(
                     base_ptr, item_len, dst_kv_indices, page_size, tensor
                 )
+                write_ms = (time.perf_counter() - t_write) * 1000
+                total_write_ms += write_ms
             else:
                 if received % 7 == 0:
                     logger.warning(
@@ -1292,7 +1366,17 @@ class TCPKVReceiver(CommonKVReceiver):
                         f"(actual_layer={actual_layer}, {'K' if layer_id % 2 == 0 else 'V'}) "
                         f"data_len={len(data)} quant=False received={received}/{expected_msgs}"
                     )
+                t_write = time.perf_counter()
                 _write_pages_to_gpu(base_ptr, item_len, dst_kv_indices, page_size, data)
+                write_ms = (time.perf_counter() - t_write) * 1000
+                total_write_ms += write_ms
+
+            logger.info(
+                f"[TIMING] room={self.bootstrap_room} side=receiver layer={actual_layer} "
+                f"kv={'K' if layer_id % 2 == 0 else 'V'} recv_ms={recv_ms:.2f} "
+                f"dequant_ms={dequant_ms:.2f} write_ms={write_ms:.2f} "
+                f"bytes={len(data)} quant={is_quantized}"
+            )
             received += 1
 
     def poll(self) -> KVPoll:
