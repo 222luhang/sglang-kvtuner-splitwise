@@ -19,6 +19,7 @@ HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-120}"
 LOG_DIR="${LOG_DIR:-/tmp}"
 ENABLE_TRANSFER_QUANT="${ENABLE_TRANSFER_QUANT:-}"
 TRANSFER_QUANT_BITS="${TRANSFER_QUANT_BITS:-8}"
+KVTUNER_LAYER_BITS="${KVTUNER_LAYER_BITS:-}"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 log_info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
@@ -60,7 +61,8 @@ _launch_args() {
 --log-level ${LOG_LEVEL} \
 ${DISABLE_OVERLAP:+--disable-overlap-schedule} \
 ${ENABLE_KVTUNER:+--enable-kvtuner-quant --kvtuner-layer-config ${KVTUNER_LAYER_CONFIG} --disable-cuda-graph} \
-${ENABLE_TRANSFER_QUANT:+--enable-transfer-quant --transfer-quant-bits ${TRANSFER_QUANT_BITS}}"
+${ENABLE_TRANSFER_QUANT:+--enable-transfer-quant --transfer-quant-bits ${TRANSFER_QUANT_BITS}} \
+${KVTUNER_LAYER_BITS:+--kvtuner-layer-bits ${KVTUNER_LAYER_BITS}}"
 }
 
 _remote_start_prefill() {
