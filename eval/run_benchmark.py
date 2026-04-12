@@ -415,12 +415,12 @@ def run_benchmark(args):
             "error": None,
         }
 
-    print(f"\nRunning {len(samples)} requests (parallel={args.parallel})...\n")
+    print(f"\nRunning {len(samples)} requests (parallel={args.parallel}, interval={args.interval}s)...\n")
 
-    with ThreadPoolExecutor(max_workers=args.parallel) as executor:
-        futures = {executor.submit(process_sample, s): s for s in samples}
-        for future in as_completed(futures):
-            result = future.result()
+    if args.parallel <= 1:
+        # Sequential mode with interval between requests
+        for sample in samples:
+            result = process_sample(sample)
             results.append(result)
             total += 1
             if result["correct"]:
@@ -431,6 +431,24 @@ def run_benchmark(args):
             print(f"  [{total}/{len(samples)}] id={result['id']} "
                   f"{status} pred={result.get('predicted')} "
                   f"expected={result.get('expected')}", flush=True)
+            # Interval between requests to avoid server state pollution
+            if total < len(samples):
+                time.sleep(args.interval)
+    else:
+        with ThreadPoolExecutor(max_workers=args.parallel) as executor:
+            futures = {executor.submit(process_sample, s): s for s in samples}
+            for future in as_completed(futures):
+                result = future.result()
+                results.append(result)
+                total += 1
+                if result["correct"]:
+                    correct += 1
+                status = "OK" if result["correct"] else "WRONG"
+                if result.get("error"):
+                    status = "ERR"
+                print(f"  [{total}/{len(samples)}] id={result['id']} "
+                      f"{status} pred={result.get('predicted')} "
+                      f"expected={result.get('expected')}", flush=True)
 
     elapsed = time.time() - t_start
     accuracy = correct / total if total > 0 else 0.0
@@ -497,6 +515,8 @@ def main():
                         help="Number of concurrent requests")
     parser.add_argument("--timeout", type=int, default=180,
                         help="Per-request timeout in seconds")
+    parser.add_argument("--interval", type=float, default=2.0,
+                        help="Seconds between sequential requests (default: 2.0)")
     parser.add_argument("--data-dir", default=None,
                         help="Local directory for cached datasets")
     parser.add_argument("--output", "-o",
