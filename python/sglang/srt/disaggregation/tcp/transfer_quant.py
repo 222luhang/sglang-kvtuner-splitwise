@@ -1,15 +1,17 @@
 """
-Lightweight numpy-based quantization/dequantization for KV cache TCP transfer.
+Quantization/dequantization for KV cache TCP transfer.
 
-Quantizes BF16/FP16 KV data on CPU before sending over TCP, reducing transfer
-size by ~2x (8-bit) or ~4x (4-bit). The packed format is self-contained so the
-receiver can dequantize without out-of-band metadata.
+Supports two backends:
+  * **GPU (default)** – uses PyTorch CUDA ops.  Quantization runs on GPU before
+    DtoH, dequantization runs on GPU after HtoD, so only the *compressed* data
+    crosses the PCIe bus.
+  * **CPU fallback** – original numpy path, used when no CUDA device is available.
 
-Packed wire format
-------------------
+Packed wire format (unchanged, GPU ↔ CPU interoperable)
+--------------------------------------------------------
 [4B nbits][4B group_size][4B num_elements][4B dtype_code]
 [scales: float16, num_groups values]
-[quantized: int8, num_elements values]
+[quantized: int8 or packed nibbles, num_elements values]
 
 dtype_code: 0 = float16, 1 = bfloat16
 """
@@ -20,6 +22,7 @@ import struct
 from typing import Tuple
 
 import numpy as np
+import torch
 
 # ── constants ────────────────────────────────────────────────────────────────
 
@@ -203,6 +206,132 @@ def dequantize_from_transfer(
         return _fp32_to_bf16_bytes(fp32)
     else:
         return fp32.astype(np.float16).tobytes()
+
+
+# ── GPU-accelerated API ─────────────────────────────────────────────────────
+
+
+def quantize_on_gpu(
+    tensor: torch.Tensor,
+    nbits: int = 8,
+    group_size: int = 64,
+) -> bytes:
+    """Quantize a *GPU-resident* tensor and return packed wire-format bytes.
+
+    The tensor must be contiguous, 1-D, and reside on a CUDA device.
+    dtype should be float16 or bfloat16.
+
+    Returns CPU bytes in the same wire format as :func:`quantize_for_transfer`
+    so the receiver can use either GPU or CPU dequantization.
+    """
+    assert tensor.is_cuda, "quantize_on_gpu requires a CUDA tensor"
+    is_bf16 = tensor.dtype == torch.bfloat16
+    dtype_code = _DTYPE_CODE_BF16 if is_bf16 else _DTYPE_CODE_FP16
+    num_elements = tensor.numel()
+
+    # Work in float32 on GPU
+    fp32 = tensor.to(torch.float32)
+
+    # Pad to multiple of group_size
+    remainder = num_elements % group_size
+    if remainder:
+        pad = group_size - remainder
+        fp32 = torch.nn.functional.pad(fp32, (0, pad))
+    else:
+        pad = 0
+
+    groups = fp32.reshape(-1, group_size)
+
+    # Symmetric quantization: scale = max(|group|) / q_max
+    q_max = (1 << (nbits - 1)) - 1  # 127 for 8-bit, 7 for 4-bit
+    abs_max = groups.abs().amax(dim=1)  # (num_groups,)
+    scales = (abs_max / q_max).to(torch.float16)
+    safe_scales = torch.where(
+        scales == 0, torch.tensor(1e-5, dtype=torch.float16, device=scales.device), scales
+    )
+
+    # Quantize
+    quantized = (groups / safe_scales[:, None].float()).round().clamp(-q_max - 1, q_max)
+    # Trim padding, flatten
+    q_flat = quantized.reshape(-1)[:num_elements].to(torch.int8)
+
+    # Build wire-format bytes on CPU
+    header = struct.pack(_HEADER_FMT, nbits, group_size, num_elements, dtype_code)
+    scales_bytes = scales.cpu().numpy().tobytes()
+
+    if nbits == 4:
+        q_u8 = q_flat.to(torch.uint8) & 0x0F
+        if num_elements % 2:
+            q_u8 = torch.cat([q_u8, torch.zeros(1, dtype=torch.uint8, device=q_u8.device)])
+        packed = q_u8[0::2] | (q_u8[1::2] << 4)
+        q_bytes = packed.cpu().numpy().tobytes()
+    else:
+        q_bytes = q_flat.cpu().numpy().tobytes()
+
+    return header + scales_bytes + q_bytes
+
+
+def dequantize_on_gpu(
+    packed: bytes,
+    device: torch.device,
+) -> torch.Tensor:
+    """Dequantize packed wire-format bytes into a GPU tensor.
+
+    Returns a contiguous 1-D tensor on *device* in the original dtype
+    (float16 or bfloat16), ready to be scattered into the KV pool.
+    """
+    nbits, group_size, num_elements, dtype_code = struct.unpack(
+        _HEADER_FMT, packed[:_HEADER_SIZE]
+    )
+    is_bf16 = dtype_code == _DTYPE_CODE_BF16
+    target_dtype = torch.bfloat16 if is_bf16 else torch.float16
+
+    q_max = (1 << (nbits - 1)) - 1
+    remainder = num_elements % group_size
+    pad = (group_size - remainder) if remainder else 0
+    num_groups = (num_elements + pad) // group_size
+
+    # Parse scales → GPU
+    scales_offset = _HEADER_SIZE
+    scales_nbytes = num_groups * 2
+    scales_np = np.frombuffer(
+        packed[scales_offset : scales_offset + scales_nbytes], dtype=np.float16
+    ).copy()
+    scales = torch.from_numpy(scales_np).to(device=device, dtype=torch.float16)
+
+    # Parse quantized values → GPU
+    q_offset = scales_offset + scales_nbytes
+    if nbits == 4:
+        packed_len = (num_elements + 1) // 2
+        packed_np = np.frombuffer(
+            packed[q_offset : q_offset + packed_len], dtype=np.uint8
+        ).copy()
+        packed_t = torch.from_numpy(packed_np).to(device=device)
+        low = (packed_t & 0x0F).to(torch.int8)
+        high = (packed_t >> 4).to(torch.int8)
+        # Sign-extend 4-bit
+        low = torch.where(low >= 8, low - 16, low)
+        high = torch.where(high >= 8, high - 16, high)
+        q_flat = torch.empty(packed_len * 2, dtype=torch.int8, device=device)
+        q_flat[0::2] = low
+        q_flat[1::2] = high
+        q_flat = q_flat[:num_elements]
+    else:
+        q_np = np.frombuffer(
+            packed[q_offset : q_offset + num_elements], dtype=np.int8
+        ).copy()
+        q_flat = torch.from_numpy(q_np).to(device=device)
+
+    # Re-pad for group reshape
+    if pad:
+        q_padded = torch.nn.functional.pad(q_flat, (0, pad))
+    else:
+        q_padded = q_flat
+
+    groups = q_padded.reshape(-1, group_size).float()
+    fp32 = groups * scales[:, None].float()
+    result = fp32.reshape(-1)[:num_elements].to(target_dtype)
+    return result.contiguous()
 
 
 def transfer_compression_ratio(

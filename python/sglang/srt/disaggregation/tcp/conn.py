@@ -54,7 +54,9 @@ from sglang.srt.disaggregation.common.conn import (
 )
 from sglang.srt.disaggregation.tcp.transfer_quant import (
     dequantize_from_transfer,
+    dequantize_on_gpu,
     quantize_for_transfer,
+    quantize_on_gpu,
 )
 from sglang.srt.disaggregation.utils import DisaggregationMode
 from sglang.srt.server_args import ServerArgs
@@ -531,7 +533,13 @@ class _PendingTransfer:
             self._finish(conn, success=False)
 
     def _stream_kv(self, conn: socket.socket) -> None:
-        """Copy each layer's KV pages from GPU → CPU → TCP socket (batch mode)."""
+        """Copy each layer's KV pages from GPU → TCP socket (batch mode).
+
+        When quantization is enabled, the flow is:
+          GPU pages (scattered) → DtoD → GPU tensor → GPU quantize → DtoH (small) → TCP
+        Without quantization the legacy path is used:
+          GPU pages (scattered) → DtoH → TCP
+        """
         kv_mgr = self.kv_mgr
         kv_args = kv_mgr.kv_args
         src_indices = self.src_kv_indices
@@ -542,11 +550,12 @@ class _PendingTransfer:
         get_quant_bits = self._get_quant_bits
         kv_dtype = getattr(kv_mgr.server_args, "kv_cache_dtype", "auto")
         is_bf16 = kv_dtype in ("auto", "bf16", "bfloat16")
+        torch_dtype = torch.bfloat16 if is_bf16 else torch.float16
 
         logger.warning(
             f"[_stream_kv] room={self.room} starting, layers={num_layers}, "
             f"src_indices={src_indices}, page_size={page_size}, "
-            f"quant={'on' if get_quant_bits else 'off'}"
+            f"quant={'gpu' if get_quant_bits else 'off'}"
         )
 
         # Synchronise the GPU so we read fully-written KV caches
@@ -557,24 +566,30 @@ class _PendingTransfer:
         for layer_id in range(num_layers):
             if layer_id % 7 == 0:
                 logger.warning(f"[_stream_kv] room={self.room} sending layer {layer_id}/{num_layers}")
-            # -- Key buffer --
+
             k_ptr = kv_args.kv_data_ptrs[layer_id]
             k_item_len = kv_args.kv_item_lens[layer_id]
-            k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
-
-            # -- Value buffer --
             v_ptr = kv_args.kv_data_ptrs[num_layers + layer_id]
             v_item_len = kv_args.kv_item_lens[num_layers + layer_id]
-            v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
 
-            # Quantize if enabled
             nbits = get_quant_bits(layer_id) if get_quant_bits else None
+
             if nbits is not None:
-                k_data = quantize_for_transfer(k_data, 2, is_bf16, nbits=nbits)
-                v_data = quantize_for_transfer(v_data, 2, is_bf16, nbits=nbits)
+                # GPU path: gather → quantize on GPU → DtoH compressed bytes
+                k_tensor = _read_pages_as_gpu_tensor(
+                    k_ptr, k_item_len, src_indices, page_size, torch_dtype
+                )
+                v_tensor = _read_pages_as_gpu_tensor(
+                    v_ptr, v_item_len, src_indices, page_size, torch_dtype
+                )
+                k_data = quantize_on_gpu(k_tensor, nbits=nbits)
+                v_data = quantize_on_gpu(v_tensor, nbits=nbits)
                 k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
                 v_lid = (layer_id * 2 + 1) | _MSG_QUANT_FLAG
             else:
+                # Legacy CPU path (no quantization)
+                k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
+                v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
                 k_lid = layer_id * 2
                 v_lid = layer_id * 2 + 1
 
@@ -667,6 +682,13 @@ def _get_cuda_driver():
                 ctypes.c_void_p,
                 ctypes.c_size_t,
             ]
+            # cuMemcpyDtoD_v2(dstDevice, srcDevice, ByteCount) → CUresult
+            lib.cuMemcpyDtoD_v2.restype = ctypes.c_int
+            lib.cuMemcpyDtoD_v2.argtypes = [
+                ctypes.c_uint64,
+                ctypes.c_uint64,
+                ctypes.c_size_t,
+            ]
             _cuda_driver = lib
     return _cuda_driver
 
@@ -718,6 +740,63 @@ def _read_pages_from_gpu(
         chunks.append(_gpu_to_cpu(base_ptr + page_offset, item_len))
 
     return b"".join(bytes(c) for c in chunks)
+
+
+def _gpu_to_gpu(dst_ptr: int, src_ptr: int, nbytes: int) -> None:
+    """Copy *nbytes* between two CUDA device pointers (DtoD)."""
+    lib = _get_cuda_driver()
+    rc = lib.cuMemcpyDtoD_v2(
+        ctypes.c_uint64(dst_ptr), ctypes.c_uint64(src_ptr), nbytes
+    )
+    if rc != 0:
+        raise RuntimeError(f"cuMemcpyDtoD_v2 failed with error code {rc}")
+
+
+def _read_pages_as_gpu_tensor(
+    base_ptr: int,
+    item_len: int,
+    page_indices: npt.NDArray[np.int32],
+    page_size: int,
+    dtype: torch.dtype,
+) -> torch.Tensor:
+    """
+    Gather scattered KV pages from the GPU pool into a contiguous GPU tensor.
+
+    Uses DtoD copies (GPU memory bandwidth, ~900 GB/s on A100) instead of
+    DtoH, so the full-size data never crosses the PCIe bus.
+    """
+    num_pages = len(page_indices)
+    if num_pages == 0:
+        return torch.empty(0, dtype=dtype, device="cuda")
+
+    total_bytes = num_pages * item_len
+    elem_size = 2  # bf16 / fp16
+    tensor = torch.empty(total_bytes // elem_size, dtype=dtype, device="cuda")
+    dst_ptr = tensor.data_ptr()
+
+    for i, pi in enumerate(page_indices):
+        src = base_ptr + int(pi) * item_len
+        _gpu_to_gpu(dst_ptr + i * item_len, src, item_len)
+
+    return tensor
+
+
+def _write_gpu_tensor_to_pages(
+    base_ptr: int,
+    item_len: int,
+    page_indices: npt.NDArray[np.int32],
+    page_size: int,
+    tensor: torch.Tensor,
+) -> None:
+    """
+    Scatter a contiguous GPU tensor back into the KV pool's page slots.
+
+    Inverse of :func:`_read_pages_as_gpu_tensor`.
+    """
+    src_ptr = tensor.data_ptr()
+    for i, pi in enumerate(page_indices):
+        dst = base_ptr + int(pi) * item_len
+        _gpu_to_gpu(dst, src_ptr + i * item_len, item_len)
 
 
 def _read_aux_from_cpu(base_ptr: int, item_len: int, index: int) -> bytes:
@@ -890,19 +969,27 @@ class TCPKVSender(CommonKVSender):
         v_item_len = kv_args.kv_item_lens[num_layers + layer_id]
 
         torch.cuda.synchronize()
-        k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
-        v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
 
-        # Quantize if enabled
+        # Quantize if enabled (GPU path: gather on GPU → quantize → DtoH compressed)
         nbits = self._get_layer_quant_bits(layer_id)
         if nbits is not None:
             kv_dtype = getattr(self.kv_mgr.server_args, "kv_cache_dtype", "auto")
             is_bf16 = kv_dtype in ("auto", "bf16", "bfloat16")
-            k_data = quantize_for_transfer(k_data, 2, is_bf16, nbits=nbits)
-            v_data = quantize_for_transfer(v_data, 2, is_bf16, nbits=nbits)
+            torch_dtype = torch.bfloat16 if is_bf16 else torch.float16
+            k_tensor = _read_pages_as_gpu_tensor(
+                k_ptr, k_item_len, src_indices, page_size, torch_dtype
+            )
+            v_tensor = _read_pages_as_gpu_tensor(
+                v_ptr, v_item_len, src_indices, page_size, torch_dtype
+            )
+            k_data = quantize_on_gpu(k_tensor, nbits=nbits)
+            v_data = quantize_on_gpu(v_tensor, nbits=nbits)
             k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
             v_lid = (layer_id * 2 + 1) | _MSG_QUANT_FLAG
         else:
+            # No quantization: legacy DtoH path
+            k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
+            v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
             k_lid = layer_id * 2
             v_lid = layer_id * 2 + 1
 
@@ -1185,18 +1272,27 @@ class TCPKVReceiver(CommonKVReceiver):
                 base_ptr = kv_args.kv_data_ptrs[num_layers + actual_layer]
                 item_len = kv_args.kv_item_lens[num_layers + actual_layer]
 
-            # Dequantize if the sender quantized this layer
+            # Dequantize on GPU and scatter to KV pool, or write raw bytes
             if is_quantized:
-                expected_nbytes = item_len * len(dst_kv_indices)
-                data = dequantize_from_transfer(data, expected_nbytes)
-
-            if received % 7 == 0:
-                logger.warning(
-                    f"[_recv_kv] room={self.bootstrap_room} writing layer_id={layer_id} "
-                    f"(actual_layer={actual_layer}, {'K' if layer_id % 2 == 0 else 'V'}) "
-                    f"data_len={len(data)} quant={is_quantized} received={received}/{expected_msgs}"
+                gpu_device = torch.device("cuda", self.kv_mgr.kv_args.gpu_id)
+                tensor = dequantize_on_gpu(data, gpu_device)
+                if received % 7 == 0:
+                    logger.warning(
+                        f"[_recv_kv] room={self.bootstrap_room} writing layer_id={layer_id} "
+                        f"(actual_layer={actual_layer}, {'K' if layer_id % 2 == 0 else 'V'}) "
+                        f"tensor={tensor.shape} quant=True received={received}/{expected_msgs}"
+                    )
+                _write_gpu_tensor_to_pages(
+                    base_ptr, item_len, dst_kv_indices, page_size, tensor
                 )
-            _write_pages_to_gpu(base_ptr, item_len, dst_kv_indices, page_size, data)
+            else:
+                if received % 7 == 0:
+                    logger.warning(
+                        f"[_recv_kv] room={self.bootstrap_room} writing layer_id={layer_id} "
+                        f"(actual_layer={actual_layer}, {'K' if layer_id % 2 == 0 else 'V'}) "
+                        f"data_len={len(data)} quant=False received={received}/{expected_msgs}"
+                    )
+                _write_pages_to_gpu(base_ptr, item_len, dst_kv_indices, page_size, data)
             received += 1
 
     def poll(self) -> KVPoll:
