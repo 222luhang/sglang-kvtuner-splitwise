@@ -1,75 +1,170 @@
 # P/D Disaggregation + KVTuner 进展报告
 
-> 最后更新: 2026-04-08
+> 最后更新: 2026-04-13
 
 ## 1. 目标
 
-在 `kvtuner-splitwise` 分支上整合 KVTuner 层级量化与 TCP KV Cache 传输，实现 P/D 分离架构下带量化的端到端推理。
+在 `kvtuner-splitwise` 分支上整合 KVTuner 层级量化与 TCP KV Cache 传输，实现 P/D 分离架构下带量化的端到端推理。评估 Transfer Quantization 在不同网络条件下的 TTFT 性能影响和输出质量影响。
 
-## 2. 测试环境
+## 2. 分支结构
 
-| 角色 | 主机 | 内网 IP | 端口 | 模型 |
-|------|------|---------|------|------|
-| Prefill | gpu1 (117.50.192.238) | 10.60.23.70 | 30000 | Qwen2.5-7B |
-| Decode | gpu2 (117.50.189.89) | 10.60.30.66 | 30000 | Qwen2.5-7B |
+两个开发分支自 `a0d8a7ae6` 分离，已在 `0896b1fd4` 合并：
 
+| 分支 | 提交数 | 职责 |
+|------|--------|------|
+| `sglang-integrate-pd-scheduling-kvcache` | 12 | PD 调度 TCP 传输后端、Pipeline 逐层传输 |
+| `kvtuner-splitwise` | 44 (独有) | KVTuner 量化、Transfer Quant、实验框架、论文实验 |
+
+`kvtuner-splitwise` 是当前主开发分支，包含两个分支的全部工作。
+
+## 3. 测试环境
+
+| 角色 | 主机 | 内网 IP | 端口 | GPU |
+|------|------|---------|------|-----|
+| Prefill | gpu1 (117.50.192.238) | 10.60.23.70 | 30000 | RTX 4090 24GB |
+| Decode | gpu2 (117.50.189.89) | 10.60.30.66 | 30000 | RTX 4090 24GB |
+
+- 模型: Qwen2.5-7B (28 层, 32 attn heads, 8 KV heads, head_dim=128, page_size=1)
 - 代码路径: `/home/ubuntu/sglang-kvtuner-splitwise/`
 - Python venv: `/home/ubuntu/sglang-env/` (editable install)
-- KVTuner 量化配置: `/home/ubuntu/qwen2.5-7b_layer_quant.json` (32层, 5层8-bit + 27层4-bit)
-- 启动参数: `--enable-kvtuner-quant --kvtuner-layer-config <json> --disable-cuda-graph`
+- 网络延迟模拟: `tc qdisc prio` + `u32 filter` (定向延迟节点间流量)
 
-## 3. 测试结果
+## 4. 工作进展
 
-### KVTuner + TCP 合并测试 (2026-04-08)
+### 4.1 PD 调度 TCP 传输后端 (sglang-integrate-pd-scheduling-kvcache)
 
-| 测试 | 输入 | 生成 | 延迟 | 结果 |
-|------|------|------|------|------|
-| 单请求 | 10 tokens | 32 tokens | 0.8s | PASS |
-| batch short_short | 1 | 16 | 0.4s | PASS |
-| batch short_medium | 1 | 64 | 1.5s | PASS |
-| batch short_long | 1 | 128 | 2.9s | PASS |
-| batch medium_short | 10 | 16 | 0.8s | PASS |
-| batch medium_medium | 10 | 64 | 7.8s | PASS |
-| batch medium_long | 28 | 128 | 39.1s | PASS |
-| batch long_short | 60 | 16 | 7.1s | PASS |
-| batch long_medium | 60 | 64 | 32.8s | PASS |
-| batch long_long | 60 | 256 | 120s | TIMEOUT |
+| 提交 | 说明 |
+|------|------|
+| 7cf5524eb | Pipeline mode 逐层传输 (layer-wise overlap with prefill) |
+| 2817a3f1d | 修复 aux metadata 只传第一个 buffer |
+| 64400871b | Flashinfer layer pipeline hook, ZMQ 可靠性提升 |
+| 62dca923d | 对齐 disagg decode overlap loop |
+| fac2127ef | CUDA 上下文初始化 + transfer_started 守卫 |
+| 4844b6c24 | TCPKVReceiver WaitingForInput 状态转换修复 |
+| 3e0e1b4e4 / 771e73162 | KVPoll 状态处理修复 |
+| d760e977d | PD coordinator 重写 (替代 Router) |
 
-**总计: 8/9 PASS** (long_long 超时为已知 scheduler 问题，非 KVTuner 相关)
+### 4.2 KVTuner 层级量化
 
-### 并发测试
-- 3 并发请求: 1/3 PASS (bootstrap_room mismatch 竞态条件)
+| 提交 | 说明 |
+|------|------|
+| b456f2a26 | 与 sglang main 对齐 (realign) |
+| 0093d1ea0 | 层级 KV Cache 量化实现 |
+| cdf8f3904 | KVTuner 压缩传输 + NIXL VRAM bridge |
+| 0a5a15125 | list-format layer config JSON 支持 |
+| cc02a1417 | 文档整理，归档过期文件 |
 
-## 4. 代码修复历史
+### 4.3 Transfer Quantization (传输量化)
 
-### TCP KV Transfer (已在 main 分支)
-- 修复 aux metadata 只传第一个 buffer (2817a3f1d)
-- Pipeline mode 逐层传输 (7cf5524eb)
-- 对齐 disagg decode overlap loop (62dca923d)
-- CUDA 上下文初始化 + transfer_started 守卫 (fac2127ef)
-- TCPKVReceiver WaitingForInput 转换 (4844b6c24)
+| 提交 | 说明 |
+|------|------|
+| 3ab79a2d8 | 传输量化设计文档 + 基础代码 |
+| bf34b7269 | 集成到 TCP send/recv 路径 |
+| 1127984cb | PD 测试脚本支持量化配置 |
+| 87fba9e37 | **修复 bootstrap_room mismatch** — 并发请求 metadata corruption |
+| c5f45f8c5 | **修复 4-bit 伪打包** — 实现真正的 nibble packing (2×4bit→1×8bit) |
+| d027be4ee | **CPU→GPU 量化** — quantize_on_gpu / dequantize_on_gpu |
+| a7213337d | 传输量化测试报告 |
 
-### KVTuner 量化
-- 分支合并: sglang-integrate-kvtuner-quantization → kvtuner-splitwise (0896b1fd4)
-- 代码清理: 删除重复文件、过期脚本、未使用模块 (2026-04-08)
+### 4.4 实验框架与论文实验
 
-## 5. 未解决问题
+| 提交 | 说明 |
+|------|------|
+| e0e410c68 | 论文实验计划 (6 个实验 RQ1-RQ6, 12 图 6 表) |
+| a34a72510 | TTFT benchmark 脚本 + conn.py timing instrumentation |
+| 1040d2947 | 质量评估脚本 (GSM8K/MMLU/HellaSwag) |
+| f418a67fa | 逐层配置生成器 (6 种策略: uniform-8/4bit, mixed-A/B/C/D) |
+| f61d86bef | 实验 3.1 TTFT 无延迟结果 (4 configs × 6 inputs × 5 runs) |
+| f28d029cc | 实验 3.1 TTFT 20ms RTT 结果 + health-check 修复 |
 
-### P0: Scheduler 线程 segfault
-scheduler 线程运行 2-5 分钟后 native segfault，影响 long_long 测试和并发测试。
+## 5. 实验结果
 
-### P1: 并发 bootstrap_room mismatch
-多个并发请求通过 pd_coordinator 发送时，可能出现 metadata corruption 错误。
+### 5.1 TTFT 实验 — 无网络延迟 (内网 <1ms)
 
-### P2: TCP 传输性能优化
-GPU→CPU 传输、TCP 非阻塞 IO、pipeline 吞吐 benchmark 待优化。
+| 输入长度 | Baseline | Quant-8bit | Quant-4bit | Mixed-B |
+|---------|---------|-----------|-----------|---------|
+| tiny (1 tok) | **415ms** (5/5) | 424ms (5/5) | 482ms (5/5) | 472ms (5/5) |
+| short (10 tok) | **4203ms** (5/5) | 4624ms (5/5) | 4654ms (5/5) | 4576ms (5/5) |
+| medium (60 tok) | **11547ms** (5/5) | 12633ms (5/5) | 12765ms (5/5) | 13268ms (5/5) |
+| long (256 tok) | **17299ms** (5/5) | 18857ms (3/5) | 19251ms (4/5) | 18533ms (3/5) |
+| xlong (512 tok) | **20743ms** (5/5) | 22792ms (5/5) | 22210ms (5/5) | 0/5 |
+| xxlong (1024 tok) | **25986ms** (5/5) | 26326ms (2/5) | 24644ms (1/5) | 20888ms (2/5) |
 
-## 6. 测试工具
+**结论**: 低延迟内网下量化无加速效果，GPU 量化开销 (~10ms) 超过传输节省。
+
+### 5.2 TTFT 实验 — 20ms RTT (tc netem)
+
+| 输入长度 | Baseline | Quant-8bit | Quant-4bit | Mixed-B |
+|---------|---------|-----------|-----------|---------|
+| tiny (1 tok) | 1859ms (5/5) | **500ms** (5/5) | 553ms (5/5) | 531ms (5/5) |
+| short (10 tok) | **3872ms** (5/5) | 4316ms (5/5) | 4498ms (5/5) | 4703ms (5/5) |
+| medium (60 tok) | **8634ms** (5/5) | 12190ms (5/5) | 12648ms (5/5) | 13380ms (5/5) |
+| long (256 tok) | **13760ms** (5/5) | 20342ms (5/5) | 19886ms (4/5) | 18534ms (4/5) |
+| xlong (512 tok) | **18401ms** (5/5) | 23294ms (1/5) | 22585ms (4/5) | 20358ms (2/5) |
+| xxlong (1024 tok) | 22001ms (5/5) | FAIL (0/5) | FAIL (0/5) | 22335ms (1/5) |
+
+**结论**:
+- **tiny/short**: 量化显著加速（500ms vs 1859ms），传输压缩收益 > GPU 量化开销
+- **medium+**: 量化反而变慢，GPU 量化+反量化 ~4s 开销逐渐占主导
+- **Baseline 100% 成功率**, 量化配置 70-77% — 长文本 GPU 状态累积仍存在
+
+## 6. 已解决问题
+
+### ~~P0: Scheduler segfault~~ ✅ 已解决
+scheduler 线程 native segfault 已在上游修复。
+
+### ~~P1: bootstrap_room mismatch~~ ✅ 已修复 (87fba9e37)
+并发请求 metadata corruption。修复：使用 `src_aux_index` 替代 `dst_aux_index` 读取 prefill 端写入的 bootstrap_room。成功率从 0-67% 提升到 100%。
+
+### ~~P2: 4-bit 伪打包~~ ✅ 已修复 (c5f45f8c5)
+原 4-bit 实现每 4-bit 存 1 byte（无压缩）。修复：真 nibble packing（2×int4→1×uint8, low nibble first）。
+
+### ~~P3: CPU 量化开销~~ ✅ 已优化 (d027be4ee)
+从 CPU numpy 量化迁移到 GPU torch CUDA，量化延迟大幅降低。
+
+## 7. 待解决问题
+
+### P0: 长文本连续请求 GPU 状态累积
+量化配置下 xlong/xxlong 连续请求失败率 60-100%。health-check 无法完全解决，疑似 GPU 内部 KV pool 分配或 TCP 连接累积。**Workaround**: 每组测试重启服务。
+
+### P1: 质量评估（实验 3.2）未完成
+- GSM8K 5-shot prompt 过长 (849+ tokens) + 512 max_new_tokens 导致截断和状态退化
+- MMLU 256 max_new_tokens 不够模型输出 "Answer: X" 格式
+- 核心瓶颈：PD 架构连续请求稳定性
+
+### P2: 待开发脚本
+- `eval/bench_quant_micro.py` — CPU vs GPU 量化微基准
+- `eval/bench_throughput.py` — 并发吞吐量测试
+- `eval/bench_network.py` — 网络条件自动化测试
+- `eval/soak_test.py` — 30 分钟稳定性测试
+
+## 8. 测试工具
 
 | 文件 | 说明 |
 |------|------|
-| `scripts/pd_disagg_test/pd_test.sh` | 一键测试主控脚本 |
-| `scripts/pd_disagg_test/remote_worker.sh` | 远程辅助脚本 |
+| `scripts/pd_disagg_test/pd_test.sh` | 一键测试主控脚本 (start/stop/status) |
+| `scripts/pd_disagg_test/remote_worker.sh` | 远程辅助脚本 (服务管理) |
 | `scripts/pd_disagg_test/pd_coordinator.py` | Python PD coordinator |
+| `scripts/pd_disagg_test/run_experiment.sh` | 统一实验入口 (TTFT + Quality) |
+| `scripts/pd_disagg_test/generate_quant_configs.py` | 逐层量化配置生成器 |
 | `scripts/pd_disagg_test/configs/default.sh` | 集群配置 |
+| `scripts/pd_disagg_test/configs/tcp-quant.sh` | 8-bit 量化配置 |
+| `scripts/pd_disagg_test/configs/tcp-quant-4bit.sh` | 4-bit 量化配置 |
+| `scripts/pd_disagg_test/configs/tcp-quant-mixed.sh` | 混合精度配置 |
+| `scripts/pd_disagg_test/configs/quant/` | JSON 量化策略文件 |
 | `scripts/pd_quant_validation/kvtuner_offline_calib.py` | 离线校准工具 |
+| `eval/bench_ttft.py` | TTFT benchmark (SSE streaming) |
+| `eval/run_benchmark.py` | 质量评估 (GSM8K/MMLU/HellaSwag) |
+
+## 9. 数据文件
+
+| 路径 | 说明 |
+|------|------|
+| `results/exp1_ttft/baseline.csv` | 无延迟 Baseline TTFT (30/30) |
+| `results/exp1_ttft/quant-8bit.csv` | 无延迟 8-bit TTFT (25/30) |
+| `results/exp1_ttft/quant-4bit.csv` | 无延迟 4-bit TTFT (25/30) |
+| `results/exp1_ttft/mixed-B.csv` | 无延迟 Mixed-B TTFT (20/30) |
+| `results/exp1_ttft/baseline-20ms.csv` | 20ms RTT Baseline TTFT (30/30) |
+| `results/exp1_ttft/quant-8bit-20ms.csv` | 20ms RTT 8-bit TTFT (21/30) |
+| `results/exp1_ttft/quant-4bit-20ms.csv` | 20ms RTT 4-bit TTFT (23/30) |
+| `results/exp1_ttft/mixed-B-20ms.csv` | 20ms RTT Mixed-B TTFT (22/30) |
