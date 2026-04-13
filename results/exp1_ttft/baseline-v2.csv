@@ -1,0 +1,10 @@
+config,input_type,prompt_tokens,max_new_tokens,run_id,ttft_ms,e2e_ms,completion_tokens,success,error
+baseline-v2,long,221,32,1,997.39,1436.88,32,true,
+baseline-v2,long,221,32,2,539.38,956.93,32,true,
+baseline-v2,long,221,32,3,537.26,950.14,32,true,
+baseline-v2,xlong,441,32,1,1123.36,1555.23,32,true,
+baseline-v2,xlong,441,32,2,681.29,1119.06,32,true,
+baseline-v2,xlong,441,32,3,672.84,1110.38,32,true,
+baseline-v2,xxlong,884,16,1,2397.79,2466.81,16,true,
+baseline-v2,xxlong,884,16,2,1233.24,1302.68,16,true,
+baseline-v2,xxlong,884,16,3,1199.62,1268.09,16,true,

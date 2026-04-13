@@ -80,6 +80,26 @@ def generate_prompt(target_tokens: int) -> str:
 
 # ---------------------------------------------------------------------------
 # HTTP helpers
+
+
+def _wait_server_ready(args, timeout: int = 30) -> None:
+    """Block until both prefill and decode servers respond to /health."""
+    deadline = time.time() + timeout
+    ok = False
+    while time.time() < deadline:
+        try:
+            urllib.request.urlopen(
+                f"http://{args.prefill_host}:{args.prefill_port}/health", timeout=2
+            )
+            urllib.request.urlopen(
+                f"http://{args.decode_host}:{args.decode_port}/health", timeout=2
+            )
+            ok = True
+            break
+        except Exception:
+            time.sleep(1)
+    if not ok:
+        print("  [WARN] servers did not become healthy within timeout", flush=True)
 # ---------------------------------------------------------------------------
 
 
@@ -320,9 +340,14 @@ def run_benchmark(args):
                 "error": dr.get("error", "") or "",
             })
 
-            # Brief pause between runs to avoid server state pollution
+            # Wait for server readiness before next request.
+            # The prefill+decode threads have already joined above, but the
+            # server may still be cleaning up internal state (KV pools, TCP
+            # bootstrap sockets, etc.).  A health check ensures the server is
+            # truly idle and ready for the next request.
             if run_id < args.num_runs:
-                time.sleep(args.interval)
+                if args.health_check:
+                    _wait_server_ready(args)
 
         print()
 
@@ -377,6 +402,10 @@ def main():
                         help="Number of runs per input type")
     parser.add_argument("--interval", type=float, default=1.0,
                         help="Seconds between runs (default: 1.0)")
+    parser.add_argument("--health-check", action="store_true", default=True,
+                        help="Health-check both servers between requests (default: True)")
+    parser.add_argument("--no-health-check", dest="health_check", action="store_false",
+                        help="Skip health checks between requests")
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--no-wait", action="store_true",
                         help="Skip health check wait")
