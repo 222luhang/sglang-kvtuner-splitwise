@@ -64,6 +64,11 @@ from sglang.srt.utils import maybe_wrap_ipv6_address
 
 logger = logging.getLogger(__name__)
 
+# Set to True to enable per-layer tensor diagnostics (sum, absmax, nonzero)
+# on sender and receiver for layer 0.  Useful for debugging quant correctness
+# but adds ~1ms per checked layer due to GPU sync + reduction.
+_DEBUG_QUANT = True
+
 # ---------------------------------------------------------------------------
 # Protocol constants
 # ---------------------------------------------------------------------------
@@ -589,11 +594,26 @@ class _PendingTransfer:
                 v_tensor = _read_pages_as_gpu_tensor(
                     v_ptr, v_item_len, src_indices, page_size, torch_dtype
                 )
+                # Sync: DtoD copies above use the CUDA driver API (NULL stream),
+                # but quantize_on_gpu uses PyTorch ops (current stream).  Without
+                # this barrier the PyTorch kernels may read partially-copied data.
+                torch.cuda.synchronize()
+                if _DEBUG_QUANT and layer_id == 0:
+                    logger.warning(
+                        f"[_stream_kv DEBUG] room={self.room} layer=0 "
+                        f"k_sum={k_tensor.float().sum().item():.4f} "
+                        f"v_sum={v_tensor.float().sum().item():.4f} "
+                        f"k_absmax={k_tensor.float().abs().max().item():.4f} "
+                        f"k_nonzero={k_tensor.count_nonzero().item()}/{k_tensor.numel()} "
+                        f"indices={src_indices[:5]}"
+                    )
                 t_quant = time.perf_counter()
                 total_gather_ms += (t_quant - t_gather) * 1000
                 k_data = quantize_on_gpu(k_tensor, nbits=nbits)
                 v_data = quantize_on_gpu(v_tensor, nbits=nbits)
                 torch.cuda.synchronize()
+                # Explicitly free large GPU temporaries to prevent fragmentation
+                del k_tensor, v_tensor
                 quant_ms = (time.perf_counter() - t_quant) * 1000
                 total_quant_ms += quant_ms
                 k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
@@ -1017,11 +1037,24 @@ class TCPKVSender(CommonKVSender):
             v_tensor = _read_pages_as_gpu_tensor(
                 v_ptr, v_item_len, src_indices, page_size, torch_dtype
             )
+            # Sync: DtoD copies use CUDA driver API (NULL stream), PyTorch
+            # quantization may run on a different stream.
+            torch.cuda.synchronize()
+            if _DEBUG_QUANT and layer_id == 0:
+                logger.warning(
+                    f"[send_layer DEBUG] room={self.bootstrap_room} layer=0 "
+                    f"k_sum={k_tensor.float().sum().item():.4f} "
+                    f"v_sum={v_tensor.float().sum().item():.4f} "
+                    f"k_absmax={k_tensor.float().abs().max().item():.4f} "
+                    f"k_nonzero={k_tensor.count_nonzero().item()}/{k_tensor.numel()} "
+                    f"indices={src_indices[:5]}"
+                )
             t_quant = time.perf_counter()
             gather_ms = (t_quant - t_gather) * 1000
             k_data = quantize_on_gpu(k_tensor, nbits=nbits)
             v_data = quantize_on_gpu(v_tensor, nbits=nbits)
             torch.cuda.synchronize()
+            del k_tensor, v_tensor
             quant_ms = (time.perf_counter() - t_quant) * 1000
             k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
             v_lid = (layer_id * 2 + 1) | _MSG_QUANT_FLAG
@@ -1086,6 +1119,10 @@ class TCPKVSender(CommonKVSender):
 
     def poll(self) -> KVPoll:
         return self.kv_mgr.check_status(self.bootstrap_room)
+
+    def clear(self) -> None:
+        """Release request_status entry to prevent unbounded growth."""
+        self.kv_mgr.request_status.pop(self.bootstrap_room, None)
 
     def failure_exception(self) -> None:
         raise RuntimeError(
@@ -1249,6 +1286,10 @@ class TCPKVReceiver(CommonKVReceiver):
             logger.warning(f"[_recv_loop] room={self.bootstrap_room} sent room id, starting _recv_kv")
 
             self._recv_kv(conn, dst_kv_indices, dst_aux_index)
+            # Final sync: ensure all GPU writes (DtoD scatter from
+            # _write_gpu_tensor_to_pages) are visible before the decode
+            # model reads the KV cache.
+            torch.cuda.synchronize()
             logger.warning(f"[_recv_loop] room={self.bootstrap_room} _recv_kv completed!")
             conn.close()
             self._transfer_ok = True
@@ -1266,12 +1307,22 @@ class TCPKVReceiver(CommonKVReceiver):
         dst_kv_indices: npt.NDArray[np.int32],
         dst_aux_index: Optional[int],
     ) -> None:
-        """Receive layer-by-layer KV data and write to GPU pool."""
+        """Receive layer-by-layer KV data and write to GPU pool.
+
+        When prefix caching is active on the prefill side, the sender may
+        transmit only the *incremental* (non-cached) pages while the decode
+        side has allocated pages for the full sequence.  We detect this by
+        comparing the received tensor/data size against the expected size
+        derived from ``dst_kv_indices`` and, when they differ, write only
+        to the **tail** of ``dst_kv_indices`` (the incremental portion).
+        """
         kv_args = self.kv_mgr.kv_args
         num_layers = len(kv_args.kv_data_ptrs) // 2
         page_size = kv_args.page_size
         expected_msgs = num_layers * 2  # K + V per layer
         received = 0
+        # Will be set on the first received layer if prefix caching is detected
+        _effective_indices: Optional[npt.NDArray[np.int32]] = None
 
         logger.warning(
             f"[_recv_kv] room={self.bootstrap_room} expecting {expected_msgs} msgs "
@@ -1344,9 +1395,37 @@ class TCPKVReceiver(CommonKVReceiver):
                 gpu_device = torch.device("cuda", self.kv_mgr.kv_args.gpu_id)
                 t_dequant = time.perf_counter()
                 tensor = dequantize_on_gpu(data, gpu_device)
+                # Sync: dequantize_on_gpu uses PyTorch ops (current stream),
+                # but _write_gpu_tensor_to_pages uses cuMemcpyDtoD (NULL stream).
+                # Ensure dequantized data is fully materialized before scatter.
                 torch.cuda.synchronize()
                 dequant_ms = (time.perf_counter() - t_dequant) * 1000
                 total_dequant_ms += dequant_ms
+
+                # --- Prefix-caching adaptation ---
+                # Compute the number of received pages from the tensor size.
+                recv_pages = tensor.numel() * tensor.element_size() // item_len
+                if _effective_indices is None and recv_pages != len(dst_kv_indices):
+                    # Sender transmitted only incremental pages (prefix cached).
+                    # Use the *tail* of dst_kv_indices for the write target.
+                    _effective_indices = dst_kv_indices[-recv_pages:]
+                    logger.warning(
+                        f"[_recv_kv] room={self.bootstrap_room} prefix-cache detected: "
+                        f"recv_pages={recv_pages} dst_pages={len(dst_kv_indices)} "
+                        f"using tail indices"
+                    )
+                elif _effective_indices is None:
+                    _effective_indices = dst_kv_indices
+                write_indices = _effective_indices
+
+                if _DEBUG_QUANT and actual_layer == 0 and layer_id % 2 == 0:
+                    logger.warning(
+                        f"[_recv_kv DEBUG] room={self.bootstrap_room} layer=0 K "
+                        f"dequant_sum={tensor.float().sum().item():.4f} "
+                        f"dequant_absmax={tensor.float().abs().max().item():.4f} "
+                        f"dequant_nonzero={tensor.count_nonzero().item()}/{tensor.numel()} "
+                        f"packed_bytes={len(data)}"
+                    )
                 if received % 7 == 0:
                     logger.warning(
                         f"[_recv_kv] room={self.bootstrap_room} writing layer_id={layer_id} "
@@ -1355,11 +1434,44 @@ class TCPKVReceiver(CommonKVReceiver):
                     )
                 t_write = time.perf_counter()
                 _write_gpu_tensor_to_pages(
-                    base_ptr, item_len, dst_kv_indices, page_size, tensor
+                    base_ptr, item_len, write_indices, page_size, tensor
                 )
                 write_ms = (time.perf_counter() - t_write) * 1000
                 total_write_ms += write_ms
+                if _DEBUG_QUANT and actual_layer == 0 and layer_id % 2 == 0:
+                    # Read-back verification: re-gather what we just wrote
+                    kv_dtype = getattr(self.kv_mgr.server_args, "kv_cache_dtype", "auto")
+                    is_bf16 = kv_dtype in ("auto", "bf16", "bfloat16")
+                    rb_dtype = torch.bfloat16 if is_bf16 else torch.float16
+                    readback = _read_pages_as_gpu_tensor(
+                        base_ptr, item_len, write_indices, page_size, rb_dtype
+                    )
+                    torch.cuda.synchronize()
+                    diff = (tensor.float() - readback.float()).abs()
+                    logger.warning(
+                        f"[_recv_kv VERIFY] room={self.bootstrap_room} layer=0 K "
+                        f"readback_sum={readback.float().sum().item():.4f} "
+                        f"max_diff={diff.max().item():.6f} "
+                        f"mean_diff={diff.mean().item():.6f} "
+                        f"match={diff.max().item() < 1e-5}"
+                    )
+                    del readback, diff
+                # Free dequantized tensor immediately to reduce GPU memory pressure
+                del tensor
             else:
+                # --- Prefix-caching adaptation (non-quantized path) ---
+                recv_pages = len(data) // item_len
+                if _effective_indices is None and recv_pages != len(dst_kv_indices):
+                    _effective_indices = dst_kv_indices[-recv_pages:]
+                    logger.warning(
+                        f"[_recv_kv] room={self.bootstrap_room} prefix-cache detected: "
+                        f"recv_pages={recv_pages} dst_pages={len(dst_kv_indices)} "
+                        f"using tail indices"
+                    )
+                elif _effective_indices is None:
+                    _effective_indices = dst_kv_indices
+                write_indices = _effective_indices
+
                 if received % 7 == 0:
                     logger.warning(
                         f"[_recv_kv] room={self.bootstrap_room} writing layer_id={layer_id} "
@@ -1367,7 +1479,7 @@ class TCPKVReceiver(CommonKVReceiver):
                         f"data_len={len(data)} quant=False received={received}/{expected_msgs}"
                     )
                 t_write = time.perf_counter()
-                _write_pages_to_gpu(base_ptr, item_len, dst_kv_indices, page_size, data)
+                _write_pages_to_gpu(base_ptr, item_len, write_indices, page_size, data)
                 write_ms = (time.perf_counter() - t_write) * 1000
                 total_write_ms += write_ms
 
@@ -1390,6 +1502,10 @@ class TCPKVReceiver(CommonKVReceiver):
         raise RuntimeError(
             f"TCPKVReceiver: transfer failed for room={self.bootstrap_room}"
         )
+
+    def clear(self) -> None:
+        """Release request_status entry to prevent unbounded growth."""
+        self.kv_mgr.request_status.pop(self.bootstrap_room, None)
 
     def _register_kv_args(self) -> None:
         """No RDMA registration needed for TCP."""

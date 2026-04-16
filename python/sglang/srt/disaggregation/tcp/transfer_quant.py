@@ -252,12 +252,16 @@ def quantize_on_gpu(
 
     # Quantize
     quantized = (groups / safe_scales[:, None].float()).round().clamp(-q_max - 1, q_max)
+    # Free intermediate GPU tensors early to reduce memory pressure
+    del fp32, groups, abs_max
     # Trim padding, flatten
     q_flat = quantized.reshape(-1)[:num_elements].to(torch.int8)
+    del quantized
 
     # Build wire-format bytes on CPU
     header = struct.pack(_HEADER_FMT, nbits, group_size, num_elements, dtype_code)
     scales_bytes = scales.cpu().numpy().tobytes()
+    del scales, safe_scales
 
     if nbits == 4:
         q_u8 = q_flat.to(torch.uint8) & 0x0F
@@ -329,8 +333,11 @@ def dequantize_on_gpu(
         q_padded = q_flat
 
     groups = q_padded.reshape(-1, group_size).float()
+    del q_flat, q_padded
     fp32 = groups * scales[:, None].float()
+    del groups, scales
     result = fp32.reshape(-1)[:num_elements].to(target_dtype)
+    del fp32
     return result.contiguous()
 
 

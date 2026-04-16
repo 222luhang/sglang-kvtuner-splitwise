@@ -1,6 +1,6 @@
 # P/D Disaggregation + KVTuner 进展报告
 
-> 最后更新: 2026-04-13
+> 最后更新: 2026-04-14
 
 ## 1. 目标
 
@@ -65,6 +65,7 @@
 | c5f45f8c5 | **修复 4-bit 伪打包** — 实现真正的 nibble packing (2×4bit→1×8bit) |
 | d027be4ee | **CPU→GPU 量化** — quantize_on_gpu / dequantize_on_gpu |
 | a7213337d | 传输量化测试报告 |
+| (WIP) | **CUDA 流同步 + 量化正确性修复** — 见 §4.5 |
 
 ### 4.4 实验框架与论文实验
 
@@ -76,6 +77,32 @@
 | f418a67fa | 逐层配置生成器 (6 种策略: uniform-8/4bit, mixed-A/B/C/D) |
 | f61d86bef | 实验 3.1 TTFT 无延迟结果 (4 configs × 6 inputs × 5 runs) |
 | f28d029cc | 实验 3.1 TTFT 20ms RTT 结果 + health-check 修复 |
+
+### 4.5 CUDA 流同步 + 量化正确性修复 (2026-04-14)
+
+**问题**: Pipeline 模式下 KV Cache 经量化/反量化后数据不正确，导致 decode 输出质量下降或请求失败。
+
+**根因分析**:
+1. `_read_pages_as_gpu_tensor` 使用 CUDA driver API (`cuMemcpyDtoD_v2`, NULL stream) 做 DtoD 拷贝，而 `quantize_on_gpu` 使用 PyTorch ops (current stream)。两者在不同 CUDA stream 上执行，缺少同步屏障导致 PyTorch 量化内核可能读到未完成拷贝的数据。
+2. 接收端 `_recv_kv` 完成后缺少最终 `torch.cuda.synchronize()`，decode 模型可能读到未完全写入的 KV cache。
+3. 量化/反量化过程中大量 GPU 中间 tensor 未及时释放，长文本连续请求时 GPU 显存碎片化加剧。
+
+**修复内容**:
+
+| 修复项 | 文件 | 说明 |
+|--------|------|------|
+| DtoD→PyTorch 流同步 | conn.py | `_stream_kv` 和 `send_layer` 中 DtoD 拷贝后加 `torch.cuda.synchronize()` |
+| 接收端最终同步 | conn.py | `_recv_kv` 完成后加 `torch.cuda.synchronize()` 确保 scatter 写入可见 |
+| timing 修复 | conn.py | `_stream_kv` 量化路径恢复 `total_gather_ms` 累加 |
+| 接收端 debug 验证 | conn.py | layer 0 K 添加 dequant sum/absmax + write-back read-back 验证 |
+| GPU 内存管理 | conn.py + transfer_quant.py | 及时 `del` 大 tensor，减少显存碎片化 |
+| `_DEBUG_QUANT` 开关 | conn.py | 所有 debug 日志受模块级标志控制 |
+| `clear()` 方法 | conn.py | TCPKVSender/Receiver 添加 `clear()` 释放 `request_status` 条目 |
+
+**验证方法**:
+- CPU roundtrip 测试: 8-bit max_err=0.030, 4-bit max_err=0.263 (符合预期量化误差)
+- GPU 测试: 对比 sender `[send_layer DEBUG]` 和 receiver `[_recv_kv DEBUG]` 的 layer 0 K sum/absmax
+- Read-back 验证: `[_recv_kv VERIFY]` 的 `match=True` 确认 scatter 写入正确
 
 ## 5. 实验结果
 
@@ -122,10 +149,16 @@ scheduler 线程 native segfault 已在上游修复。
 ### ~~P3: CPU 量化开销~~ ✅ 已优化 (d027be4ee)
 从 CPU numpy 量化迁移到 GPU torch CUDA，量化延迟大幅降低。
 
+### ~~P4: CUDA 流同步缺失~~ ✅ 已修复 (2026-04-14)
+DtoD 拷贝 (NULL stream) 与 PyTorch 量化 (current stream) 之间缺少同步屏障。修复：在 `_stream_kv`、`send_layer`、`_recv_kv` 关键路径加 `torch.cuda.synchronize()`。
+
 ## 7. 待解决问题
 
 ### P0: 长文本连续请求 GPU 状态累积
-量化配置下 xlong/xxlong 连续请求失败率 60-100%。health-check 无法完全解决，疑似 GPU 内部 KV pool 分配或 TCP 连接累积。**Workaround**: 每组测试重启服务。
+量化配置下 xlong/xxlong 连续请求失败率 60-100%。health-check 无法完全解决，疑似 GPU 内部 KV pool 分配或 TCP 连接累积。**Workaround**: 每组测试重启服务。已添加 `clear()` 方法和 `del` 及时释放，待验证是否改善。
+
+### P1: 量化正确性 GPU 端验证 (进行中)
+已添加 sender/receiver debug 日志和 read-back 验证。需在 GPU 机器上运行确认 `[_recv_kv VERIFY] match=True`。
 
 ### P1: 质量评估（实验 3.2）未完成
 - GSM8K 5-shot prompt 过长 (849+ tokens) + 512 max_new_tokens 导致截断和状态退化
