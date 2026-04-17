@@ -67,7 +67,7 @@ logger = logging.getLogger(__name__)
 # Set to True to enable per-layer tensor diagnostics (sum, absmax, nonzero)
 # on sender and receiver for layer 0.  Useful for debugging quant correctness
 # but adds ~1ms per checked layer due to GPU sync + reduction.
-_DEBUG_QUANT = True
+_DEBUG_QUANT = False
 
 # ---------------------------------------------------------------------------
 # Protocol constants
@@ -611,7 +611,8 @@ class _PendingTransfer:
                 total_gather_ms += (t_quant - t_gather) * 1000
                 k_data = quantize_on_gpu(k_tensor, nbits=nbits)
                 v_data = quantize_on_gpu(v_tensor, nbits=nbits)
-                torch.cuda.synchronize()
+                # No sync needed: quantize_on_gpu returns CPU bytes
+                # (implicit sync via .cpu() inside quantize_on_gpu)
                 # Explicitly free large GPU temporaries to prevent fragmentation
                 del k_tensor, v_tensor
                 quant_ms = (time.perf_counter() - t_quant) * 1000
@@ -785,8 +786,8 @@ def _read_pages_from_gpu(
     if num_pages == 0:
         return b""
 
-    # Synchronise so we read fully-written KV caches (caller may also do this)
-    torch.cuda.synchronize()
+    # Note: caller (_stream_kv) is responsible for synchronizing before
+    # this function is called.  Removed redundant torch.cuda.synchronize().
 
     chunks = []
     for pi in page_indices:
@@ -1053,7 +1054,8 @@ class TCPKVSender(CommonKVSender):
             gather_ms = (t_quant - t_gather) * 1000
             k_data = quantize_on_gpu(k_tensor, nbits=nbits)
             v_data = quantize_on_gpu(v_tensor, nbits=nbits)
-            torch.cuda.synchronize()
+            # No sync needed: quantize_on_gpu returns CPU bytes
+            # (implicit sync via .cpu() inside quantize_on_gpu)
             del k_tensor, v_tensor
             quant_ms = (time.perf_counter() - t_quant) * 1000
             k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
