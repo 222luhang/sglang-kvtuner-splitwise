@@ -1,0 +1,22 @@
+{
+  "config": "bw500mbps_baseline",
+  "timestamp": "2026-04-18T18:26:15.910055",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 10.48,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 3.05,
+    "tokens_per_sec": 264.73,
+    "output_tokens_per_sec": 195.44,
+    "mean_ttft_ms": 1383.0,
+    "p50_ttft_ms": 1482.7,
+    "p99_ttft_ms": 1667.2,
+    "mean_e2e_ms": 2546.2
+  }
+}

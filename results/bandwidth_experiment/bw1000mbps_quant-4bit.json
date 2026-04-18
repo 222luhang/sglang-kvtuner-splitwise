@@ -1,0 +1,22 @@
+{
+  "config": "bw1000mbps_quant-4bit",
+  "timestamp": "2026-04-18T18:32:59.940657",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 8.93,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 3.59,
+    "tokens_per_sec": 310.8,
+    "output_tokens_per_sec": 229.46,
+    "mean_ttft_ms": 978.8,
+    "p50_ttft_ms": 1034.2,
+    "p99_ttft_ms": 1205.9,
+    "mean_e2e_ms": 2148.7
+  }
+}
