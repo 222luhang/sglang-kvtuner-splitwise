@@ -1,0 +1,89 @@
+[0;34m[STEP][0m 2026-04-18 16:12:50 V2 Baseline Experiment (sync optimization, no transfer quant)
+[0;34m[STEP][0m 2026-04-18 16:12:50 Runs per input type: 5
+[0;32m[INFO][0m 2026-04-18 16:12:50 Stopping old services...
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;32m[INFO][0m 2026-04-18 16:12:59 Starting services with baseline config...
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Prefill PID: 545201, 日志: /tmp/prefill.log
+[0;32m[INFO][0m Decode PID: 358529, 日志: /tmp/decode.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Decode 就绪 (42s)
+[0;32m[INFO][0m Prefill 就绪 (42s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+[0;32m[INFO][0m 2026-04-18 16:13:51 Waiting for services to stabilize...
+[0;32m[INFO][0m 2026-04-18 16:13:56 Running TTFT benchmark (5 runs per input type)...
+Waiting for servers... OK
+
+Config: qwen2.5-7b_baseline_v2
+Input types: tiny, short, medium, long, xlong, xxlong
+Runs per input: 5
+Total requests: 30
+
+--- tiny (1 token, max_new=32) ---
+  [tiny/run1] TTFT=304.5ms  E2E=637.5ms  prompt=1  completion=32
+  [tiny/run2] TTFT=291.4ms  E2E=624.3ms  prompt=1  completion=32
+  [tiny/run3] TTFT=292.4ms  E2E=625.1ms  prompt=1  completion=32
+  [tiny/run4] TTFT=291.8ms  E2E=624.8ms  prompt=1  completion=32
+  [tiny/run5] TTFT=291.5ms  E2E=624.3ms  prompt=1  completion=32
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=326.6ms  E2E=1202.2ms  prompt=7  completion=64
+  [short/run2] TTFT=310.5ms  E2E=1186.3ms  prompt=7  completion=64
+  [short/run3] TTFT=308.9ms  E2E=1184.9ms  prompt=7  completion=64
+  [short/run4] TTFT=310.8ms  E2E=1186.8ms  prompt=7  completion=64
+  [short/run5] TTFT=309.2ms  E2E=1185.2ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=340.6ms  E2E=1235.7ms  prompt=52  completion=64
+  [medium/run2] TTFT=292.9ms  E2E=1188.2ms  prompt=52  completion=64
+  [medium/run3] TTFT=293.3ms  E2E=1188.5ms  prompt=52  completion=64
+  [medium/run4] TTFT=293.6ms  E2E=1189.0ms  prompt=52  completion=64
+  [medium/run5] TTFT=291.8ms  E2E=1187.0ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=477.2ms  E2E=811.1ms  prompt=221  completion=32
+  [long/run2] TTFT=295.3ms  E2E=629.4ms  prompt=221  completion=32
+  [long/run3] TTFT=293.9ms  E2E=627.8ms  prompt=221  completion=32
+  [long/run4] TTFT=294.7ms  E2E=628.8ms  prompt=221  completion=32
+  [long/run5] TTFT=292.8ms  E2E=627.1ms  prompt=221  completion=32
+
+--- xlong (512 tokens, max_new=32) ---
+  [xlong/run1] TTFT=533.0ms  E2E=849.5ms  prompt=441  completion=32
+  [xlong/run2] TTFT=295.4ms  E2E=629.5ms  prompt=441  completion=32
+  [xlong/run3] TTFT=294.4ms  E2E=628.4ms  prompt=441  completion=32
+  [xlong/run4] TTFT=294.9ms  E2E=628.9ms  prompt=441  completion=32
+  [xlong/run5] TTFT=295.2ms  E2E=629.1ms  prompt=441  completion=32
+
+--- xxlong (1024 tokens, max_new=16) ---
+  [xxlong/run1] TTFT=792.3ms  E2E=845.4ms  prompt=884  completion=16
+  [xxlong/run2] TTFT=295.5ms  E2E=348.7ms  prompt=884  completion=16
+  [xxlong/run3] TTFT=294.6ms  E2E=347.6ms  prompt=884  completion=16
+  [xxlong/run4] TTFT=295.0ms  E2E=348.3ms  prompt=884  completion=16
+  [xxlong/run5] TTFT=299.3ms  E2E=352.3ms  prompt=884  completion=16
+
+Results written to /tmp/qwen2.5-7b_baseline_v2.csv
+
+Summary (30/30 successful):
+  TTFT  mean=329.8ms  min=291.4ms  max=792.3ms
+  E2E   mean=800.1ms  min=347.6ms  max=1235.7ms
+[0;32m[INFO][0m 2026-04-18 16:15:13 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/two_model_comparison_v2/qwen2.5-7b_baseline_v2.csv

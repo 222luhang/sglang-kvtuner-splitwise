@@ -1,0 +1,369 @@
+[0;34m[STEP][0m 2026-04-18 15:59:59 Continuing two-model comparison experiment
+[0;34m[STEP][0m 2026-04-18 15:59:59 Models: qwen2.5-7b, gemma2-27b
+[0;34m[STEP][0m 2026-04-18 15:59:59 Configs per model: baseline, quant-8bit, quant-4bit, mixed-b
+[0;34m[STEP][0m 2026-04-18 15:59:59 Runs per input type: 5
+
+[0;34m[STEP][0m 2026-04-18 15:59:59 ==========================================
+[0;34m[STEP][0m 2026-04-18 15:59:59 Model: qwen2.5-7b, Config: quant-8bit
+[0;34m[STEP][0m 2026-04-18 15:59:59 ==========================================
+[0;32m[INFO][0m 2026-04-18 15:59:59 Stopping old services...
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;32m[INFO][0m 2026-04-18 16:00:08 Starting services with quant-8bit config...
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 542344, 日志: /tmp/prefill.log
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 355443, 日志: /tmp/decode.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Prefill 就绪 (39s)
+[0;32m[INFO][0m Decode 就绪 (45s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+[0;32m[INFO][0m 2026-04-18 16:01:02 Waiting for services to stabilize...
+[0;32m[INFO][0m 2026-04-18 16:01:07 Running TTFT benchmark (5 runs per input type)...
+Waiting for servers... OK
+
+Config: qwen2.5-7b_quant-8bit
+Input types: tiny, short, medium, long, xlong, xxlong
+Runs per input: 5
+Total requests: 30
+
+--- tiny (1 token, max_new=32) ---
+  [tiny/run1] TTFT=562.3ms  E2E=895.1ms  prompt=1  completion=32
+  [tiny/run2] TTFT=320.7ms  E2E=653.4ms  prompt=1  completion=32
+  [tiny/run3] TTFT=318.2ms  E2E=651.1ms  prompt=1  completion=32
+  [tiny/run4] TTFT=694.2ms  E2E=1027.3ms  prompt=1  completion=32
+  [tiny/run5] TTFT=303.7ms  E2E=636.8ms  prompt=1  completion=32
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=585.1ms  E2E=1461.1ms  prompt=7  completion=64
+  [short/run2] TTFT=321.5ms  E2E=1197.6ms  prompt=7  completion=64
+  [short/run3] TTFT=325.8ms  E2E=1201.8ms  prompt=7  completion=64
+  [short/run4] TTFT=325.3ms  E2E=1201.3ms  prompt=7  completion=64
+  [short/run5] TTFT=321.3ms  E2E=1197.1ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=317.2ms  E2E=1212.4ms  prompt=52  completion=64
+  [medium/run2] TTFT=305.3ms  E2E=1200.7ms  prompt=52  completion=64
+  [medium/run3] TTFT=307.6ms  E2E=1203.2ms  prompt=52  completion=64
+  [medium/run4] TTFT=308.6ms  E2E=1204.0ms  prompt=52  completion=64
+  [medium/run5] TTFT=309.5ms  E2E=1204.8ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=300.5ms  E2E=652.5ms  prompt=221  completion=32
+  [long/run2] TTFT=290.0ms  E2E=641.7ms  prompt=221  completion=32
+  [long/run3] TTFT=289.2ms  E2E=640.6ms  prompt=221  completion=32
+  [long/run4] TTFT=292.3ms  E2E=644.2ms  prompt=221  completion=32
+  [long/run5] TTFT=290.1ms  E2E=642.1ms  prompt=221  completion=32
+
+--- xlong (512 tokens, max_new=32) ---
+  [xlong/run1] TTFT=320.3ms  E2E=654.4ms  prompt=441  completion=32
+  [xlong/run2] TTFT=307.9ms  E2E=642.0ms  prompt=441  completion=32
+  [xlong/run3] TTFT=310.7ms  E2E=644.9ms  prompt=441  completion=32
+  [xlong/run4] TTFT=309.4ms  E2E=643.6ms  prompt=441  completion=32
+  [xlong/run5] TTFT=307.1ms  E2E=641.1ms  prompt=441  completion=32
+
+--- xxlong (1024 tokens, max_new=16) ---
+  [xxlong/run1] TTFT=339.9ms  E2E=375.1ms  prompt=884  completion=16
+  [xxlong/run2] TTFT=329.0ms  E2E=364.4ms  prompt=884  completion=16
+  [xxlong/run3] TTFT=328.8ms  E2E=364.2ms  prompt=884  completion=16
+  [xxlong/run4] TTFT=331.2ms  E2E=366.6ms  prompt=884  completion=16
+  [xxlong/run5] TTFT=325.8ms  E2E=361.2ms  prompt=884  completion=16
+
+Results written to /tmp/qwen2.5-7b_quant-8bit.csv
+
+Summary (30/30 successful):
+  TTFT  mean=343.3ms  min=289.2ms  max=694.2ms
+  E2E   mean=814.2ms  min=361.2ms  max=1461.1ms
+[0;32m[INFO][0m 2026-04-18 16:02:25 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/two_model_comparison_v2/qwen2.5-7b_quant-8bit.csv
+
+[0;34m[STEP][0m 2026-04-18 16:02:25 ==========================================
+[0;34m[STEP][0m 2026-04-18 16:02:25 Model: qwen2.5-7b, Config: quant-4bit
+[0;34m[STEP][0m 2026-04-18 16:02:25 ==========================================
+[0;32m[INFO][0m 2026-04-18 16:02:25 Stopping old services...
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;32m[INFO][0m 2026-04-18 16:02:34 Starting services with quant-4bit config...
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 543208, 日志: /tmp/prefill.log
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 356151, 日志: /tmp/decode.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Prefill 就绪 (42s)
+[0;32m[INFO][0m Decode 就绪 (45s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+[0;32m[INFO][0m 2026-04-18 16:03:28 Waiting for services to stabilize...
+[0;32m[INFO][0m 2026-04-18 16:03:33 Running TTFT benchmark (5 runs per input type)...
+Waiting for servers... OK
+
+Config: qwen2.5-7b_quant-4bit
+Input types: tiny, short, medium, long, xlong, xxlong
+Runs per input: 5
+Total requests: 30
+
+--- tiny (1 token, max_new=32) ---
+  [tiny/run1] TTFT=466.8ms  E2E=782.4ms  prompt=1  completion=32
+  [tiny/run2] TTFT=360.2ms  E2E=675.8ms  prompt=1  completion=32
+  [tiny/run3] TTFT=339.3ms  E2E=654.7ms  prompt=1  completion=32
+  [tiny/run4] TTFT=368.1ms  E2E=683.5ms  prompt=1  completion=32
+  [tiny/run5] TTFT=341.8ms  E2E=657.2ms  prompt=1  completion=32
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=364.3ms  E2E=1257.7ms  prompt=7  completion=64
+  [short/run2] TTFT=362.7ms  E2E=1238.4ms  prompt=7  completion=64
+  [short/run3] TTFT=360.0ms  E2E=1235.8ms  prompt=7  completion=64
+  [short/run4] TTFT=344.6ms  E2E=1220.6ms  prompt=7  completion=64
+  [short/run5] TTFT=349.3ms  E2E=1225.7ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=433.6ms  E2E=1328.6ms  prompt=52  completion=64
+  [medium/run2] TTFT=344.9ms  E2E=1240.0ms  prompt=52  completion=64
+  [medium/run3] TTFT=343.2ms  E2E=1238.3ms  prompt=52  completion=64
+  [medium/run4] TTFT=342.0ms  E2E=1237.3ms  prompt=52  completion=64
+  [medium/run5] TTFT=343.5ms  E2E=1238.9ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=608.8ms  E2E=925.3ms  prompt=221  completion=32
+  [long/run2] TTFT=342.0ms  E2E=676.4ms  prompt=221  completion=32
+  [long/run3] TTFT=352.3ms  E2E=686.4ms  prompt=221  completion=32
+  [long/run4] TTFT=363.6ms  E2E=698.0ms  prompt=221  completion=32
+  [long/run5] TTFT=340.9ms  E2E=675.0ms  prompt=221  completion=32
+
+--- xlong (512 tokens, max_new=32) ---
+  [xlong/run1] TTFT=730.7ms  E2E=1064.8ms  prompt=441  completion=32
+  [xlong/run2] TTFT=359.0ms  E2E=675.0ms  prompt=441  completion=32
+  [xlong/run3] TTFT=356.9ms  E2E=673.4ms  prompt=441  completion=32
+  [xlong/run4] TTFT=352.9ms  E2E=669.6ms  prompt=441  completion=32
+  [xlong/run5] TTFT=347.8ms  E2E=664.2ms  prompt=441  completion=32
+
+--- xxlong (1024 tokens, max_new=16) ---
+  [xxlong/run1] TTFT=895.3ms  E2E=966.0ms  prompt=884  completion=16
+  [xxlong/run2] TTFT=324.8ms  E2E=377.9ms  prompt=884  completion=16
+  [xxlong/run3] TTFT=348.0ms  E2E=401.0ms  prompt=884  completion=16
+  [xxlong/run4] TTFT=343.7ms  E2E=396.5ms  prompt=884  completion=16
+  [xxlong/run5] TTFT=337.5ms  E2E=390.5ms  prompt=884  completion=16
+
+Results written to /tmp/qwen2.5-7b_quant-4bit.csv
+
+Summary (30/30 successful):
+  TTFT  mean=395.6ms  min=324.8ms  max=895.3ms
+  E2E   mean=861.8ms  min=377.9ms  max=1328.6ms
+[0;32m[INFO][0m 2026-04-18 16:05:51 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/two_model_comparison_v2/qwen2.5-7b_quant-4bit.csv
+
+[0;34m[STEP][0m 2026-04-18 16:05:51 ==========================================
+[0;34m[STEP][0m 2026-04-18 16:05:51 Model: qwen2.5-7b, Config: mixed-b
+[0;34m[STEP][0m 2026-04-18 16:05:51 ==========================================
+[0;32m[INFO][0m 2026-04-18 16:05:51 Stopping old services...
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;32m[INFO][0m 2026-04-18 16:06:00 Starting services with mixed-b config...
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 543955, 日志: /tmp/prefill.log
+[0;32m[INFO][0m Decode PID: 356895, 日志: /tmp/decode.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Prefill 就绪 (42s)
+[0;32m[INFO][0m Decode 就绪 (45s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+[0;32m[INFO][0m 2026-04-18 16:06:55 Waiting for services to stabilize...
+[0;32m[INFO][0m 2026-04-18 16:07:00 Running TTFT benchmark (5 runs per input type)...
+Waiting for servers... OK
+
+Config: qwen2.5-7b_mixed-b
+Input types: tiny, short, medium, long, xlong, xxlong
+Runs per input: 5
+Total requests: 30
+
+--- tiny (1 token, max_new=32) ---
+  [tiny/run1] TTFT=450.8ms  E2E=784.1ms  prompt=1  completion=32
+  [tiny/run2] TTFT=324.6ms  E2E=657.5ms  prompt=1  completion=32
+  [tiny/run3] TTFT=334.2ms  E2E=666.9ms  prompt=1  completion=32
+  [tiny/run4] TTFT=329.6ms  E2E=662.6ms  prompt=1  completion=32
+  [tiny/run5] TTFT=345.4ms  E2E=678.3ms  prompt=1  completion=32
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=341.8ms  E2E=1235.3ms  prompt=7  completion=64
+  [short/run2] TTFT=346.6ms  E2E=1240.1ms  prompt=7  completion=64
+  [short/run3] TTFT=331.1ms  E2E=1224.2ms  prompt=7  completion=64
+  [short/run4] TTFT=346.3ms  E2E=1239.7ms  prompt=7  completion=64
+  [short/run5] TTFT=327.2ms  E2E=1220.7ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=388.3ms  E2E=1283.4ms  prompt=52  completion=64
+  [medium/run2] TTFT=324.2ms  E2E=1219.4ms  prompt=52  completion=64
+  [medium/run3] TTFT=332.8ms  E2E=1228.4ms  prompt=52  completion=64
+  [medium/run4] TTFT=326.9ms  E2E=1222.1ms  prompt=52  completion=64
+  [medium/run5] TTFT=314.3ms  E2E=1209.3ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=616.3ms  E2E=932.8ms  prompt=221  completion=32
+  [long/run2] TTFT=330.1ms  E2E=664.2ms  prompt=221  completion=32
+  [long/run3] TTFT=333.9ms  E2E=667.9ms  prompt=221  completion=32
+  [long/run4] TTFT=336.9ms  E2E=671.0ms  prompt=221  completion=32
+  [long/run5] TTFT=337.7ms  E2E=671.8ms  prompt=221  completion=32
+
+--- xlong (512 tokens, max_new=32) ---
+  [xlong/run1] TTFT=632.0ms  E2E=948.7ms  prompt=441  completion=32
+  [xlong/run2] TTFT=324.7ms  E2E=658.8ms  prompt=441  completion=32
+  [xlong/run3] TTFT=335.6ms  E2E=670.1ms  prompt=441  completion=32
+  [xlong/run4] TTFT=347.6ms  E2E=681.8ms  prompt=441  completion=32
+  [xlong/run5] TTFT=325.0ms  E2E=658.7ms  prompt=441  completion=32
+
+--- xxlong (1024 tokens, max_new=16) ---
+  [xxlong/run1] TTFT=871.1ms  E2E=924.0ms  prompt=884  completion=16
+  [xxlong/run2] TTFT=326.7ms  E2E=379.7ms  prompt=884  completion=16
+  [xxlong/run3] TTFT=347.4ms  E2E=400.5ms  prompt=884  completion=16
+  [xxlong/run4] TTFT=362.1ms  E2E=415.1ms  prompt=884  completion=16
+  [xxlong/run5] TTFT=332.3ms  E2E=385.4ms  prompt=884  completion=16
+
+Results written to /tmp/qwen2.5-7b_mixed-b.csv
+
+Summary (30/30 successful):
+  TTFT  mean=377.5ms  min=314.3ms  max=871.1ms
+  E2E   mean=850.1ms  min=379.7ms  max=1283.4ms
+[0;32m[INFO][0m 2026-04-18 16:08:19 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/two_model_comparison_v2/qwen2.5-7b_mixed-b.csv
+
+[0;34m[STEP][0m 2026-04-18 16:08:19 ==========================================
+[0;34m[STEP][0m 2026-04-18 16:08:19 Model: gemma2-27b, Config: baseline
+[0;34m[STEP][0m 2026-04-18 16:08:19 ==========================================
+[0;32m[INFO][0m 2026-04-18 16:08:19 Stopping old services...
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;32m[INFO][0m 2026-04-18 16:08:28 Starting services with baseline config...
+declare -x ANTHROPIC_AUTH_TOKEN="q3fHVQComFWsoxDV5d364168-30c8-440b-90bF-530d49Df"
+declare -x ANTHROPIC_BASE_URL="https://api.modelverse.cn"
+declare -x ANTHROPIC_MODEL="zai-org/glm-5"
+declare -x APPLICATIONINSIGHTS_CONFIGURATION_CONTENT="{}"
+declare -x APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL="1"
+declare -x CLAUDECODE="1"
+declare -x CLAUDE_AGENT_SDK_VERSION="0.2.112"
+declare -x CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS="1"
+declare -x CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING="true"
+declare -x CLAUDE_CODE_ENTRYPOINT="claude-vscode"
+declare -x CLAUDE_CODE_EXECPATH="/Users/user/.vscode/extensions/anthropic.claude-code-2.1.112-darwin-arm64/resources/native-binary/claude"
+declare -x COMMAND_MODE="unix2003"
+declare -x CONDA_DEFAULT_ENV="base"
+declare -x CONDA_EXE="/opt/anaconda3/bin/conda"
+declare -x CONDA_PREFIX="/opt/anaconda3"
+declare -x CONDA_PROMPT_MODIFIER="(base) "
+declare -x CONDA_PYTHON_EXE="/opt/anaconda3/bin/python"
+declare -x CONDA_SHLVL="1"
+declare -x CONFIG_FILE="configs/gemma2-27b.sh"
+declare -x COREPACK_ENABLE_AUTO_PIN="0"
+declare -x ELECTRON_RUN_AS_NODE="1"
+declare -x ENABLE_TRANSFER_QUANT="true"
+declare -x GIT_EDITOR="true"
+declare -x GSETTINGS_SCHEMA_DIR="/opt/anaconda3/share/glib-2.0/schemas"
+declare -x HOME="/Users/user"
+declare -x HOMEBREW_API_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api"
+declare -x HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
+declare -x HOMEBREW_CELLAR="/opt/homebrew/Cellar"
+declare -x HOMEBREW_PIP_INDEX_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
+declare -x HOMEBREW_PREFIX="/opt/homebrew"
+declare -x HOMEBREW_REPOSITORY="/opt/homebrew"
+declare -x INFOPATH="/opt/homebrew/share/info:"
+declare -x KVTUNER_LAYER_BITS="[8,8,8,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,8,8]"
+declare -x LOGNAME="user"
+declare -x MANPATH="/opt/homebrew/share/man::"
+declare -x MCP_CONNECTION_NONBLOCKING="true"
+declare -x MallocNanoZone="0"
+declare -x NoDefaultCurrentDirectoryInExePath="1"
+declare -x OLDPWD="/Users/user/Code/sglang-kvtuner-splitwise/scripts/pd_disagg_test"
+declare -x ORIGINAL_XDG_CURRENT_DESKTOP="undefined"
+declare -x OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE="delta"
+declare -x PATH="/Users/user/Library/Python/3.9/bin:/Library/Developer/CommandLineTools/usr/bin/python3:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/TeX/texbin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/user/Library/Python/3.9/bin:/Library/Developer/CommandLineTools/usr/bin/python3:/opt/homebrew/bin:/opt/homebrew/sbin"
+declare -x PWD="/Users/user/Code/sglang-kvtuner-splitwise/scripts/pd_disagg_test"
+declare -x SHELL="/bin/zsh"
+declare -x SHLVL="2"
+declare -x SSH_AUTH_SOCK="/private/tmp/com.apple.launchd.fdLOR4YiqE/Listeners"
+declare -x TERM="xterm-color"
+declare -x TMPDIR="/var/folders/b7/qzm22s6j2z1fvzry343rv8980000gn/T/"
+declare -x TRANSFER_QUANT_BITS="4"
+declare -x USER="user"
+declare -x VSCODE_CODE_CACHE_PATH="/Users/user/Library/Application Support/Code/CachedData/e54c774e0add60467559eb0d1e229c6452cf8447"
+declare -x VSCODE_CRASH_REPORTER_PROCESS_TYPE="extensionHost"
+declare -x VSCODE_CWD="/"
+declare -x VSCODE_ESM_ENTRYPOINT="vs/workbench/api/node/extensionHostProcess"
+declare -x VSCODE_HANDLES_UNCAUGHT_ERRORS="true"
+declare -x VSCODE_IPC_HOOK="/Users/user/Library/Application Support/Code/1.97-main.sock"
+declare -x VSCODE_L10N_BUNDLE_LOCATION=""
+declare -x VSCODE_NLS_CONFIG="{\"userLocale\":\"zh-cn\",\"osLocale\":\"zh-cn\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/private/var/folders/b7/qzm22s6j2z1fvzry343rv8980000gn/T/AppTranslocation/B8474BE5-4A0A-4F47-B1A2-E53CAB42FF1B/d/Visual Studio Code-3.app/Contents/Resources/app/out/nls.messages.json\",\"locale\":\"zh-cn\",\"availableLanguages\":{}}"
+declare -x VSCODE_PID="4009"
+declare -x XPC_FLAGS="0x0"
+declare -x XPC_SERVICE_NAME="0"
+declare -x __CFBundleIdentifier="com.microsoft.VSCode"
+declare -x __CF_USER_TEXT_ENCODING="0x1F5:0x19:0x34"
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 544630, 日志: /tmp/prefill.log
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 357641, 日志: /tmp/decode.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;31m[ERROR][0m Decode 在 120s 内未就绪
+[0;31m[ERROR][0m Prefill 在 120s 内未就绪

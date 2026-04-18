@@ -4,8 +4,8 @@
 # ============================================================================
 
 # SSH 配置（对应 ~/.ssh/config 中的 Host 别名）
-PREFILL_HOST="${PREFILL_HOST:-ubuntu@10.60.23.70}"
-DECODE_HOST="${DECODE_HOST:-ubuntu@10.60.30.66}"
+PREFILL_HOST="${PREFILL_HOST:-gpu1}"
+DECODE_HOST="${DECODE_HOST:-gpu2}"
 
 # 内网 IP（用于服务 --host 和 --dist-init-addr）
 PREFILL_IP="${PREFILL_IP:-10.60.23.70}"
@@ -37,6 +37,7 @@ DISABLE_CUDA_GRAPH="${DISABLE_CUDA_GRAPH:-false}"
 # 传输量化参数（TCP 传输前量化 KV cache）
 ENABLE_TRANSFER_QUANT="${ENABLE_TRANSFER_QUANT:-}"
 TRANSFER_QUANT_BITS="${TRANSFER_QUANT_BITS:-8}"
+KVTUNER_LAYER_BITS="${KVTUNER_LAYER_BITS:-}"
 
 # 超时（秒）
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-120}"

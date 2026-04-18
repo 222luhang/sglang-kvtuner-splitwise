@@ -1,0 +1,10 @@
+config,input_type,prompt_tokens,max_new_tokens,run_id,ttft_ms,e2e_ms,completion_tokens,success,error
+rtt200_quant-4bit,short,7,64,1,2707.35,3601.13,64,true,
+rtt200_quant-4bit,short,7,64,2,1126.02,1999.29,64,true,
+rtt200_quant-4bit,short,7,64,3,1109.90,1981.72,64,true,
+rtt200_quant-4bit,medium,52,64,1,2071.08,2973.72,64,true,
+rtt200_quant-4bit,medium,52,64,2,1076.97,1971.80,64,true,
+rtt200_quant-4bit,medium,52,64,3,1060.06,1959.53,64,true,
+rtt200_quant-4bit,long,221,32,1,2499.79,2811.51,32,true,
+rtt200_quant-4bit,long,221,32,2,1081.57,1411.92,32,true,
+rtt200_quant-4bit,long,221,32,3,1073.01,1417.94,32,true,

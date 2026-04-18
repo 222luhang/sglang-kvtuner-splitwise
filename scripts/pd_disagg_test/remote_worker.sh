@@ -13,7 +13,7 @@ DECODE_PORT="${DECODE_PORT:-30001}"
 DIST_INIT_PORT="${DIST_INIT_PORT:-5000}"
 MODEL_PATH="${MODEL_PATH:-/data/Qwen/Qwen2.5-7B}"
 TRANSFER_BACKEND="${TRANSFER_BACKEND:-tcp}"
-DISABLE_OVERLAP="${DISABLE_OVERLAP:-true}"
+DISABLE_OVERLAP="${DISABLE_OVERLAP:-false}"
 LOG_LEVEL="${LOG_LEVEL:-warning}"
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-120}"
 LOG_DIR="${LOG_DIR:-/tmp}"
@@ -59,9 +59,9 @@ _launch_args() {
 --nnodes 1 --node-rank 0 \
 --disable-custom-all-reduce \
 --log-level ${LOG_LEVEL} \
-${DISABLE_OVERLAP:+--disable-overlap-schedule} \
-${ENABLE_KVTUNER:+--enable-kvtuner-quant --kvtuner-layer-config ${KVTUNER_LAYER_CONFIG} --disable-cuda-graph} \
-${ENABLE_TRANSFER_QUANT:+--enable-transfer-quant --transfer-quant-bits ${TRANSFER_QUANT_BITS}} \
+$([ "${DISABLE_OVERLAP}" = "true" ] && echo "--disable-overlap-schedule") \
+$([ "${ENABLE_KVTUNER}" = "true" ] && echo "--enable-kvtuner-quant --kvtuner-layer-config ${KVTUNER_LAYER_CONFIG} --disable-cuda-graph") \
+$([ "${ENABLE_TRANSFER_QUANT}" = "true" ] && echo "--enable-transfer-quant --transfer-quant-bits ${TRANSFER_QUANT_BITS}") \
 ${KVTUNER_LAYER_BITS:+--kvtuner-layer-bits ${KVTUNER_LAYER_BITS}}"
 }
 

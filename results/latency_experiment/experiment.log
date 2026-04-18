@@ -1,0 +1,737 @@
+[0;34m[STEP][0m 2026-04-18 16:43:16 Network Latency Experiment
+[0;34m[STEP][0m 2026-04-18 16:43:16 Testing RTT values: 10ms, 50ms, 100ms, 200ms
+[0;34m[STEP][0m 2026-04-18 16:43:16 Configs: baseline, quant-8bit, quant-4bit
+[0;34m[STEP][0m 2026-04-18 16:43:16 Runs per input type: 3
+[0;34m[STEP][0m 2026-04-18 16:43:16 ==========================================
+[0;34m[STEP][0m 2026-04-18 16:43:16 RTT: 10ms (one-way: 5ms)
+[0;34m[STEP][0m 2026-04-18 16:43:16 ==========================================
+[0;32m[INFO][0m 2026-04-18 16:43:16 Adding 5ms one-way latency (5ms RTT)...
+[0;32m[INFO][0m 2026-04-18 16:43:18 Verifying latency (gpu1 -> gpu2)...
+rtt min/avg/max/mdev = 6.755/12.760/16.937/4.353 ms
+[0;34m[STEP][0m 2026-04-18 16:43:20 Running benchmark: rtt10_baseline
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 547889, 日志: /tmp/prefill.log
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 362617, 日志: /tmp/decode.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Decode 就绪 (42s)
+[0;32m[INFO][0m Prefill 就绪 (54s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt10_baseline
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=977.4ms  E2E=1846.4ms  prompt=7  completion=64
+  [short/run2] TTFT=365.4ms  E2E=1235.5ms  prompt=7  completion=64
+  [short/run3] TTFT=349.0ms  E2E=1229.7ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=5688.8ms  E2E=6577.8ms  prompt=52  completion=64
+  [medium/run2] TTFT=362.3ms  E2E=1265.8ms  prompt=52  completion=64
+  [medium/run3] TTFT=343.8ms  E2E=1232.6ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=14521.8ms  E2E=14853.5ms  prompt=221  completion=32
+  [long/run2] TTFT=331.3ms  E2E=667.9ms  prompt=221  completion=32
+  [long/run3] TTFT=417.0ms  E2E=752.4ms  prompt=221  completion=32
+
+Results written to /tmp/rtt10_baseline.csv
+
+Summary (9/9 successful):
+  TTFT  mean=2595.2ms  min=331.3ms  max=14521.8ms
+  E2E   mean=3295.7ms  min=667.9ms  max=14853.5ms
+[0;32m[INFO][0m 2026-04-18 16:45:26 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt10_baseline.csv
+[0;34m[STEP][0m 2026-04-18 16:45:26 Running benchmark: rtt10_quant-8bit
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 363134, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 548557, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Decode 就绪 (42s)
+[0;32m[INFO][0m Prefill 就绪 (42s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt10_quant-8bit
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=963.4ms  E2E=1835.2ms  prompt=7  completion=64
+  [short/run2] TTFT=362.6ms  E2E=1241.2ms  prompt=7  completion=64
+  [short/run3] TTFT=358.0ms  E2E=1232.0ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=3125.1ms  E2E=4023.9ms  prompt=52  completion=64
+  [medium/run2] TTFT=383.9ms  E2E=1282.9ms  prompt=52  completion=64
+  [medium/run3] TTFT=351.7ms  E2E=1253.5ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=8493.7ms  E2E=8815.8ms  prompt=221  completion=32
+  [long/run2] TTFT=330.7ms  E2E=686.6ms  prompt=221  completion=32
+  [long/run3] TTFT=333.3ms  E2E=687.0ms  prompt=221  completion=32
+
+Results written to /tmp/rtt10_quant-8bit.csv
+
+Summary (9/9 successful):
+  TTFT  mean=1633.6ms  min=330.7ms  max=8493.7ms
+  E2E   mean=2339.8ms  min=686.6ms  max=8815.8ms
+[0;32m[INFO][0m 2026-04-18 16:47:10 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt10_quant-8bit.csv
+[0;34m[STEP][0m 2026-04-18 16:47:10 Running benchmark: rtt10_quant-4bit
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 549178, 日志: /tmp/prefill.log
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 363608, 日志: /tmp/decode.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Prefill 就绪 (36s)
+[0;32m[INFO][0m Decode 就绪 (42s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt10_quant-4bit
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=576.9ms  E2E=1462.0ms  prompt=7  completion=64
+  [short/run2] TTFT=398.1ms  E2E=1277.2ms  prompt=7  completion=64
+  [short/run3] TTFT=393.7ms  E2E=1273.4ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=1660.9ms  E2E=2549.4ms  prompt=52  completion=64
+  [medium/run2] TTFT=374.9ms  E2E=1273.5ms  prompt=52  completion=64
+  [medium/run3] TTFT=394.3ms  E2E=1286.8ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=5594.7ms  E2E=5910.7ms  prompt=221  completion=32
+  [long/run2] TTFT=378.5ms  E2E=712.3ms  prompt=221  completion=32
+  [long/run3] TTFT=377.7ms  E2E=716.6ms  prompt=221  completion=32
+
+Results written to /tmp/rtt10_quant-4bit.csv
+
+Summary (9/9 successful):
+  TTFT  mean=1127.8ms  min=374.9ms  max=5594.7ms
+  E2E   mean=1829.1ms  min=712.3ms  max=5910.8ms
+[0;32m[INFO][0m 2026-04-18 16:48:50 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt10_quant-4bit.csv
+[0;34m[STEP][0m 2026-04-18 16:48:50 ==========================================
+[0;34m[STEP][0m 2026-04-18 16:48:50 RTT: 50ms (one-way: 25ms)
+[0;34m[STEP][0m 2026-04-18 16:48:50 ==========================================
+[0;32m[INFO][0m 2026-04-18 16:48:50 Adding 25ms one-way latency (25ms RTT)...
+[0;32m[INFO][0m 2026-04-18 16:48:53 Verifying latency (gpu1 -> gpu2)...
+rtt min/avg/max/mdev = 44.411/52.711/61.721/7.084 ms
+[0;34m[STEP][0m 2026-04-18 16:48:56 Running benchmark: rtt50_baseline
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 549914, 日志: /tmp/prefill.log
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 364236, 日志: /tmp/decode.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Decode 就绪 (42s)
+[0;32m[INFO][0m Prefill 就绪 (60s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt50_baseline
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=950.3ms  E2E=1832.6ms  prompt=7  completion=64
+  [short/run2] TTFT=531.6ms  E2E=1407.7ms  prompt=7  completion=64
+  [short/run3] TTFT=498.3ms  E2E=1381.0ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=710.5ms  E2E=1615.2ms  prompt=52  completion=64
+  [medium/run2] TTFT=477.9ms  E2E=1382.3ms  prompt=52  completion=64
+  [medium/run3] TTFT=504.3ms  E2E=1394.8ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=929.0ms  E2E=1250.7ms  prompt=221  completion=32
+  [long/run2] TTFT=511.3ms  E2E=838.4ms  prompt=221  completion=32
+  [long/run3] TTFT=480.2ms  E2E=819.2ms  prompt=221  completion=32
+
+Results written to /tmp/rtt50_baseline.csv
+
+Summary (9/9 successful):
+  TTFT  mean=621.5ms  min=477.9ms  max=950.3ms
+  E2E   mean=1324.6ms  min=819.2ms  max=1832.6ms
+[0;32m[INFO][0m 2026-04-18 16:50:54 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt50_baseline.csv
+[0;34m[STEP][0m 2026-04-18 16:50:54 Running benchmark: rtt50_quant-8bit
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 364750, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 550558, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+kex_exchange_identification: read: Connection reset by peer
+Connection reset by 117.50.189.89 port 22
+[0;32m[INFO][0m Prefill 就绪 (54s)
+[0;32m[INFO][0m 2026-04-18 16:52:09 Removing network latency...
+[0;34m[STEP][0m 2026-04-18 16:56:14 Continuing from RTT 50ms quant-8bit...
+[0;32m[INFO][0m 2026-04-18 16:56:14 Adding 25ms one-way latency...
+[0;34m[STEP][0m 2026-04-18 16:56:16 Running benchmark: rtt50_quant-8bit
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 365454, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 551235, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Prefill 就绪 (42s)
+[0;32m[INFO][0m Decode 就绪 (45s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt50_quant-8bit
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=992.9ms  E2E=1874.7ms  prompt=7  completion=64
+  [short/run2] TTFT=506.4ms  E2E=1387.9ms  prompt=7  completion=64
+  [short/run3] TTFT=504.3ms  E2E=1384.6ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=770.6ms  E2E=1667.8ms  prompt=52  completion=64
+  [medium/run2] TTFT=502.0ms  E2E=1396.9ms  prompt=52  completion=64
+  [medium/run3] TTFT=487.9ms  E2E=1391.7ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=1817.7ms  E2E=2150.6ms  prompt=221  completion=32
+  [long/run2] TTFT=487.2ms  E2E=844.0ms  prompt=221  completion=32
+  [long/run3] TTFT=474.0ms  E2E=823.5ms  prompt=221  completion=32
+
+Results written to /tmp/rtt50_quant-8bit.csv
+
+Summary (9/9 successful):
+  TTFT  mean=727.0ms  min=474.0ms  max=1817.7ms
+  E2E   mean=1435.8ms  min=823.5ms  max=2150.6ms
+[0;32m[INFO][0m 2026-04-18 16:58:00 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt50_quant-8bit.csv
+[0;34m[STEP][0m 2026-04-18 16:58:00 Running benchmark: rtt50_quant-4bit
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 365969, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 551886, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Decode 就绪 (42s)
+[0;32m[INFO][0m Prefill 就绪 (51s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt50_quant-4bit
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=949.8ms  E2E=1840.4ms  prompt=7  completion=64
+  [short/run2] TTFT=541.7ms  E2E=1422.0ms  prompt=7  completion=64
+  [short/run3] TTFT=499.2ms  E2E=1378.2ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=737.7ms  E2E=1631.7ms  prompt=52  completion=64
+  [medium/run2] TTFT=517.3ms  E2E=1414.7ms  prompt=52  completion=64
+  [medium/run3] TTFT=480.0ms  E2E=1377.2ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=1006.0ms  E2E=1319.4ms  prompt=221  completion=32
+  [long/run2] TTFT=520.2ms  E2E=850.3ms  prompt=221  completion=32
+  [long/run3] TTFT=515.7ms  E2E=850.0ms  prompt=221  completion=32
+
+Results written to /tmp/rtt50_quant-4bit.csv
+
+Summary (9/9 successful):
+  TTFT  mean=640.8ms  min=480.0ms  max=1006.0ms
+  E2E   mean=1342.6ms  min=850.0ms  max=1840.4ms
+[0;32m[INFO][0m 2026-04-18 16:59:48 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt50_quant-4bit.csv
+[0;32m[INFO][0m 2026-04-18 16:59:48 Removing network latency...
+[0;32m[INFO][0m 2026-04-18 16:59:50 Adding 50ms one-way latency...
+[0;34m[STEP][0m 2026-04-18 16:59:51 RTT: 100ms
+[0;34m[STEP][0m 2026-04-18 16:59:51 Running benchmark: rtt100_baseline
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 366562, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 552611, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Decode 就绪 (45s)
+[0;32m[INFO][0m Prefill 就绪 (63s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt100_baseline
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=1533.4ms  E2E=2433.9ms  prompt=7  completion=64
+  [short/run2] TTFT=692.0ms  E2E=1574.7ms  prompt=7  completion=64
+  [short/run3] TTFT=704.3ms  E2E=1577.2ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=1112.9ms  E2E=1994.1ms  prompt=52  completion=64
+  [medium/run2] TTFT=677.3ms  E2E=1554.2ms  prompt=52  completion=64
+  [medium/run3] TTFT=675.9ms  E2E=1578.6ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=1384.9ms  E2E=1698.6ms  prompt=221  completion=32
+  [long/run2] TTFT=690.1ms  E2E=1013.7ms  prompt=221  completion=32
+  [long/run3] TTFT=691.4ms  E2E=1020.7ms  prompt=221  completion=32
+
+Results written to /tmp/rtt100_baseline.csv
+
+Summary (9/9 successful):
+  TTFT  mean=906.9ms  min=675.9ms  max=1533.4ms
+  E2E   mean=1605.1ms  min=1013.7ms  max=2433.9ms
+[0;32m[INFO][0m 2026-04-18 17:02:02 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt100_baseline.csv
+[0;34m[STEP][0m 2026-04-18 17:02:02 Running benchmark: rtt100_quant-8bit
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 367076, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 553245, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Prefill 就绪 (42s)
+[0;32m[INFO][0m Decode 就绪 (45s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt100_quant-8bit
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=1632.9ms  E2E=2506.3ms  prompt=7  completion=64
+  [short/run2] TTFT=707.6ms  E2E=1580.6ms  prompt=7  completion=64
+  [short/run3] TTFT=699.2ms  E2E=1571.9ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=1464.2ms  E2E=2373.7ms  prompt=52  completion=64
+  [medium/run2] TTFT=690.5ms  E2E=1591.2ms  prompt=52  completion=64
+  [medium/run3] TTFT=699.6ms  E2E=1602.0ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=3899.2ms  E2E=4241.3ms  prompt=221  completion=32
+  [long/run2] TTFT=671.8ms  E2E=1034.3ms  prompt=221  completion=32
+  [long/run3] TTFT=674.7ms  E2E=1032.2ms  prompt=221  completion=32
+
+Results written to /tmp/rtt100_quant-8bit.csv
+
+Summary (9/9 successful):
+  TTFT  mean=1237.8ms  min=671.8ms  max=3899.2ms
+  E2E   mean=1948.2ms  min=1032.2ms  max=4241.3ms
+[0;32m[INFO][0m 2026-04-18 17:03:55 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt100_quant-8bit.csv
+[0;34m[STEP][0m 2026-04-18 17:03:55 Running benchmark: rtt100_quant-4bit
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 367600, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 553842, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Decode 就绪 (42s)
+[0;32m[INFO][0m Prefill 就绪 (48s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt100_quant-4bit
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=1540.0ms  E2E=2433.7ms  prompt=7  completion=64
+  [short/run2] TTFT=706.8ms  E2E=1569.7ms  prompt=7  completion=64
+  [short/run3] TTFT=707.9ms  E2E=1582.1ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=1164.3ms  E2E=2066.9ms  prompt=52  completion=64
+  [medium/run2] TTFT=693.7ms  E2E=1574.8ms  prompt=52  completion=64
+  [medium/run3] TTFT=674.4ms  E2E=1565.6ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=1323.9ms  E2E=1638.3ms  prompt=221  completion=32
+  [long/run2] TTFT=712.5ms  E2E=1039.7ms  prompt=221  completion=32
+  [long/run3] TTFT=678.7ms  E2E=1020.5ms  prompt=221  completion=32
+
+Results written to /tmp/rtt100_quant-4bit.csv
+
+Summary (9/9 successful):
+  TTFT  mean=911.4ms  min=674.4ms  max=1540.0ms
+  E2E   mean=1610.1ms  min=1020.5ms  max=2433.7ms
+[0;32m[INFO][0m 2026-04-18 17:05:47 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt100_quant-4bit.csv
+[0;32m[INFO][0m 2026-04-18 17:05:47 Removing network latency...
+[0;32m[INFO][0m 2026-04-18 17:05:50 Adding 100ms one-way latency...
+[0;34m[STEP][0m 2026-04-18 17:05:51 RTT: 200ms
+[0;34m[STEP][0m 2026-04-18 17:05:51 Running benchmark: rtt200_baseline
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 368225, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 554569, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Decode 就绪 (42s)
+[0;32m[INFO][0m Prefill 就绪 (42s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt200_baseline
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=2733.0ms  E2E=3631.5ms  prompt=7  completion=64
+  [short/run2] TTFT=1113.0ms  E2E=1984.5ms  prompt=7  completion=64
+  [short/run3] TTFT=1103.8ms  E2E=1982.2ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=2055.8ms  E2E=2955.2ms  prompt=52  completion=64
+  [medium/run2] TTFT=1078.4ms  E2E=1967.5ms  prompt=52  completion=64
+  [medium/run3] TTFT=1108.5ms  E2E=2003.4ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=2504.4ms  E2E=2824.3ms  prompt=221  completion=32
+  [long/run2] TTFT=1075.6ms  E2E=1400.9ms  prompt=221  completion=32
+  [long/run3] TTFT=1096.5ms  E2E=1422.2ms  prompt=221  completion=32
+
+Results written to /tmp/rtt200_baseline.csv
+
+Summary (9/9 successful):
+  TTFT  mean=1541.0ms  min=1075.6ms  max=2733.0ms
+  E2E   mean=2241.3ms  min=1400.9ms  max=3631.5ms
+[0;32m[INFO][0m 2026-04-18 17:07:53 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt200_baseline.csv
+[0;34m[STEP][0m 2026-04-18 17:07:53 Running benchmark: rtt200_quant-8bit
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 368732, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 555196, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Decode 就绪 (39s)
+[0;32m[INFO][0m Prefill 就绪 (42s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt200_quant-8bit
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=2886.4ms  E2E=3758.1ms  prompt=7  completion=64
+  [short/run2] TTFT=1130.7ms  E2E=2003.4ms  prompt=7  completion=64
+  [short/run3] TTFT=1132.8ms  E2E=2012.7ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=2266.8ms  E2E=3158.1ms  prompt=52  completion=64
+  [medium/run2] TTFT=1090.7ms  E2E=1982.6ms  prompt=52  completion=64
+  [medium/run3] TTFT=1104.5ms  E2E=1995.1ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=2600.0ms  E2E=2922.8ms  prompt=221  completion=32
+  [long/run2] TTFT=1071.0ms  E2E=1411.6ms  prompt=221  completion=32
+  [long/run3] TTFT=1088.5ms  E2E=1429.0ms  prompt=221  completion=32
+
+Results written to /tmp/rtt200_quant-8bit.csv
+
+Summary (9/9 successful):
+  TTFT  mean=1596.8ms  min=1071.0ms  max=2886.4ms
+  E2E   mean=2297.1ms  min=1411.6ms  max=3758.1ms
+[0;32m[INFO][0m 2026-04-18 17:09:57 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt200_quant-8bit.csv
+[0;34m[STEP][0m 2026-04-18 17:09:57 Running benchmark: rtt200_quant-4bit
+[0;34m[1m==>[0m [1m停止所有服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[1m[PASS][0m 所有服务已停止
+[0;34m[1m==>[0m [1m===== 启动 P/D Disaggregation 服务 =====[0m
+[0;34m[1m==>[0m [1m部署远程辅助脚本[0m
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu1
+[0;32m[INFO][0m 部署 remote_worker.sh → gpu2
+[0;34m[1m==>[0m [1m停止旧服务[0m
+[0;32m[INFO][0m 停止 Prefill (gpu1) ...
+[0;32m[INFO][0m 服务已停止
+[0;32m[INFO][0m 停止 Decode (gpu2) ...
+[0;32m[INFO][0m 服务已停止
+[0;34m[1m==>[0m [1m并行启动 Prefill + Decode[0m
+[0;32m[INFO][0m 启动 Decode (10.60.30.66:30001) ...
+[0;32m[INFO][0m Decode PID: 369245, 日志: /tmp/decode.log
+[0;32m[INFO][0m 启动 Prefill (10.60.23.70:30000) ...
+[0;32m[INFO][0m Prefill PID: 555814, 日志: /tmp/prefill.log
+[0;34m[1m==>[0m [1m等待服务就绪...[0m
+[0;32m[INFO][0m Prefill 就绪 (42s)
+[0;32m[INFO][0m Decode 就绪 (42s)
+[0;32m[1m[PASS][0m 所有服务已就绪
+
+  Prefill: http://10.60.23.70:30000
+  Decode:  http://10.60.30.66:30001
+  Bootstrap: 10.60.23.70:8998
+Waiting for servers... OK
+
+Config: rtt200_quant-4bit
+Input types: short, medium, long
+Runs per input: 3
+Total requests: 9
+
+--- short (10 tokens, max_new=64) ---
+  [short/run1] TTFT=2707.3ms  E2E=3601.1ms  prompt=7  completion=64
+  [short/run2] TTFT=1126.0ms  E2E=1999.3ms  prompt=7  completion=64
+  [short/run3] TTFT=1109.9ms  E2E=1981.7ms  prompt=7  completion=64
+
+--- medium (60 tokens, max_new=64) ---
+  [medium/run1] TTFT=2071.1ms  E2E=2973.7ms  prompt=52  completion=64
+  [medium/run2] TTFT=1077.0ms  E2E=1971.8ms  prompt=52  completion=64
+  [medium/run3] TTFT=1060.1ms  E2E=1959.5ms  prompt=52  completion=64
+
+--- long (256 tokens, max_new=32) ---
+  [long/run1] TTFT=2499.8ms  E2E=2811.5ms  prompt=221  completion=32
+  [long/run2] TTFT=1081.6ms  E2E=1411.9ms  prompt=221  completion=32
+  [long/run3] TTFT=1073.0ms  E2E=1417.9ms  prompt=221  completion=32
+
+Results written to /tmp/rtt200_quant-4bit.csv
+
+Summary (9/9 successful):
+  TTFT  mean=1534.0ms  min=1060.1ms  max=2707.3ms
+  E2E   mean=2236.5ms  min=1411.9ms  max=3601.1ms
+[0;32m[INFO][0m 2026-04-18 17:11:59 Results saved to /Users/user/Code/sglang-kvtuner-splitwise/results/latency_experiment/rtt200_quant-4bit.csv
+[0;32m[INFO][0m 2026-04-18 17:11:59 Removing network latency...
+[0;34m[STEP][0m 2026-04-18 17:12:02 All experiments completed!
+[0;32m[INFO][0m 2026-04-18 17:12:02 Removing network latency...

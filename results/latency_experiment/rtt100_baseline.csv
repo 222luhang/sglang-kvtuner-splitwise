@@ -1,0 +1,10 @@
+config,input_type,prompt_tokens,max_new_tokens,run_id,ttft_ms,e2e_ms,completion_tokens,success,error
+rtt100_baseline,short,7,64,1,1533.36,2433.90,64,true,
+rtt100_baseline,short,7,64,2,691.96,1574.67,64,true,
+rtt100_baseline,short,7,64,3,704.33,1577.16,64,true,
+rtt100_baseline,medium,52,64,1,1112.93,1994.10,64,true,
+rtt100_baseline,medium,52,64,2,677.26,1554.18,64,true,
+rtt100_baseline,medium,52,64,3,675.89,1578.63,64,true,
+rtt100_baseline,long,221,32,1,1384.90,1698.64,32,true,
+rtt100_baseline,long,221,32,2,690.10,1013.73,32,true,
+rtt100_baseline,long,221,32,3,691.45,1020.74,32,true,
