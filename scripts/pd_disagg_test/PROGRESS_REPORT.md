@@ -1,6 +1,6 @@
 # P/D Disaggregation + KVTuner 进展报告
 
-> 最后更新: 2026-04-14
+> 最后更新: 2026-04-18
 
 ## 1. 目标
 
@@ -104,6 +104,51 @@
 - GPU 测试: 对比 sender `[send_layer DEBUG]` 和 receiver `[_recv_kv DEBUG]` 的 layer 0 K sum/absmax
 - Read-back 验证: `[_recv_kv VERIFY]` 的 `match=True` 确认 scatter 写入正确
 
+### 4.6 冗余 CUDA 同步移除 + Overlap 调度修复 (2026-04-18)
+
+**问题**: V1 实验显示 TTFT 异常高 (xxlong: 25-28s)，远超预期。
+
+**根因分析**:
+1. 代码中存在 3 个冗余 `torch.cuda.synchronize()` 调用，阻塞了 overlap 调度
+2. `remote_worker.sh` 中 `DISABLE_OVERLAP` 默认为 `true`，导致 overlap 调度被禁用
+3. 条件参数传递逻辑错误 (`${VAR:+--flag}` 在 VAR="false" 时仍添加 flag)
+
+**修复内容**:
+
+| 修复项 | 文件 | 说明 |
+|--------|------|------|
+| 移除冗余同步 | conn.py | 移除 `quantize_on_gpu` 后、`_read_pages_from_gpu` 入口、`send_layer` 量化后的同步调用 |
+| 禁用 debug | conn.py | `_DEBUG_QUANT = False` |
+| Overlap 默认启用 | remote_worker.sh | `DISABLE_OVERLAP="${DISABLE_OVERLAP:-false}"` |
+| 条件 flag 修复 | remote_worker.sh | 改用 `[ "${VAR}" = "true" ]` 条件判断 |
+| KVTUNER_LAYER_BITS | configs/default.sh | 添加变量定义，修复 unbound variable |
+
+**性能提升**:
+
+| 输入类型 | V1 TTFT (ms) | V2 TTFT (ms) | 提升倍数 |
+|---------|-------------|-------------|---------|
+| xxlong (884 tok) | 25,123 | 395 | **63.6x** |
+| xlong (441 tok) | 21,440 | 343 | **62.5x** |
+| long (221 tok) | 17,211 | 331 | **52.0x** |
+| medium (52 tok) | 11,106 | 303 | **36.7x** |
+| short (7 tok) | 4,294 | 313 | **13.7x** |
+| tiny (1 tok) | 418 | 294 | 1.4x |
+
+**整体均值**: V1=13,265ms → V2=330ms，**提升 40.2x**
+
+### 4.7 传输量化效果评估 (V2 with sync optimization)
+
+**V2 Baseline vs Transfer Quantization**:
+
+| 配置 | Mean TTFT | vs Baseline | 带宽节省 |
+|-----|-----------|-------------|---------|
+| baseline | 330 ms | - | 0% |
+| quant-8bit | 343 ms | +4% | 50% |
+| quant-4bit | 396 ms | +20% | 75% |
+| mixed-b | 378 ms | +14% | 71% |
+
+**结论**: 在 overlap 调度生效后，传输量化对 TTFT 影响很小。主要价值在于带宽节省。
+
 ## 5. 实验结果
 
 ### 5.1 TTFT 实验 — 无网络延迟 (内网 <1ms)
@@ -135,7 +180,25 @@
 - **medium+**: 量化反而变慢，GPU 量化+反量化 ~4s 开销逐渐占主导
 - **Baseline 100% 成功率**, 量化配置 70-77% — 长文本 GPU 状态累积仍存在
 
-## 6. 已解决问题
+## 5.3 网络延迟实验 (2026-04-18)
+
+测试不同 RTT 下传输量化对 TTFT 的影响:
+
+| RTT | Baseline | quant-8bit | quant-4bit | 8-bit节省 | 4-bit节省 |
+|-----|----------|------------|------------|----------|----------|
+| 10ms | 362 ms | 353 ms | 386 ms | +2.2% | -6.8% |
+| 50ms | 501 ms | 494 ms | 512 ms | +1.4% | -2.3% |
+| 100ms | 689 ms | 691 ms | 696 ms | -0.3% | -1.0% |
+| 200ms | 1096 ms | 1103 ms | 1088 ms | -0.6% | +0.7% |
+
+**意外发现**: 传输量化在网络延迟场景下 TTFT 优化效果有限。
+
+**原因**:
+1. Overlap 调度使 KV 传输与 prefill 并行
+2. 内网带宽充足，传输时间差异对 TTFT 影响小
+3. 反量化开销抵消了传输优势
+
+**核心价值**: 传输量化的主要收益是 **带宽节省 (50-75%)**，而非 TTFT 优化。
 
 ### ~~P0: Scheduler segfault~~ ✅ 已解决
 scheduler 线程 native segfault 已在上游修复。
@@ -193,11 +256,16 @@ DtoD 拷贝 (NULL stream) 与 PyTorch 量化 (current stream) 之间缺少同步
 
 | 路径 | 说明 |
 |------|------|
-| `results/exp1_ttft/baseline.csv` | 无延迟 Baseline TTFT (30/30) |
-| `results/exp1_ttft/quant-8bit.csv` | 无延迟 8-bit TTFT (25/30) |
-| `results/exp1_ttft/quant-4bit.csv` | 无延迟 4-bit TTFT (25/30) |
-| `results/exp1_ttft/mixed-B.csv` | 无延迟 Mixed-B TTFT (20/30) |
-| `results/exp1_ttft/baseline-20ms.csv` | 20ms RTT Baseline TTFT (30/30) |
-| `results/exp1_ttft/quant-8bit-20ms.csv` | 20ms RTT 8-bit TTFT (21/30) |
-| `results/exp1_ttft/quant-4bit-20ms.csv` | 20ms RTT 4-bit TTFT (23/30) |
-| `results/exp1_ttft/mixed-B-20ms.csv` | 20ms RTT Mixed-B TTFT (22/30) |
+| `results/two_model_comparison/` | V1 实验 (sync issue 存在) |
+| `results/two_model_comparison_v2/` | V2 实验 (sync 优化后) |
+| `results/latency_experiment/` | 网络延迟实验 (RTT 10/50/100/200ms) |
+| `results/compare_v1_v2.py` | V1 vs V2 对比分析脚本 |
+
+### 新增实验脚本
+
+| 文件 | 说明 |
+|------|------|
+| `scripts/pd_disagg_test/continue_experiment.sh` | 断点续跑实验脚本 |
+| `scripts/pd_disagg_test/run_latency_experiment.sh` | 网络延迟实验脚本 |
+| `scripts/pd_disagg_test/run_v2_baseline.sh` | V2 baseline 单独运行 |
+| `scripts/pd_disagg_test/configs/gemma2-27b.sh` | Gemma2-27B 配置 (OOM 未完成) |
