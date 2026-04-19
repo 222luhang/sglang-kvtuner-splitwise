@@ -1,0 +1,22 @@
+{
+  "config": "bw0mbps_baseline",
+  "timestamp": "2026-04-19T17:11:32.626071",
+  "params": {
+    "concurrency": 4,
+    "num_requests": 16,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 8.15,
+    "successful": 16,
+    "failed": 0,
+    "requests_per_sec": 1.96,
+    "tokens_per_sec": 169.59,
+    "output_tokens_per_sec": 125.66,
+    "mean_ttft_ms": 716.0,
+    "p50_ttft_ms": 662.5,
+    "p99_ttft_ms": 1251.1,
+    "mean_e2e_ms": 1886.4
+  }
+}
