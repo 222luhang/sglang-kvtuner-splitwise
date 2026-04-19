@@ -3,12 +3,12 @@
 Run standard LLM evaluation benchmarks through PD disaggregated inference.
 
 Supported benchmarks:
-  - gsm8k:     Math reasoning (5-shot, accuracy)
-  - mmlu:      Language understanding (5-shot, accuracy)
-  - hellaswag: Commonsense reasoning (0-shot, accuracy)
+  - gsm8k:     Math reasoning (0-shot CoT, accuracy)
+  - mmlu:      Language understanding (0-shot direct, accuracy)
+  - hellaswag: Commonsense reasoning (0-shot direct, accuracy)
 
 Usage:
-    # GSM8K with 200 samples
+    # GSM8K with 200 samples, 0-shot
     python3 eval/run_benchmark.py \
         --benchmark gsm8k \
         --prefill-host 10.60.23.70 --decode-host 10.60.30.66 \
@@ -134,8 +134,32 @@ _GSM8K_INVALID = -9999999
 
 
 def _gsm8k_get_answer_value(answer_str):
-    """Extract numeric answer from GSM8K response."""
+    """Extract numeric answer from GSM8K response.
+
+    Priority:
+    1. Look for '#### <number>' (GSM8K canonical format)
+    2. Look for 'the answer is <number>' pattern
+    3. Fall back to the last number in the text
+    """
     answer_str = answer_str.replace(",", "")
+
+    # Priority 1: GSM8K canonical "#### number"
+    m = re.search(r"####\s*(-?\d+\.?\d*)", answer_str)
+    if m:
+        try:
+            return ast.literal_eval(m.group(1))
+        except (SyntaxError, ValueError):
+            pass
+
+    # Priority 2: "the answer is <number>"
+    m = re.search(r"(?i)the\s+answer\s+is\s*:?\s*\$?(-?\d+[\d,]*\.?\d*)", answer_str)
+    if m:
+        try:
+            return ast.literal_eval(m.group(1).replace(",", ""))
+        except (SyntaxError, ValueError):
+            pass
+
+    # Priority 3: last number in text
     numbers = re.findall(r"-?\d+\.?\d*", answer_str)
     if not numbers:
         return _GSM8K_INVALID
@@ -145,14 +169,20 @@ def _gsm8k_get_answer_value(answer_str):
         return _GSM8K_INVALID
 
 
-def _gsm8k_format_prompt(lines, idx, few_shot_examples):
-    """Format a GSM8K prompt with few-shot examples."""
-    question = f"Question: {lines[idx]['question']}\nAnswer:"
-    return few_shot_examples + question
+def _gsm8k_format_prompt(question, few_shot_examples, num_shots):
+    """Format a GSM8K prompt."""
+    if num_shots > 0:
+        return few_shot_examples + f"Question: {question}\nAnswer:"
+    # 0-shot with CoT guidance
+    return (
+        f"Question: {question}\n"
+        f"Let's solve this step by step, then give the final numeric answer "
+        f"after '####'.\nAnswer:"
+    )
 
 
-def load_gsm8k(num_samples, num_shots=5, data_dir=None):
-    """Load GSM8K dataset. Returns (samples, few_shot_prompt)."""
+def load_gsm8k(num_samples, num_shots=0, data_dir=None):
+    """Load GSM8K dataset. Returns samples list."""
     # Try local file first, then download
     local_path = os.path.join(data_dir, "gsm8k_test.jsonl") if data_dir else None
     if local_path and os.path.isfile(local_path):
@@ -178,14 +208,14 @@ def load_gsm8k(num_samples, num_shots=5, data_dir=None):
 
     samples = []
     for i, line in enumerate(eval_lines):
-        prompt = _gsm8k_format_prompt(eval_lines, i, few_shot)
+        prompt = _gsm8k_format_prompt(line["question"], few_shot, num_shots)
         label = _gsm8k_get_answer_value(line["answer"])
         samples.append({
             "id": i,
             "prompt": prompt,
             "label": label,
             "label_str": line["answer"].split("####")[-1].strip() if "####" in line["answer"] else str(label),
-            "max_new_tokens": 512,
+            "max_new_tokens": 1024,
         })
 
     return samples
@@ -194,8 +224,13 @@ def load_gsm8k(num_samples, num_shots=5, data_dir=None):
 def eval_gsm8k(prediction, label):
     """Evaluate a single GSM8K prediction."""
     pred_value = _gsm8k_get_answer_value(prediction)
+    # Use tolerance for float comparison
+    if isinstance(pred_value, float) or isinstance(label, float):
+        correct = abs(pred_value - label) < 1e-3 if pred_value != _GSM8K_INVALID else False
+    else:
+        correct = pred_value == label
     return {
-        "correct": pred_value == label,
+        "correct": correct,
         "predicted": pred_value,
         "expected": label,
     }
@@ -205,7 +240,16 @@ def eval_gsm8k(prediction, label):
 # MMLU benchmark
 # ---------------------------------------------------------------------------
 
-_MMLU_QUERY_TEMPLATE = """Answer the following multiple choice question. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where LETTER is one of ABCD. Think step by step before answering.
+_MMLU_QUERY_TEMPLATE_DIRECT = """{question}
+
+A) {A}
+B) {B}
+C) {C}
+D) {D}
+
+Answer:""".strip()
+
+_MMLU_QUERY_TEMPLATE_COT = """Answer the following multiple choice question. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where LETTER is one of ABCD. Think step by step before answering.
 
 {question}
 
@@ -217,7 +261,32 @@ D) {D}""".strip()
 _ANSWER_PATTERN_MULTICHOICE = r"(?i)Answer\s*:\s*([A-D])"
 
 
-def load_mmlu(num_samples, num_shots=5):
+def _extract_multichoice(prediction):
+    """Extract A/B/C/D from model output with multiple fallback strategies."""
+    # Strategy 1: "Answer: X" pattern
+    m = re.search(_ANSWER_PATTERN_MULTICHOICE, prediction)
+    if m:
+        return m.group(1).upper()
+
+    # Strategy 2: standalone letter at start or after newline
+    m = re.search(r"(?:^|\n)\s*([A-D])\s*[)\.]", prediction)
+    if m:
+        return m.group(1).upper()
+
+    # Strategy 3: first single A/B/C/D letter in output
+    cleaned = prediction.strip()
+    if cleaned and cleaned[0] in "ABCD":
+        return cleaned[0]
+
+    # Strategy 4: look for "(X)" pattern
+    m = re.search(r"\(([A-D])\)", prediction)
+    if m:
+        return m.group(1).upper()
+
+    return None
+
+
+def load_mmlu(num_samples, num_shots=0):
     """Load MMLU dataset from HuggingFace. Returns samples list."""
     from datasets import load_dataset
     ds = load_dataset("cais/mmlu", "all", split="test")
@@ -228,7 +297,7 @@ def load_mmlu(num_samples, num_shots=5):
         if num_samples and count >= num_samples:
             break
         choices = item["choices"]
-        prompt = _MMLU_QUERY_TEMPLATE.format(
+        prompt = _MMLU_QUERY_TEMPLATE_DIRECT.format(
             question=item["question"],
             A=choices[0], B=choices[1], C=choices[2], D=choices[3],
         )
@@ -240,7 +309,7 @@ def load_mmlu(num_samples, num_shots=5):
             "label": label_letter,
             "label_str": label_letter,
             "subject": item.get("subject", "unknown"),
-            "max_new_tokens": 256,
+            "max_new_tokens": 32,
         })
         count += 1
 
@@ -249,8 +318,7 @@ def load_mmlu(num_samples, num_shots=5):
 
 def eval_mmlu(prediction, label):
     """Evaluate a single MMLU prediction."""
-    match = re.search(_ANSWER_PATTERN_MULTICHOICE, prediction)
-    extracted = match.group(1).upper() if match else None
+    extracted = _extract_multichoice(prediction)
     return {
         "correct": extracted == label,
         "predicted": extracted,
@@ -262,14 +330,16 @@ def eval_mmlu(prediction, label):
 # HellaSwag benchmark
 # ---------------------------------------------------------------------------
 
-_HELLASWAG_TEMPLATE = """Pick the most plausible continuation of the following text. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where LETTER is one of ABCD.
+_HELLASWAG_TEMPLATE = """Pick the most plausible continuation.
 
 {context}
 
 A) {A}
 B) {B}
 C) {C}
-D) {D}""".strip()
+D) {D}
+
+Answer:""".strip()
 
 
 def load_hellaswag(num_samples):
@@ -297,7 +367,7 @@ def load_hellaswag(num_samples):
             "prompt": prompt,
             "label": label_letter,
             "label_str": label_letter,
-            "max_new_tokens": 256,
+            "max_new_tokens": 32,
         })
         count += 1
 
@@ -306,8 +376,7 @@ def load_hellaswag(num_samples):
 
 def eval_hellaswag(prediction, label):
     """Evaluate a single HellaSwag prediction."""
-    match = re.search(_ANSWER_PATTERN_MULTICHOICE, prediction)
-    extracted = match.group(1).upper() if match else None
+    extracted = _extract_multichoice(prediction)
     return {
         "correct": extracted == label,
         "predicted": extracted,
@@ -357,13 +426,11 @@ def run_benchmark(args):
     bench = BENCHMARKS[args.benchmark]
 
     # Load data
-    print(f"Loading {args.benchmark} data...", flush=True)
+    print(f"Loading {args.benchmark} data (num_shots={args.num_shots})...", flush=True)
     if args.benchmark == "gsm8k":
-        samples = bench["loader"](args.num_samples, data_dir=args.data_dir)
+        samples = bench["loader"](args.num_samples, num_shots=args.num_shots, data_dir=args.data_dir)
     elif args.benchmark == "mmlu":
-        samples = bench["loader"](args.num_samples)
-    elif args.benchmark == "hellaswag":
-        samples = bench["loader"](args.num_samples)
+        samples = bench["loader"](args.num_samples, num_shots=args.num_shots)
     else:
         samples = bench["loader"](args.num_samples)
 
@@ -406,7 +473,7 @@ def run_benchmark(args):
         return {
             "id": sample["id"],
             "label": sample["label_str"],
-            "output": resp["text"][:200],
+            "output": resp["text"][:500],
             "correct": eval_result["correct"],
             "predicted": eval_result["predicted"],
             "expected": eval_result["expected"],
@@ -511,7 +578,9 @@ def main():
                         help="Label for this config (used in output)")
     parser.add_argument("--num-samples", type=int, default=200,
                         help="Number of samples to evaluate")
-    parser.add_argument("--parallel", type=int, default=4,
+    parser.add_argument("--num-shots", type=int, default=0,
+                        help="Number of few-shot examples (default: 0)")
+    parser.add_argument("--parallel", type=int, default=1,
                         help="Number of concurrent requests")
     parser.add_argument("--timeout", type=int, default=180,
                         help="Per-request timeout in seconds")
