@@ -1,0 +1,22 @@
+{
+  "config": "baseline",
+  "timestamp": "2026-04-19T20:33:22.947484",
+  "params": {
+    "concurrency": 4,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 18.37,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 1.74,
+    "tokens_per_sec": 150.98,
+    "output_tokens_per_sec": 111.47,
+    "mean_ttft_ms": 1012.8,
+    "p50_ttft_ms": 963.6,
+    "p99_ttft_ms": 1593.3,
+    "mean_e2e_ms": 2174.2
+  }
+}

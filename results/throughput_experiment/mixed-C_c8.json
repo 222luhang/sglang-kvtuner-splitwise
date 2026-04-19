@@ -1,0 +1,22 @@
+{
+  "config": "mixed-C",
+  "timestamp": "2026-04-19T20:51:49.832392",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 9.22,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 3.47,
+    "tokens_per_sec": 300.99,
+    "output_tokens_per_sec": 222.21,
+    "mean_ttft_ms": 991.8,
+    "p50_ttft_ms": 1049.3,
+    "p99_ttft_ms": 1348.0,
+    "mean_e2e_ms": 2158.4
+  }
+}

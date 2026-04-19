@@ -1,0 +1,22 @@
+{
+  "config": "uniform-4bit",
+  "timestamp": "2026-04-19T20:24:14.292943",
+  "params": {
+    "concurrency": 2,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 35.37,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 0.9,
+    "tokens_per_sec": 78.42,
+    "output_tokens_per_sec": 57.9,
+    "mean_ttft_ms": 1057.9,
+    "p50_ttft_ms": 1214.1,
+    "p99_ttft_ms": 1225.9,
+    "mean_e2e_ms": 2174.3
+  }
+}
