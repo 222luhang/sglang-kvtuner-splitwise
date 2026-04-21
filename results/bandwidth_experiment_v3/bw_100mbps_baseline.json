@@ -1,0 +1,22 @@
+{
+  "config": "bw_100mbps_baseline",
+  "timestamp": "2026-04-21T15:46:01.530170",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 7.93,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 4.03,
+    "tokens_per_sec": 349.71,
+    "output_tokens_per_sec": 258.19,
+    "mean_ttft_ms": 797.9,
+    "p50_ttft_ms": 754.4,
+    "p99_ttft_ms": 1101.1,
+    "mean_e2e_ms": 1977.6
+  }
+}

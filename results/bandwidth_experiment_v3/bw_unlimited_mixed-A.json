@@ -1,0 +1,22 @@
+{
+  "config": "bw_unlimited_mixed-A",
+  "timestamp": "2026-04-21T16:28:57.344917",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 10.4,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 3.08,
+    "tokens_per_sec": 266.68,
+    "output_tokens_per_sec": 196.88,
+    "mean_ttft_ms": 1345.7,
+    "p50_ttft_ms": 1364.2,
+    "p99_ttft_ms": 1642.1,
+    "mean_e2e_ms": 2509.0
+  }
+}

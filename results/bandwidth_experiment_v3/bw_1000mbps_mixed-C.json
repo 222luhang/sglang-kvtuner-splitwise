@@ -1,0 +1,22 @@
+{
+  "config": "bw_1000mbps_mixed-C",
+  "timestamp": "2026-04-21T16:24:21.243030",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 9.26,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 3.45,
+    "tokens_per_sec": 299.45,
+    "output_tokens_per_sec": 221.08,
+    "mean_ttft_ms": 1009.8,
+    "p50_ttft_ms": 1075.9,
+    "p99_ttft_ms": 1262.1,
+    "mean_e2e_ms": 2180.4
+  }
+}

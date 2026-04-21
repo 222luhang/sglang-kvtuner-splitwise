@@ -1,0 +1,22 @@
+{
+  "config": "bw_1000mbps_quant-8bit",
+  "timestamp": "2026-04-21T15:54:01.885591",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 7.53,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 4.25,
+    "tokens_per_sec": 368.55,
+    "output_tokens_per_sec": 272.09,
+    "mean_ttft_ms": 704.2,
+    "p50_ttft_ms": 647.4,
+    "p99_ttft_ms": 927.6,
+    "mean_e2e_ms": 1868.2
+  }
+}
