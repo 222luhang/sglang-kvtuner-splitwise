@@ -1,0 +1,23 @@
+{
+  "config": "seq3072_baseline",
+  "timestamp": "2026-04-22T23:14:47.754026",
+  "params": {
+    "concurrency": 4,
+    "num_requests": 16,
+    "prompt_type": "medium",
+    "prompt_tokens": 3072,
+    "max_new_tokens": 32
+  },
+  "results": {
+    "total_time_s": 180.27,
+    "successful": 15,
+    "failed": 1,
+    "requests_per_sec": 0.08,
+    "tokens_per_sec": 223.94,
+    "output_tokens_per_sec": 2.66,
+    "mean_ttft_ms": 9248.1,
+    "p50_ttft_ms": 7750.5,
+    "p99_ttft_ms": 20197.6,
+    "mean_e2e_ms": 9804.2
+  }
+}

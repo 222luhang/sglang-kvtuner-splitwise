@@ -204,8 +204,27 @@ async def run_concurrent_requests(
         return await asyncio.gather(*tasks)
 
 
-def generate_prompts(num_requests: int, prompt_type: str = "medium") -> list[str]:
-    """Generate test prompts."""
+def generate_prompts(num_requests: int, prompt_type: str = "medium",
+                     prompt_tokens: int = 0) -> list[str]:
+    """Generate test prompts. If prompt_tokens > 0, generate a prompt of that
+    approximate token length by repeating seed text (~1.3 tokens per word)."""
+
+    if prompt_tokens > 0:
+        seed = (
+            "The quick brown fox jumps over the lazy dog. "
+            "In a world where technology and nature coexist, "
+            "we find ourselves at a crossroads between innovation and tradition. "
+            "The future of artificial intelligence depends on our ability to balance "
+            "progress with responsibility. Let us explore the possibilities and "
+            "challenges that lie ahead as we navigate this complex landscape. "
+        )
+        words = seed.split()
+        target_words = int(prompt_tokens / 1.3)
+        result_words = []
+        while len(result_words) < target_words:
+            result_words.extend(words)
+        base = " ".join(result_words[:target_words])
+        return [f"[Request {i}] {base}" for i in range(num_requests)]
 
     templates = {
         "short": "Write a brief summary of AI.",
@@ -227,6 +246,8 @@ def main():
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--num-requests", type=int, default=32)
     parser.add_argument("--prompt-type", default="medium", choices=["short", "medium", "long"])
+    parser.add_argument("--prompt-tokens", type=int, default=0,
+                        help="Override prompt length in approximate tokens (0 = use prompt-type)")
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--timeout", type=float, default=120.0)
     parser.add_argument("--config-name", default="throughput_test")
@@ -238,7 +259,8 @@ def main():
     print(f"Prompt type: {args.prompt_type}, Max new tokens: {args.max_new_tokens}")
     print()
 
-    prompts = generate_prompts(args.num_requests, args.prompt_type)
+    prompts = generate_prompts(args.num_requests, args.prompt_type,
+                               prompt_tokens=args.prompt_tokens)
 
     print(f"Starting {args.num_requests} requests with concurrency {args.concurrency}...")
     start_time = time.perf_counter()
@@ -304,6 +326,7 @@ def main():
             "concurrency": args.concurrency,
             "num_requests": args.num_requests,
             "prompt_type": args.prompt_type,
+            "prompt_tokens": args.prompt_tokens,
             "max_new_tokens": args.max_new_tokens,
         },
         "results": {

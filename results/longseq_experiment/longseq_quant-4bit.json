@@ -1,0 +1,23 @@
+{
+  "config": "longseq_quant-4bit",
+  "timestamp": "2026-04-22T22:21:42.659772",
+  "params": {
+    "concurrency": 4,
+    "num_requests": 16,
+    "prompt_type": "medium",
+    "prompt_tokens": 4096,
+    "max_new_tokens": 32
+  },
+  "results": {
+    "total_time_s": 300.09,
+    "successful": 14,
+    "failed": 2,
+    "requests_per_sec": 0.05,
+    "tokens_per_sec": 166.71,
+    "output_tokens_per_sec": 1.49,
+    "mean_ttft_ms": 12251.0,
+    "p50_ttft_ms": 10011.1,
+    "p99_ttft_ms": 31467.8,
+    "mean_e2e_ms": 12809.9
+  }
+}
