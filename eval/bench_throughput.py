@@ -248,6 +248,8 @@ def main():
     parser.add_argument("--prompt-type", default="medium", choices=["short", "medium", "long"])
     parser.add_argument("--prompt-tokens", type=int, default=0,
                         help="Override prompt length in approximate tokens (0 = use prompt-type)")
+    parser.add_argument("--prompt-length", type=int, default=0,
+                        help="Alias for --prompt-tokens (backward compat)")
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--timeout", type=float, default=120.0)
     parser.add_argument("--config-name", default="throughput_test")
@@ -256,11 +258,15 @@ def main():
 
     print(f"Throughput Benchmark - {args.config_name}")
     print(f"Concurrency: {args.concurrency}, Requests: {args.num_requests}")
-    print(f"Prompt type: {args.prompt_type}, Max new tokens: {args.max_new_tokens}")
+    prompt_tokens = args.prompt_tokens or args.prompt_length
+    if prompt_tokens > 0:
+        print(f"Prompt type: {args.prompt_type}, Prompt tokens: ~{prompt_tokens}, Max new tokens: {args.max_new_tokens}")
+    else:
+        print(f"Prompt type: {args.prompt_type}, Max new tokens: {args.max_new_tokens}")
     print()
 
     prompts = generate_prompts(args.num_requests, args.prompt_type,
-                               prompt_tokens=args.prompt_tokens)
+                               prompt_tokens=args.prompt_tokens or args.prompt_length)
 
     print(f"Starting {args.num_requests} requests with concurrency {args.concurrency}...")
     start_time = time.perf_counter()
@@ -326,7 +332,7 @@ def main():
             "concurrency": args.concurrency,
             "num_requests": args.num_requests,
             "prompt_type": args.prompt_type,
-            "prompt_tokens": args.prompt_tokens,
+            "prompt_tokens": args.prompt_tokens or args.prompt_length,
             "max_new_tokens": args.max_new_tokens,
         },
         "results": {

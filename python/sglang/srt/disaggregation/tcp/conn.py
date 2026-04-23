@@ -52,12 +52,31 @@ from sglang.srt.disaggregation.common.conn import (
     CommonKVReceiver,
     CommonKVSender,
 )
+import struct as _struct
+
 from sglang.srt.disaggregation.tcp.transfer_quant import (
+    _DTYPE_CODE_BF16,
+    _DTYPE_CODE_FP16,
     dequantize_from_transfer,
     dequantize_on_gpu,
     quantize_for_transfer,
     quantize_on_gpu,
 )
+
+# Wire-format header for quantized payloads (from transfer_quant.py).
+# Must be captured before conn.py's own _HEADER_FMT overrides it.
+_WIRE_HEADER_FMT = "!iiiI"
+_WIRE_HEADER_SIZE = 16
+
+# Lazily import Triton kernels; fall back to PyTorch if unavailable.
+try:
+    from sglang.srt.disaggregation.tcp.transfer_quant_triton import (
+        dequantize_4bit_on_gpu as _triton_dequant_4bit,
+        quantize_4bit_on_gpu as _triton_quant_4bit,
+    )
+    _HAS_TRITON = True
+except ImportError:
+    _HAS_TRITON = False
 from sglang.srt.disaggregation.utils import DisaggregationMode
 from sglang.srt.server_args import ServerArgs
 from sglang.srt.utils import maybe_wrap_ipv6_address
@@ -68,6 +87,35 @@ logger = logging.getLogger(__name__)
 # on sender and receiver for layer 0.  Useful for debugging quant correctness
 # but adds ~1ms per checked layer due to GPU sync + reduction.
 _DEBUG_QUANT = False
+
+# ---------------------------------------------------------------------------
+# Triton-accelerated 4-bit helpers (drop-in for quantize_on_gpu / dequantize_on_gpu)
+# ---------------------------------------------------------------------------
+
+def _triton_quant_4bit_to_bytes(tensor: torch.Tensor, group_size: int = 64) -> bytes:
+    """Quantize a GPU tensor with Triton and return wire-format bytes."""
+    packed, scales = _triton_quant_4bit(tensor, group_size=group_size)
+    torch.cuda.synchronize()
+    is_bf16 = tensor.dtype == torch.bfloat16
+    dtype_code = _DTYPE_CODE_BF16 if is_bf16 else _DTYPE_CODE_FP16
+    num_elements = tensor.numel()
+    header = _struct.pack(_WIRE_HEADER_FMT, 4, group_size, num_elements, dtype_code)
+    return header + scales.numpy().tobytes() + packed.numpy().tobytes()
+
+
+def _triton_dequant_4bit_from_bytes(packed: bytes, device: torch.device, group_size: int = 64) -> torch.Tensor:
+    """Dequantize wire-format bytes with Triton and return a GPU tensor."""
+    nbits, gs, num_elements, dtype_code = _struct.unpack(_WIRE_HEADER_FMT, packed[:_WIRE_HEADER_SIZE])
+    is_bf16 = dtype_code == _DTYPE_CODE_BF16
+    target_dtype = torch.bfloat16 if is_bf16 else torch.float16
+    remainder = num_elements % gs
+    pad = (gs - remainder) if remainder else 0
+    num_groups = (num_elements + pad) // gs
+    import numpy as _np
+    scales_offset = 16
+    scales_np = _np.frombuffer(packed[scales_offset : scales_offset + num_groups * 2], dtype=_np.float16).copy()
+    packed_np = _np.frombuffer(packed[scales_offset + num_groups * 2 : scales_offset + num_groups * 2 + (num_elements + 1) // 2], dtype=_np.uint8).copy()
+    return _triton_dequant_4bit(packed_np, scales_np, num_elements, group_size=gs, device=device, dtype=target_dtype)
 
 # ---------------------------------------------------------------------------
 # Protocol constants
@@ -609,8 +657,12 @@ class _PendingTransfer:
                     )
                 t_quant = time.perf_counter()
                 total_gather_ms += (t_quant - t_gather) * 1000
-                k_data = quantize_on_gpu(k_tensor, nbits=nbits)
-                v_data = quantize_on_gpu(v_tensor, nbits=nbits)
+                if _HAS_TRITON and nbits == 4:
+                    k_data = _triton_quant_4bit_to_bytes(k_tensor)
+                    v_data = _triton_quant_4bit_to_bytes(v_tensor)
+                else:
+                    k_data = quantize_on_gpu(k_tensor, nbits=nbits)
+                    v_data = quantize_on_gpu(v_tensor, nbits=nbits)
                 # No sync needed: quantize_on_gpu returns CPU bytes
                 # (implicit sync via .cpu() inside quantize_on_gpu)
                 # Explicitly free large GPU temporaries to prevent fragmentation
@@ -1052,8 +1104,12 @@ class TCPKVSender(CommonKVSender):
                 )
             t_quant = time.perf_counter()
             gather_ms = (t_quant - t_gather) * 1000
-            k_data = quantize_on_gpu(k_tensor, nbits=nbits)
-            v_data = quantize_on_gpu(v_tensor, nbits=nbits)
+            if _HAS_TRITON and nbits == 4:
+                k_data = _triton_quant_4bit_to_bytes(k_tensor)
+                v_data = _triton_quant_4bit_to_bytes(v_tensor)
+            else:
+                k_data = quantize_on_gpu(k_tensor, nbits=nbits)
+                v_data = quantize_on_gpu(v_tensor, nbits=nbits)
             # No sync needed: quantize_on_gpu returns CPU bytes
             # (implicit sync via .cpu() inside quantize_on_gpu)
             del k_tensor, v_tensor
@@ -1396,7 +1452,11 @@ class TCPKVReceiver(CommonKVReceiver):
             if is_quantized:
                 gpu_device = torch.device("cuda", self.kv_mgr.kv_args.gpu_id)
                 t_dequant = time.perf_counter()
-                tensor = dequantize_on_gpu(data, gpu_device)
+                nbits = _struct.unpack(_WIRE_HEADER_FMT, data[:_WIRE_HEADER_SIZE])[0]
+                if _HAS_TRITON and nbits == 4:
+                    tensor = _triton_dequant_4bit_from_bytes(data, gpu_device)
+                else:
+                    tensor = dequantize_on_gpu(data, gpu_device)
                 # Sync: dequantize_on_gpu uses PyTorch ops (current stream),
                 # but _write_gpu_tensor_to_pages uses cuMemcpyDtoD (NULL stream).
                 # Ensure dequantized data is fully materialized before scatter.
