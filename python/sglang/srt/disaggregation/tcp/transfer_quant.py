@@ -18,11 +18,14 @@ dtype_code: 0 = float16, 1 = bfloat16
 
 from __future__ import annotations
 
+import logging
 import struct
 from typing import Tuple
 
 import numpy as np
 import torch
+
+logger = logging.getLogger(__name__)
 
 # ── constants ────────────────────────────────────────────────────────────────
 
@@ -225,6 +228,12 @@ def quantize_on_gpu(
     so the receiver can use either GPU or CPU dequantization.
     """
     assert tensor.is_cuda, "quantize_on_gpu requires a CUDA tensor"
+
+    # Use fused Triton kernel for 4-bit (much faster than PyTorch fallback)
+    if nbits == 4:
+        return _quantize_4bit_triton(tensor, group_size)
+
+    # --- 8-bit path (original PyTorch, already fast) ---
     is_bf16 = tensor.dtype == torch.bfloat16
     dtype_code = _DTYPE_CODE_BF16 if is_bf16 else _DTYPE_CODE_FP16
     num_elements = tensor.numel()
@@ -243,7 +252,7 @@ def quantize_on_gpu(
     groups = fp32.reshape(-1, group_size)
 
     # Symmetric quantization: scale = max(|group|) / q_max
-    q_max = (1 << (nbits - 1)) - 1  # 127 for 8-bit, 7 for 4-bit
+    q_max = (1 << (nbits - 1)) - 1  # 127 for 8-bit
     abs_max = groups.abs().amax(dim=1)  # (num_groups,)
     scales = (abs_max / q_max).to(torch.float16)
     safe_scales = torch.where(
@@ -262,17 +271,61 @@ def quantize_on_gpu(
     header = struct.pack(_HEADER_FMT, nbits, group_size, num_elements, dtype_code)
     scales_bytes = scales.cpu().numpy().tobytes()
     del scales, safe_scales
-
-    if nbits == 4:
-        q_u8 = q_flat.to(torch.uint8) & 0x0F
-        if num_elements % 2:
-            q_u8 = torch.cat([q_u8, torch.zeros(1, dtype=torch.uint8, device=q_u8.device)])
-        packed = q_u8[0::2] | (q_u8[1::2] << 4)
-        q_bytes = packed.cpu().numpy().tobytes()
-    else:
-        q_bytes = q_flat.cpu().numpy().tobytes()
+    q_bytes = q_flat.cpu().numpy().tobytes()
 
     return header + scales_bytes + q_bytes
+
+
+def _quantize_4bit_pytorch(tensor: torch.Tensor, group_size: int = 64) -> bytes:
+    """PyTorch fallback for 4-bit quantize (slow, used only if Triton unavailable)."""
+    is_bf16 = tensor.dtype == torch.bfloat16
+    dtype_code = _DTYPE_CODE_BF16 if is_bf16 else _DTYPE_CODE_FP16
+    num_elements = tensor.numel()
+
+    fp32 = tensor.to(torch.float32)
+    remainder = num_elements % group_size
+    if remainder:
+        fp32 = torch.nn.functional.pad(fp32, (0, group_size - remainder))
+
+    groups = fp32.reshape(-1, group_size)
+    q_max = 7
+    abs_max = groups.abs().amax(dim=1)
+    scales = (abs_max / q_max).to(torch.float16)
+    safe_scales = torch.where(
+        scales == 0, torch.tensor(1e-5, dtype=torch.float16, device=scales.device), scales
+    )
+    quantized = (groups / safe_scales[:, None].float()).round().clamp(-8, 7).to(torch.int8)
+    del fp32, groups, abs_max, safe_scales
+    q_flat = quantized.reshape(-1)[:num_elements]
+    del quantized
+    q_u8 = q_flat.to(torch.uint8) & 0x0F
+    if num_elements % 2:
+        q_u8 = torch.cat([q_u8, torch.zeros(1, dtype=torch.uint8, device=q_u8.device)])
+    packed = q_u8[0::2] | (q_u8[1::2] << 4)
+    del q_flat, q_u8
+
+    header = struct.pack(_HEADER_FMT, 4, group_size, num_elements, dtype_code)
+    return header + scales.cpu().numpy().tobytes() + packed.cpu().numpy().tobytes()
+
+
+def _quantize_4bit_triton(tensor: torch.Tensor, group_size: int = 64) -> bytes:
+    """Fast 4-bit quantize path using fused Triton kernel."""
+    try:
+        from sglang.srt.disaggregation.tcp.transfer_quant_triton import (
+            quantize_4bit_on_gpu,
+        )
+    except ImportError:
+        logger.warning("[quant] Triton kernel import failed, falling back to PyTorch 4-bit")
+        return _quantize_4bit_pytorch(tensor, group_size)
+
+    is_bf16 = tensor.dtype == torch.bfloat16
+    dtype_code = _DTYPE_CODE_BF16 if is_bf16 else _DTYPE_CODE_FP16
+    num_elements = tensor.numel()
+
+    packed, scales = quantize_4bit_on_gpu(tensor, group_size=group_size)
+
+    header = struct.pack(_HEADER_FMT, 4, group_size, num_elements, dtype_code)
+    return header + scales.numpy().tobytes() + packed.numpy().tobytes()
 
 
 def dequantize_on_gpu(
@@ -287,6 +340,12 @@ def dequantize_on_gpu(
     nbits, group_size, num_elements, dtype_code = struct.unpack(
         _HEADER_FMT, packed[:_HEADER_SIZE]
     )
+
+    # Use fused Triton kernel for 4-bit (much faster than PyTorch fallback)
+    if nbits == 4:
+        return _dequantize_4bit_triton(packed, device)
+
+    # --- 8-bit path (original PyTorch, already fast) ---
     is_bf16 = dtype_code == _DTYPE_CODE_BF16
     target_dtype = torch.bfloat16 if is_bf16 else torch.float16
 
@@ -305,26 +364,10 @@ def dequantize_on_gpu(
 
     # Parse quantized values → GPU
     q_offset = scales_offset + scales_nbytes
-    if nbits == 4:
-        packed_len = (num_elements + 1) // 2
-        packed_np = np.frombuffer(
-            packed[q_offset : q_offset + packed_len], dtype=np.uint8
-        ).copy()
-        packed_t = torch.from_numpy(packed_np).to(device=device)
-        low = (packed_t & 0x0F).to(torch.int8)
-        high = (packed_t >> 4).to(torch.int8)
-        # Sign-extend 4-bit
-        low = torch.where(low >= 8, low - 16, low)
-        high = torch.where(high >= 8, high - 16, high)
-        q_flat = torch.empty(packed_len * 2, dtype=torch.int8, device=device)
-        q_flat[0::2] = low
-        q_flat[1::2] = high
-        q_flat = q_flat[:num_elements]
-    else:
-        q_np = np.frombuffer(
-            packed[q_offset : q_offset + num_elements], dtype=np.int8
-        ).copy()
-        q_flat = torch.from_numpy(q_np).to(device=device)
+    q_np = np.frombuffer(
+        packed[q_offset : q_offset + num_elements], dtype=np.int8
+    ).copy()
+    q_flat = torch.from_numpy(q_np).to(device=device)
 
     # Re-pad for group reshape
     if pad:
@@ -339,6 +382,64 @@ def dequantize_on_gpu(
     result = fp32.reshape(-1)[:num_elements].to(target_dtype)
     del fp32
     return result.contiguous()
+
+
+def _dequantize_4bit_pytorch(packed: bytes, device: torch.device) -> torch.Tensor:
+    """PyTorch fallback for 4-bit dequantize (slow, used only if Triton unavailable)."""
+    nbits, group_size, num_elements, dtype_code = struct.unpack(
+        _HEADER_FMT, packed[:_HEADER_SIZE]
+    )
+    is_bf16 = dtype_code == _DTYPE_CODE_BF16
+    target_dtype = torch.bfloat16 if is_bf16 else torch.float16
+    remainder = num_elements % group_size
+    pad = (group_size - remainder) if remainder else 0
+    num_groups = (num_elements + pad) // group_size
+
+    scales_offset = _HEADER_SIZE
+    scales_nbytes = num_groups * 2
+    scales = torch.from_numpy(
+        np.frombuffer(packed[scales_offset:scales_offset + scales_nbytes], dtype=np.float16).copy()
+    ).to(device=device, dtype=torch.float16)
+
+    q_offset = scales_offset + scales_nbytes
+    packed_len = (num_elements + 1) // 2
+    packed_t = torch.from_numpy(
+        np.frombuffer(packed[q_offset:q_offset + packed_len], dtype=np.uint8).copy()
+    ).to(device=device)
+    low = (packed_t & 0x0F).to(torch.int8)
+    high = (packed_t >> 4).to(torch.int8)
+    low = torch.where(low >= 8, low - 16, low)
+    high = torch.where(high >= 8, high - 16, high)
+    q_flat = torch.empty(packed_len * 2, dtype=torch.int8, device=device)
+    q_flat[0::2] = low
+    q_flat[1::2] = high
+    q_flat = q_flat[:num_elements]
+    del low, high, packed_t
+
+    if pad:
+        q_padded = torch.nn.functional.pad(q_flat, (0, pad))
+    else:
+        q_padded = q_flat
+    del q_flat
+
+    groups = q_padded.reshape(-1, group_size).float()
+    del q_padded
+    fp32 = groups * scales[:, None].float()
+    del groups, scales
+    return fp32.reshape(-1)[:num_elements].to(target_dtype).contiguous()
+
+
+def _dequantize_4bit_triton(packed: bytes, device: torch.device) -> torch.Tensor:
+    """Fast 4-bit dequantize path using fused Triton kernel."""
+    try:
+        from sglang.srt.disaggregation.tcp.transfer_quant_triton import (
+            dequantize_4bit_from_transfer,
+        )
+    except ImportError:
+        logger.warning("[dequant] Triton kernel import failed, falling back to PyTorch 4-bit")
+        return _dequantize_4bit_pytorch(packed, device)
+
+    return dequantize_4bit_from_transfer(packed, device)
 
 
 def transfer_compression_ratio(
