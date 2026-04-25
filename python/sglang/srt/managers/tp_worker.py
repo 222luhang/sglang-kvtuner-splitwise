@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List, Optional
 
@@ -477,6 +478,7 @@ class TpModelWorker(BaseTpWorker):
                 and self.server_args.disaggregation_transfer_backend == "tcp"
                 and model_worker_batch.reqs
                 and forward_batch.forward_mode.is_extend()
+                and os.environ.get("SGLANG_DISABLE_LAYER_PIPELINE", "") != "1"
             ):
                 forward_batch.layer_kv_send_fn = self._build_layer_kv_send_fn(
                     model_worker_batch.reqs

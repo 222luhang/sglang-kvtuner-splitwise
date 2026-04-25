@@ -35,6 +35,8 @@ from __future__ import annotations
 
 import ctypes
 import logging
+import os
+import queue
 import socket
 import struct
 import threading
@@ -87,6 +89,8 @@ logger = logging.getLogger(__name__)
 # on sender and receiver for layer 0.  Useful for debugging quant correctness
 # but adds ~1ms per checked layer due to GPU sync + reduction.
 _DEBUG_QUANT = False
+
+_PIPELINE_SEND = os.environ.get("SGLANG_TCP_PIPELINE_SEND", "1") != "0"
 
 # ---------------------------------------------------------------------------
 # Triton-accelerated 4-bit helpers (drop-in for quantize_on_gpu / dequantize_on_gpu)
@@ -586,6 +590,12 @@ class _PendingTransfer:
             self._finish(conn, success=False)
 
     def _stream_kv(self, conn: socket.socket) -> None:
+        if _PIPELINE_SEND:
+            self._stream_kv_pipelined(conn)
+        else:
+            self._stream_kv_sequential(conn)
+
+    def _stream_kv_sequential(self, conn: socket.socket) -> None:
         """Copy each layer's KV pages from GPU → TCP socket (batch mode).
 
         When quantization is enabled, the flow is:
@@ -695,6 +705,139 @@ class _PendingTransfer:
                 f"bytes={layer_bytes} nbits={nbits or 16}"
             )
 
+        total_ms = (time.perf_counter() - t_stream_start) * 1000
+        logger.warning(
+            f"[TIMING_SUMMARY] room={self.room} side=sender total_ms={total_ms:.2f} "
+            f"layers={num_layers} total_gather_ms={total_gather_ms:.2f} "
+            f"total_quant_ms={total_quant_ms:.2f} total_send_ms={total_send_ms:.2f} "
+            f"transfer_bytes={total_transfer_bytes}"
+        )
+
+        logger.warning(f"[_stream_kv] room={self.room} all {num_layers} layers sent, calling _send_tail")
+        self._send_tail(conn)
+
+    def _stream_kv_pipelined(self, conn: socket.socket) -> None:
+        """Pipelined version: GPU quantize overlaps with TCP send via a bounded queue."""
+        kv_mgr = self.kv_mgr
+        kv_args = kv_mgr.kv_args
+        src_indices = self.src_kv_indices
+        page_size = kv_args.page_size
+        num_layers = len(kv_args.kv_data_ptrs) // 2
+
+        get_quant_bits = self._get_quant_bits
+        kv_dtype = getattr(kv_mgr.server_args, "kv_cache_dtype", "auto")
+        is_bf16 = kv_dtype in ("auto", "bf16", "bfloat16")
+        torch_dtype = torch.bfloat16 if is_bf16 else torch.float16
+
+        logger.warning(
+            f"[_stream_kv] room={self.room} starting (pipelined), layers={num_layers}, "
+            f"src_indices={src_indices}, page_size={page_size}, "
+            f"quant={'gpu' if get_quant_bits else 'off'}"
+        )
+
+        torch.cuda.synchronize()
+        logger.warning(f"[_stream_kv] room={self.room} cuda sync done, sending layers...")
+
+        t_stream_start = time.perf_counter()
+        total_quant_ms = 0.0
+        total_gather_ms = 0.0
+        total_transfer_bytes = 0
+
+        send_queue: queue.Queue = queue.Queue(maxsize=2)
+        send_error: list = [None]
+        send_total_ms: list = [0.0]
+
+        def _send_worker():
+            try:
+                while True:
+                    item = send_queue.get()
+                    if item is None:
+                        break
+                    k_lid, k_data, v_lid, v_data, lid, qms, lbytes, nb = item
+                    t_s = time.perf_counter()
+                    _send_layer_data(conn, k_lid, k_data)
+                    _send_layer_data(conn, v_lid, v_data)
+                    sms = (time.perf_counter() - t_s) * 1000
+                    send_total_ms[0] += sms
+                    logger.info(
+                        f"[TIMING] room={self.room} side=sender layer={lid} "
+                        f"quant_ms={qms:.2f} send_ms={sms:.2f} "
+                        f"bytes={lbytes} nbits={nb or 16}"
+                    )
+            except Exception as e:
+                send_error[0] = e
+
+        sender = threading.Thread(target=_send_worker, daemon=True)
+        sender.start()
+
+        try:
+            for layer_id in range(num_layers):
+                if send_error[0] is not None:
+                    raise RuntimeError(f"Send thread failed: {send_error[0]}") from send_error[0]
+
+                if layer_id % 7 == 0:
+                    logger.warning(f"[_stream_kv] room={self.room} sending layer {layer_id}/{num_layers}")
+
+                k_ptr = kv_args.kv_data_ptrs[layer_id]
+                k_item_len = kv_args.kv_item_lens[layer_id]
+                v_ptr = kv_args.kv_data_ptrs[num_layers + layer_id]
+                v_item_len = kv_args.kv_item_lens[num_layers + layer_id]
+
+                nbits = get_quant_bits(layer_id) if get_quant_bits else None
+
+                t_gather = time.perf_counter()
+                if nbits is not None:
+                    k_tensor = _read_pages_as_gpu_tensor(
+                        k_ptr, k_item_len, src_indices, page_size, torch_dtype
+                    )
+                    v_tensor = _read_pages_as_gpu_tensor(
+                        v_ptr, v_item_len, src_indices, page_size, torch_dtype
+                    )
+                    torch.cuda.synchronize()
+                    if _DEBUG_QUANT and layer_id == 0:
+                        logger.warning(
+                            f"[_stream_kv DEBUG] room={self.room} layer=0 "
+                            f"k_sum={k_tensor.float().sum().item():.4f} "
+                            f"v_sum={v_tensor.float().sum().item():.4f} "
+                            f"k_absmax={k_tensor.float().abs().max().item():.4f} "
+                            f"k_nonzero={k_tensor.count_nonzero().item()}/{k_tensor.numel()} "
+                            f"indices={src_indices[:5]}"
+                        )
+                    t_quant = time.perf_counter()
+                    total_gather_ms += (t_quant - t_gather) * 1000
+                    if _HAS_TRITON and nbits == 4:
+                        k_data = _triton_quant_4bit_to_bytes(k_tensor)
+                        v_data = _triton_quant_4bit_to_bytes(v_tensor)
+                    else:
+                        k_data = quantize_on_gpu(k_tensor, nbits=nbits)
+                        v_data = quantize_on_gpu(v_tensor, nbits=nbits)
+                    del k_tensor, v_tensor
+                    quant_ms = (time.perf_counter() - t_quant) * 1000
+                    total_quant_ms += quant_ms
+                    k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
+                    v_lid = (layer_id * 2 + 1) | _MSG_QUANT_FLAG
+                else:
+                    k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
+                    v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
+                    quant_ms = 0.0
+                    total_gather_ms += (time.perf_counter() - t_gather) * 1000
+                    k_lid = layer_id * 2
+                    v_lid = layer_id * 2 + 1
+
+                layer_bytes = len(k_data) + len(v_data)
+                total_transfer_bytes += layer_bytes
+
+                send_queue.put(
+                    (k_lid, k_data, v_lid, v_data, layer_id, quant_ms, layer_bytes, nbits)
+                )
+        finally:
+            send_queue.put(None)
+            sender.join(timeout=120)
+
+        if send_error[0] is not None:
+            raise RuntimeError(f"Send thread failed: {send_error[0]}") from send_error[0]
+
+        total_send_ms = send_total_ms[0]
         total_ms = (time.perf_counter() - t_stream_start) * 1000
         logger.warning(
             f"[TIMING_SUMMARY] room={self.room} side=sender total_ms={total_ms:.2f} "
@@ -953,6 +1096,13 @@ class TCPKVSender(CommonKVSender):
         self._layer_sent: bool = False
         self._pipeline_aborted: bool = False
 
+        # Async send thread for send_layer: TCP sends happen in a background
+        # thread so the forward pass doesn't block on network I/O.
+        self._send_queue: Optional[queue.Queue] = None
+        self._send_thread: Optional[threading.Thread] = None
+        self._send_error: list = [None]
+        self._send_thread_total_ms: list = [0.0]
+
         # Transfer quantization config
         server_args: Optional[ServerArgs] = getattr(mgr, "server_args", None)
         if server_args and getattr(server_args, "enable_transfer_quant", False):
@@ -973,6 +1123,45 @@ class TCPKVSender(CommonKVSender):
     def init(self, num_kv_indices: int, aux_index: Optional[int] = None) -> None:
         self.num_kv_indices = num_kv_indices
         self.aux_index = aux_index
+
+    def _ensure_send_thread(self, conn: socket.socket) -> None:
+        """Lazily create the async send thread for this request."""
+        if self._send_thread is not None:
+            return
+        self._send_queue = queue.Queue(maxsize=2)
+        self._send_error = [None]
+        self._send_thread_total_ms = [0.0]
+        _conn_ref = [conn]
+
+        def _worker():
+            try:
+                while True:
+                    item = self._send_queue.get()
+                    if item is None:
+                        break
+                    k_lid, k_data, v_lid, v_data, lid, qms, gms, lbytes, nb = item
+                    t_s = time.perf_counter()
+                    _send_layer_data(_conn_ref[0], k_lid, k_data)
+                    _send_layer_data(_conn_ref[0], v_lid, v_data)
+                    sms = (time.perf_counter() - t_s) * 1000
+                    self._send_thread_total_ms[0] += sms
+                    logger.info(
+                        f"[TIMING] room={self.bootstrap_room} side=sender_pipeline layer={lid} "
+                        f"gather_ms={gms:.2f} quant_ms={qms:.2f} send_ms={sms:.2f} "
+                        f"bytes={lbytes} nbits={nb or 16}"
+                    )
+            except Exception as e:
+                self._send_error[0] = e
+
+        self._send_thread = threading.Thread(target=_worker, daemon=True)
+        self._send_thread.start()
+
+    def _drain_send_thread(self) -> None:
+        """Wait for the async send thread to finish all queued work."""
+        if self._send_queue is None:
+            return
+        self._send_queue.put(None)
+        self._send_thread.join(timeout=120)
 
     def send(
         self,
@@ -1023,8 +1212,15 @@ class TCPKVSender(CommonKVSender):
         )
 
         if self._layer_sent:
-            # Pipeline mode: all KV data already sent layer-by-layer.
-            # Signal serve() to send aux + EOF and finish.
+            # Wait for async send thread to flush all queued data.
+            self._drain_send_thread()
+            if self._send_error[0] is not None:
+                logger.error(
+                    f"[TCPKVSender] room={self.bootstrap_room} "
+                    f"send thread failed: {self._send_error[0]}"
+                )
+                self.kv_mgr.update_status(self.bootstrap_room, KVPoll.Failed)
+                return
             pending.done_pipeline(kv_indices, src_aux_index=self.aux_index)
         else:
             # Batch mode: let serve() read all GPU data and stream it now.
@@ -1035,11 +1231,9 @@ class TCPKVSender(CommonKVSender):
         Layer-wise pipeline send: called from the attention forward pass after
         each layer's KV cache has been written to the GPU pool.
 
-        Looks up the ``_PendingTransfer`` for this room (created when the ZMQ
-        descriptor arrives from the decode side) and waits briefly for the TCP
-        connection to be established.  Once the connection is available, sends
-        the current layer's KV data (K + V) immediately over the socket so that
-        the transfer overlaps with the computation of subsequent layers.
+        When ``SGLANG_TCP_PIPELINE_SEND=1`` (default), GPU work (gather + quantize)
+        is decoupled from TCP sends via a background thread.  The forward pass
+        only blocks on GPU operations; TCP sends happen asynchronously.
 
         If the pending transfer or the TCP connection is not yet available when
         called, the call is a no-op and ``send()`` will handle the transfer in
@@ -1056,10 +1250,8 @@ class TCPKVSender(CommonKVSender):
             pending = self.kv_mgr._pending_transfers.get(self.bootstrap_room)
 
         if pending is None:
-            # ZMQ message hasn't arrived yet – can't do pipeline for this layer.
             return
 
-        # Wait briefly for the TCP connection to be established.
         if not pending.wait_for_conn(timeout=_TCP_CONN_WAIT_S):
             return
 
@@ -1077,7 +1269,6 @@ class TCPKVSender(CommonKVSender):
 
         torch.cuda.synchronize()
 
-        # Quantize if enabled (GPU path: gather on GPU → quantize → DtoH compressed)
         nbits = self._get_layer_quant_bits(layer_id)
         t_gather = time.perf_counter()
         if nbits is not None:
@@ -1090,8 +1281,6 @@ class TCPKVSender(CommonKVSender):
             v_tensor = _read_pages_as_gpu_tensor(
                 v_ptr, v_item_len, src_indices, page_size, torch_dtype
             )
-            # Sync: DtoD copies use CUDA driver API (NULL stream), PyTorch
-            # quantization may run on a different stream.
             torch.cuda.synchronize()
             if _DEBUG_QUANT and layer_id == 0:
                 logger.warning(
@@ -1110,14 +1299,11 @@ class TCPKVSender(CommonKVSender):
             else:
                 k_data = quantize_on_gpu(k_tensor, nbits=nbits)
                 v_data = quantize_on_gpu(v_tensor, nbits=nbits)
-            # No sync needed: quantize_on_gpu returns CPU bytes
-            # (implicit sync via .cpu() inside quantize_on_gpu)
             del k_tensor, v_tensor
             quant_ms = (time.perf_counter() - t_quant) * 1000
             k_lid = (layer_id * 2) | _MSG_QUANT_FLAG
             v_lid = (layer_id * 2 + 1) | _MSG_QUANT_FLAG
         else:
-            # No quantization: legacy DtoH path
             k_data = _read_pages_from_gpu(k_ptr, k_item_len, src_indices, page_size)
             v_data = _read_pages_from_gpu(v_ptr, v_item_len, src_indices, page_size)
             gather_ms = (time.perf_counter() - t_gather) * 1000
@@ -1126,28 +1312,35 @@ class TCPKVSender(CommonKVSender):
             v_lid = layer_id * 2 + 1
 
         layer_bytes = len(k_data) + len(v_data)
-        try:
-            t_send = time.perf_counter()
-            _send_layer_data(pending._conn, k_lid, k_data)
-            _send_layer_data(pending._conn, v_lid, v_data)
-            send_ms = (time.perf_counter() - t_send) * 1000
-            self._layer_sent = True
-            logger.info(
-                f"[TIMING] room={self.bootstrap_room} side=sender_pipeline layer={layer_id} "
-                f"gather_ms={gather_ms:.2f} quant_ms={quant_ms:.2f} send_ms={send_ms:.2f} "
-                f"bytes={layer_bytes} nbits={nbits or 16}"
+        self._layer_sent = True
+
+        if _PIPELINE_SEND:
+            self._ensure_send_thread(pending._conn)
+            if self._send_error[0] is not None:
+                self._pipeline_aborted = True
+                return
+            self._send_queue.put(
+                (k_lid, k_data, v_lid, v_data, layer_id, quant_ms, gather_ms, layer_bytes, nbits)
             )
-        except Exception as e:
-            logger.warning(
-                f"[TCPKVSender] send_layer layer={layer_id} failed for "
-                f"room={self.bootstrap_room}: {e}; will retry in batch mode"
-            )
-            self._pipeline_aborted = True
-            # If we already sent some layers successfully, keep _layer_sent True
-            # so send() calls done_pipeline() instead of batch mode (which would
-            # duplicate already-sent layers). Decode will timeout on missing layers.
-            if not self._layer_sent:
-                self._layer_sent = False
+        else:
+            try:
+                t_send = time.perf_counter()
+                _send_layer_data(pending._conn, k_lid, k_data)
+                _send_layer_data(pending._conn, v_lid, v_data)
+                send_ms = (time.perf_counter() - t_send) * 1000
+                logger.info(
+                    f"[TIMING] room={self.bootstrap_room} side=sender_pipeline layer={layer_id} "
+                    f"gather_ms={gather_ms:.2f} quant_ms={quant_ms:.2f} send_ms={send_ms:.2f} "
+                    f"bytes={layer_bytes} nbits={nbits or 16}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"[TCPKVSender] send_layer layer={layer_id} failed for "
+                    f"room={self.bootstrap_room}: {e}; will retry in batch mode"
+                )
+                self._pipeline_aborted = True
+                if not self._layer_sent:
+                    self._layer_sent = False
 
     # ------------------------------------------------------------------
     # Transfer quantization helpers
