@@ -1,0 +1,23 @@
+{
+  "config": "quant-8bit_seq3072",
+  "timestamp": "2026-04-25T14:31:43.971911",
+  "params": {
+    "concurrency": 4,
+    "num_requests": 16,
+    "prompt_type": "medium",
+    "prompt_tokens": 3072,
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 5.46,
+    "successful": 16,
+    "failed": 0,
+    "requests_per_sec": 2.93,
+    "tokens_per_sec": 7985.15,
+    "output_tokens_per_sec": 187.65,
+    "mean_ttft_ms": 148.2,
+    "p50_ttft_ms": 146.2,
+    "p99_ttft_ms": 161.6,
+    "mean_e2e_ms": 1362.0
+  }
+}
