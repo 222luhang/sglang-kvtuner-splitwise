@@ -91,6 +91,11 @@ logger = logging.getLogger(__name__)
 _DEBUG_QUANT = False
 
 _PIPELINE_SEND = os.environ.get("SGLANG_TCP_PIPELINE_SEND", "1") != "0"
+logger.warning(
+    f"[conn.py] _PIPELINE_SEND={_PIPELINE_SEND} "
+    f"(env SGLANG_TCP_PIPELINE_SEND={os.environ.get('SGLANG_TCP_PIPELINE_SEND', '<not set>')!r}), "
+    f"_HAS_TRITON={_HAS_TRITON}"
+)
 
 # ---------------------------------------------------------------------------
 # Triton-accelerated 4-bit helpers (drop-in for quantize_on_gpu / dequantize_on_gpu)
