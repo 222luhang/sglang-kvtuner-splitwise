@@ -1,0 +1,23 @@
+{
+  "config": "A5_run2",
+  "timestamp": "2026-04-28T10:33:11.025760",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "prompt_tokens": 0,
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 9.98,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 3.21,
+    "tokens_per_sec": 277.97,
+    "output_tokens_per_sec": 205.22,
+    "mean_ttft_ms": 1221.9,
+    "p50_ttft_ms": 1006.3,
+    "p99_ttft_ms": 1913.3,
+    "mean_e2e_ms": 2386.6
+  }
+}
