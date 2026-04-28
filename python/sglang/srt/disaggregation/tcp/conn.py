@@ -90,11 +90,36 @@ logger = logging.getLogger(__name__)
 # but adds ~1ms per checked layer due to GPU sync + reduction.
 _DEBUG_QUANT = False
 
-_PIPELINE_SEND = os.environ.get("SGLANG_TCP_PIPELINE_SEND", "1") != "0"
+# Runtime config file for ablation experiments — allows toggling pipeline/triton
+# without restarting the server.  Falls back to env vars when the file is absent.
+_CONFIG_PATH = "/tmp/sglang_ablation.cfg"
+
+
+def _read_config(key: str, default: str) -> str:
+    try:
+        with open(_CONFIG_PATH) as f:
+            for line in f:
+                k, _, v = line.partition("=")
+                if k.strip() == key:
+                    return v.strip()
+    except FileNotFoundError:
+        pass
+    return default
+
+
+def _pipeline_send_enabled() -> bool:
+    return _read_config("PIPELINE_SEND", os.environ.get("SGLANG_TCP_PIPELINE_SEND", "1")) != "0"
+
+
+def _triton_available() -> bool:
+    return _HAS_TRITON and not _read_config("DISABLE_TRITON", "0") == "1"
+
+
 logger.warning(
-    f"[conn.py] _PIPELINE_SEND={_PIPELINE_SEND} "
-    f"(env SGLANG_TCP_PIPELINE_SEND={os.environ.get('SGLANG_TCP_PIPELINE_SEND', '<not set>')!r}), "
-    f"_HAS_TRITON={_HAS_TRITON}"
+    f"[conn.py] _pipeline_send_enabled()={_pipeline_send_enabled()}, "
+    f"_triton_available()={_triton_available()}, "
+    f"_HAS_TRITON={_HAS_TRITON}, "
+    f"config_path={_CONFIG_PATH}"
 )
 
 # ---------------------------------------------------------------------------
@@ -595,7 +620,7 @@ class _PendingTransfer:
             self._finish(conn, success=False)
 
     def _stream_kv(self, conn: socket.socket) -> None:
-        if _PIPELINE_SEND:
+        if _pipeline_send_enabled():
             self._stream_kv_pipelined(conn)
         else:
             self._stream_kv_sequential(conn)
@@ -672,7 +697,7 @@ class _PendingTransfer:
                     )
                 t_quant = time.perf_counter()
                 total_gather_ms += (t_quant - t_gather) * 1000
-                if _HAS_TRITON and nbits == 4:
+                if _triton_available() and nbits == 4:
                     k_data = _triton_quant_4bit_to_bytes(k_tensor)
                     v_data = _triton_quant_4bit_to_bytes(v_tensor)
                 else:
@@ -810,7 +835,7 @@ class _PendingTransfer:
                         )
                     t_quant = time.perf_counter()
                     total_gather_ms += (t_quant - t_gather) * 1000
-                    if _HAS_TRITON and nbits == 4:
+                    if _triton_available() and nbits == 4:
                         k_data = _triton_quant_4bit_to_bytes(k_tensor)
                         v_data = _triton_quant_4bit_to_bytes(v_tensor)
                     else:
@@ -1304,7 +1329,7 @@ class TCPKVSender(CommonKVSender):
                 )
             t_quant = time.perf_counter()
             gather_ms = (t_quant - t_gather) * 1000
-            if _HAS_TRITON and nbits == 4:
+            if _triton_available() and nbits == 4:
                 k_data = _triton_quant_4bit_to_bytes(k_tensor)
                 v_data = _triton_quant_4bit_to_bytes(v_tensor)
             else:
@@ -1325,7 +1350,7 @@ class TCPKVSender(CommonKVSender):
         layer_bytes = len(k_data) + len(v_data)
         self._layer_sent = True
 
-        if _PIPELINE_SEND:
+        if _pipeline_send_enabled():
             self._ensure_send_thread(pending._conn)
             if self._send_error[0] is not None:
                 self._pipeline_aborted = True
@@ -1657,7 +1682,7 @@ class TCPKVReceiver(CommonKVReceiver):
                 gpu_device = torch.device("cuda", self.kv_mgr.kv_args.gpu_id)
                 t_dequant = time.perf_counter()
                 nbits = _struct.unpack(_WIRE_HEADER_FMT, data[:_WIRE_HEADER_SIZE])[0]
-                if _HAS_TRITON and nbits == 4:
+                if _triton_available() and nbits == 4:
                     tensor = _triton_dequant_4bit_from_bytes(data, gpu_device)
                 else:
                     tensor = dequantize_on_gpu(data, gpu_device)

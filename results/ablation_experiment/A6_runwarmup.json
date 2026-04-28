@@ -1,0 +1,23 @@
+{
+  "config": "A6_runwarmup",
+  "timestamp": "2026-04-28T14:01:26.851672",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "prompt_tokens": 0,
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 5.33,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 6.0,
+    "tokens_per_sec": 520.19,
+    "output_tokens_per_sec": 384.05,
+    "mean_ttft_ms": 174.1,
+    "p50_ttft_ms": 173.5,
+    "p99_ttft_ms": 195.9,
+    "mean_e2e_ms": 1331.7
+  }
+}

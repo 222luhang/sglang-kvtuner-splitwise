@@ -1,6 +1,6 @@
 {
   "config": "A7_run2",
-  "timestamp": "2026-04-28T10:39:14.282976",
+  "timestamp": "2026-04-28T14:02:17.887550",
   "params": {
     "concurrency": 8,
     "num_requests": 32,
@@ -9,15 +9,15 @@
     "max_new_tokens": 64
   },
   "results": {
-    "total_time_s": 11.0,
+    "total_time_s": 5.38,
     "successful": 32,
     "failed": 0,
-    "requests_per_sec": 2.91,
-    "tokens_per_sec": 252.18,
-    "output_tokens_per_sec": 186.18,
-    "mean_ttft_ms": 1479.0,
-    "p50_ttft_ms": 1580.7,
-    "p99_ttft_ms": 1894.9,
-    "mean_e2e_ms": 2638.7
+    "requests_per_sec": 5.95,
+    "tokens_per_sec": 515.52,
+    "output_tokens_per_sec": 380.6,
+    "mean_ttft_ms": 186.8,
+    "p50_ttft_ms": 188.9,
+    "p99_ttft_ms": 197.0,
+    "mean_e2e_ms": 1343.7
   }
 }

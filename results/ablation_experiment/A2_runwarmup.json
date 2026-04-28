@@ -1,0 +1,23 @@
+{
+  "config": "A2_runwarmup",
+  "timestamp": "2026-04-28T14:03:20.252210",
+  "params": {
+    "concurrency": 8,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "prompt_tokens": 0,
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 5.93,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 5.4,
+    "tokens_per_sec": 467.87,
+    "output_tokens_per_sec": 345.42,
+    "mean_ttft_ms": 296.0,
+    "p50_ttft_ms": 286.1,
+    "p99_ttft_ms": 458.9,
+    "mean_e2e_ms": 1477.6
+  }
+}

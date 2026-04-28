@@ -1,13 +1,19 @@
 #!/bin/bash
 # ============================================================================
-# 消融实验 — 量化各优化技术的独立贡献
+# 消融实验 v2 — 运行时配置切换，最小化服务重启
 #
-# 7 配置 × 3 次重复，固定 conc=8, 32 requests, medium prompt
+# 设计: 仅 2 次服务启动
+#   Start 1: 无量化 baseline → A1 (1 config)
+#   Start 2: 4bit 量化 → A4/A5/A6/A7 (4 configs, 运行时切换 Triton/Pipeline)
+#
+# 运行时切换通过 /tmp/sglang_ablation.cfg 实现 (SSH 写入两台机器)
+#
+# 7 配置 × 3 次重复, 固定 conc=8, 32 requests, medium prompt
 #
 # 配置矩阵:
-#   A1: baseline (无量化, 无 Triton 优化, 无异步 pipeline)
-#   A2: 8bit 量化, PyTorch, 无异步 pipeline
-#   A3: 8bit 量化, PyTorch, 有异步 pipeline
+#   A1: baseline (无量化)
+#   A2: 8bit 量化, PyTorch, 无异步 pipeline   ← 需要 8bit 量化启动
+#   A3: 8bit 量化, PyTorch, 有异步 pipeline   ← 需要 8bit 量化启动
 #   A4: 4bit 量化, PyTorch, 无异步 pipeline
 #   A5: 4bit 量化, Triton,  无异步 pipeline
 #   A6: 4bit 量化, Triton,  有异步 pipeline (当前默认)
@@ -34,6 +40,7 @@ CONCURRENCY="${CONCURRENCY:-8}"
 PROMPT_TYPE="${PROMPT_TYPE:-medium}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-64}"
 DRY_RUN="${DRY_RUN:-false}"
+WARMUP_REQUESTS="${WARMUP_REQUESTS:-8}"
 
 SSH_OPTS="-o ConnectTimeout=10 -o StrictHostKeyChecking=no"
 
@@ -44,51 +51,65 @@ log_step()  { echo -e "${BLUE}${BOLD}==>${NC} ${BOLD}$1${NC}"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 log_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
-# ---- Triton 路径 (远程机器上) ----
+# ---- 加载集群配置 ----
 source "${SCRIPT_DIR}/configs/default.sh"
-TRITON_FILE="${SGLANG_REPO}/python/sglang/srt/disaggregation/tcp/transfer_quant_triton.py"
 
-# ---- Triton 开关 ----
-set_triton_enabled() {
-    local host=$1
+# 远程配置文件路径 (与 conn.py 中的 _CONFIG_PATH 一致)
+CONFIG_PATH="/tmp/sglang_ablation.cfg"
+
+# ---- 配置文件写入 ----
+write_config_to_hosts() {
+    local content=$1
     if [ "$DRY_RUN" = "true" ]; then
-        log_info "[dry-run] SSH ${host}: 恢复 Triton (mv .bak → .py)"
+        log_info "[dry-run] 写入配置文件到两台机器:"
+        echo "  ${content}"
         return 0
     fi
-    ssh ${SSH_OPTS} "${host}" "
-        if [ -f '${TRITON_FILE}.bak' ]; then
-            mv '${TRITON_FILE}.bak' '${TRITON_FILE}'
-            echo 'Triton enabled on ${host}'
-        else
-            echo 'Triton already enabled on ${host}'
-        fi
-    "
+    for host in "${PREFILL_HOST}" "${DECODE_HOST}"; do
+        ssh ${SSH_OPTS} "${host}" "echo '${content}' > ${CONFIG_PATH}"
+        log_info "已写入 ${host}:${CONFIG_PATH}"
+    done
 }
 
-set_triton_disabled() {
-    local host=$1
+clear_config_on_hosts() {
     if [ "$DRY_RUN" = "true" ]; then
-        log_info "[dry-run] SSH ${host}: 禁用 Triton (mv .py → .bak)"
+        log_info "[dry-run] 清除远程配置文件"
         return 0
     fi
-    ssh ${SSH_OPTS} "${host}" "
-        if [ -f '${TRITON_FILE}' ]; then
-            mv '${TRITON_FILE}' '${TRITON_FILE}.bak'
-            echo 'Triton disabled on ${host}'
-        else
-            echo 'Triton already disabled on ${host}'
-        fi
-    "
+    for host in "${PREFILL_HOST}" "${DECODE_HOST}"; do
+        ssh ${SSH_OPTS} "${host}" "rm -f ${CONFIG_PATH}" 2>/dev/null || true
+    done
+}
+
+# ---- 服务启动/停止 ----
+start_services() {
+    cd "${SCRIPT_DIR}"
+    export CONFIG_FILE="configs/default.sh"
+
+    if [ "$DRY_RUN" = "true" ]; then
+        log_info "[dry-run] 启动服务 (env: ENABLE_TRANSFER_QUANT=${ENABLE_TRANSFER_QUANT:-<unset>}, TRANSFER_QUANT_BITS=${TRANSFER_QUANT_BITS:-<unset>})"
+        return 0
+    fi
+
+    ./pd_test.sh stop || true
+    sleep 3
+    ./pd_test.sh start || { log_error "服务启动失败"; return 1; }
+    sleep 5
+}
+
+stop_services() {
+    if [ "$DRY_RUN" = "false" ]; then
+        (cd "${SCRIPT_DIR}" && ./pd_test.sh stop) || true
+    fi
 }
 
 # ---- 单次 benchmark 运行 ----
-run_single_benchmark() {
+run_benchmark() {
     local config_id=$1
     local run_idx=$2
-    local exp_env=$3
     local output_json="${RESULTS_DIR}/${config_id}_run${run_idx}.json"
 
-    # 断点续跑: 如果结果已存在且 non-empty，跳过
+    # 断点续跑
     if [ -f "$output_json" ] && [ -s "$output_json" ]; then
         local existing_success
         existing_success=$(jq -r '.results.successful // 0' "$output_json" 2>/dev/null || echo "0")
@@ -98,97 +119,75 @@ run_single_benchmark() {
         fi
     fi
 
-    log_step "${config_id} run${run_idx} — 启动服务..."
-
-    # 停止旧服务
-    if [ "$DRY_RUN" = "false" ]; then
-        (cd "${SCRIPT_DIR}" && ./pd_test.sh stop) || true
-        sleep 3
-    fi
-
-    # 设置环境变量并启动
-    cd "${SCRIPT_DIR}"
-    if [ -n "${exp_env}" ]; then
-        eval "export ${exp_env}"
-    fi
-    export CONFIG_FILE="configs/default.sh"
-
-    if [ "$DRY_RUN" = "true" ]; then
-        echo "  env: ${exp_env:-'(none)'}"
-        echo "  output: ${output_json}"
-    else
-        ./pd_test.sh start || { log_error "服务启动失败"; return 1; }
-    fi
-
-    # 等待服务稳定
-    sleep 5
-
     # 同步 benchmark 脚本到远程
     if [ "$DRY_RUN" = "false" ]; then
         scp ${SSH_OPTS} "${PROJECT_ROOT}/eval/bench_throughput.py" \
             "${PREFILL_HOST}:${SGLANG_REPO}/eval/" 2>/dev/null || true
     fi
 
-    # 在远程运行 benchmark
     local remote_output="/tmp/${config_id}_run${run_idx}.json"
     if [ "$DRY_RUN" = "true" ]; then
-        log_info "[dry-run] SSH ${PREFILL_HOST}: 运行 bench_throughput.py"
-    else
-        ssh ${SSH_OPTS} "${PREFILL_HOST}" "
-            cd ${SGLANG_REPO} && \
-            source ${VENV_DIR}/bin/activate && \
-            python3 eval/bench_throughput.py \
-                --prefill-host ${PREFILL_IP} \
-                --prefill-port ${PREFILL_PORT} \
-                --decode-host ${DECODE_IP} \
-                --decode-port ${DECODE_PORT} \
-                --bootstrap-port ${BOOTSTRAP_PORT} \
-                --concurrency ${CONCURRENCY} \
-                --num-requests ${NUM_REQUESTS} \
-                --prompt-type ${PROMPT_TYPE} \
-                --max-new-tokens ${MAX_NEW_TOKENS} \
-                --config-name ${config_id}_run${run_idx} \
-                --output ${remote_output}
-        " 2>&1 | tail -20
-
-        # 拉取结果
-        scp ${SSH_OPTS} "${PREFILL_HOST}:${remote_output}" "${output_json}" 2>/dev/null || {
-            log_error "结果拉取失败: ${config_id} run${run_idx}"
-            return 1
-        }
+        log_info "[dry-run] 运行 benchmark: ${config_id} run${run_idx}"
+        return 0
     fi
 
+    ssh ${SSH_OPTS} "${PREFILL_HOST}" "
+        cd ${SGLANG_REPO} && \
+        source ${VENV_DIR}/bin/activate && \
+        python3 eval/bench_throughput.py \
+            --prefill-host ${PREFILL_IP} \
+            --prefill-port ${PREFILL_PORT} \
+            --decode-host ${DECODE_IP} \
+            --decode-port ${DECODE_PORT} \
+            --bootstrap-port ${BOOTSTRAP_PORT} \
+            --concurrency ${CONCURRENCY} \
+            --num-requests ${NUM_REQUESTS} \
+            --prompt-type ${PROMPT_TYPE} \
+            --max-new-tokens ${MAX_NEW_TOKENS} \
+            --config-name ${config_id}_run${run_idx} \
+            --output ${remote_output}
+    " 2>&1 | tail -20
+
+    scp ${SSH_OPTS} "${PREFILL_HOST}:${remote_output}" "${output_json}" 2>/dev/null || {
+        log_error "结果拉取失败: ${config_id} run${run_idx}"
+        return 1
+    }
+
     log_info "结果: ${output_json}"
-    echo ""
 }
 
-# ---- 配置矩阵定义 ----
-# 格式: "config_id:quant_label:use_triton:env_vars"
-#
-# 注意: Triton 仅用于 4-bit 量化路径。8-bit 量化始终走 PyTorch 路径。
-# "use_triton=no" 的配置需要 rename triton 文件 (安全起见，避免意外 import)。
-# "use_triton=n/a" 的配置 (baseline/8bit) 不依赖 Triton，无需 rename。
+# ---- 运行一个配置 (warmup + N runs) ----
+run_config() {
+    local config_id=$1
+    local label=$2
+    local cfg_content=$3  # 配置文件内容
 
-MIXED_C_BITS="[4,4,4,4,4,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,4,4,4,4,4]"
+    log_step "=========================================="
+    log_step "配置 ${config_id}: ${label}"
+    log_step "=========================================="
 
-CONFIGS=(
-    "A1:baseline:n/a:"
-    "A2:8bit_pytorch_no_pipe:no:ENABLE_TRANSFER_QUANT=true TRANSFER_QUANT_BITS=8 SGLANG_TCP_PIPELINE_SEND=0"
-    "A3:8bit_pytorch_pipe:no:ENABLE_TRANSFER_QUANT=true TRANSFER_QUANT_BITS=8 SGLANG_TCP_PIPELINE_SEND=1"
-    "A4:4bit_pytorch_no_pipe:no:ENABLE_TRANSFER_QUANT=true TRANSFER_QUANT_BITS=4 SGLANG_TCP_PIPELINE_SEND=0"
-    "A5:4bit_triton_no_pipe:yes:ENABLE_TRANSFER_QUANT=true TRANSFER_QUANT_BITS=4 SGLANG_TCP_PIPELINE_SEND=0"
-    "A6:4bit_triton_pipe:yes:ENABLE_TRANSFER_QUANT=true TRANSFER_QUANT_BITS=4 SGLANG_TCP_PIPELINE_SEND=1"
-    "A7:mixed_C_triton_pipe:yes:ENABLE_TRANSFER_QUANT=true TRANSFER_QUANT_BITS=4 SGLANG_TCP_PIPELINE_SEND=1 KVTUNER_LAYER_BITS=${MIXED_C_BITS}"
-)
+    # 写入运行时配置
+    write_config_to_hosts "${cfg_content}"
+
+    # Warmup run (discarded)
+    log_info "Warmup: ${config_id} ..."
+    run_benchmark "${config_id}" "warmup" || log_warn "Warmup 失败 (非致命)"
+
+    # 正式运行
+    for run_idx in $(seq 1 "${NUM_RUNS}"); do
+        run_benchmark "${config_id}" "${run_idx}"
+    done
+    echo ""
+}
 
 # ---- 主流程 ----
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
-echo "║        消融实验 — 各优化技术独立贡献                     ║"
+echo "║     消融实验 v2 — 运行时配置切换 (2 次服务启动)          ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
-echo "  配置数: ${#CONFIGS[@]}"
+echo "  配置数: 7 (A1-A7)"
 echo "  重复次数: ${NUM_RUNS}"
 echo "  并发: ${CONCURRENCY}, 请求数: ${NUM_REQUESTS}"
 echo "  Prompt: ${PROMPT_TYPE}, max_new_tokens: ${MAX_NEW_TOKENS}"
@@ -196,50 +195,57 @@ echo "  结果目录: ${RESULTS_DIR}"
 echo "  Dry run: ${DRY_RUN}"
 echo ""
 
-# 记录 Triton 初始状态 (用于最终恢复)
-CURRENT_TRITON_STATE="unknown"
+# ==== Start 1: 无量化 baseline (A1) ====
+log_step "===== Start 1/2: 无量化 Baseline ====="
+ENABLE_TRANSFER_QUANT=""
+TRANSFER_QUANT_BITS=""
+KVTUNER_LAYER_BITS=""
+start_services
+run_config "A1" "baseline (无量化)" "PIPELINE_SEND=0
+DISABLE_TRITON=0"
 
-for config_entry in "${CONFIGS[@]}"; do
-    IFS=':' read -r config_id quant_label use_triton exp_env <<< "${config_entry}"
+# ==== Start 2: 4bit 量化 (A4-A7) ====
+log_step "===== Start 2/2: 4bit 量化 (A4→A5→A6→A7) ====="
+ENABLE_TRANSFER_QUANT="true"
+TRANSFER_QUANT_BITS="4"
+KVTUNER_LAYER_BITS=""
+start_services
 
-    log_step "=========================================="
-    log_step "配置 ${config_id}: ${quant_label}"
-    log_step "=========================================="
+# A4: 4bit PyTorch, 无 pipeline
+run_config "A4" "4bit PyTorch, 无 pipeline" "PIPELINE_SEND=0
+DISABLE_TRITON=1"
 
-    # Triton 状态切换
-    if [ "${use_triton}" = "yes" ]; then
-        if [ "${CURRENT_TRITON_STATE}" != "enabled" ]; then
-            log_info "启用 Triton..."
-            set_triton_enabled "${PREFILL_HOST}"
-            set_triton_enabled "${DECODE_HOST}"
-            CURRENT_TRITON_STATE="enabled"
-        fi
-    elif [ "${use_triton}" = "no" ]; then
-        if [ "${CURRENT_TRITON_STATE}" != "disabled" ]; then
-            log_info "禁用 Triton..."
-            set_triton_disabled "${PREFILL_HOST}"
-            set_triton_disabled "${DECODE_HOST}"
-            CURRENT_TRITON_STATE="disabled"
-        fi
-    fi
+# A5: 4bit Triton, 无 pipeline
+run_config "A5" "4bit Triton, 无 pipeline" "PIPELINE_SEND=0
+DISABLE_TRITON=0"
 
-    # 运行多次重复
-    for run_idx in $(seq 1 "${NUM_RUNS}"); do
-        run_single_benchmark "${config_id}" "${run_idx}" "${exp_env}"
-    done
-done
+# A6: 4bit Triton, 有 pipeline (当前默认)
+run_config "A6" "4bit Triton, 有 pipeline" "PIPELINE_SEND=1
+DISABLE_TRITON=0"
 
-# 恢复 Triton
-if [ "${CURRENT_TRITON_STATE}" = "disabled" ]; then
-    log_info "恢复 Triton..."
-    set_triton_enabled "${PREFILL_HOST}"
-    set_triton_enabled "${DECODE_HOST}"
-fi
+# A7: mixed-C Triton, 有 pipeline
+MIXED_C_BITS="[4,4,4,4,4,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,4,4,4,4,4]"
+run_config "A7" "mixed-C Triton, 有 pipeline" "PIPELINE_SEND=1
+DISABLE_TRITON=0"
 
-# 停止服务
-if [ "$DRY_RUN" = "false" ]; then
-    (cd "${SCRIPT_DIR}" && ./pd_test.sh stop) || true
-fi
+# ==== Start 3: 8bit 量化 (A2-A3) ====
+log_step "===== Start 3/3: 8bit 量化 (A2→A3) ====="
+ENABLE_TRANSFER_QUANT="true"
+TRANSFER_QUANT_BITS="8"
+KVTUNER_LAYER_BITS=""
+start_services
+
+# A2: 8bit PyTorch, 无 pipeline
+run_config "A2" "8bit PyTorch, 无 pipeline" "PIPELINE_SEND=0
+DISABLE_TRITON=0"
+
+# A3: 8bit PyTorch, 有 pipeline
+run_config "A3" "8bit PyTorch, 有 pipeline" "PIPELINE_SEND=1
+DISABLE_TRITON=0"
+
+# 清理
+stop_services
+clear_config_on_hosts
 
 # ---- 汇总结果 ----
 echo ""
@@ -248,15 +254,23 @@ log_step "汇总结果"
 log_step "=========================================="
 echo ""
 
-printf "%-8s %-6s %10s %10s %10s %10s %10s\n" \
-    "配置" "Quant" "req/s" "tok/s" "TTFT(ms)" "p99TTFT" "e2e(ms)"
-echo "------------------------------------------------------------------------"
+printf "%-8s %-30s %10s %10s %10s %10s %10s\n" \
+    "配置" "描述" "req/s" "tok/s" "TTFT(ms)" "p99TTFT" "e2e(ms)"
+echo "----------------------------------------------------------------------------"
 
-# 逐配置汇总
-for config_entry in "${CONFIGS[@]}"; do
-    IFS=':' read -r config_id quant_label use_triton exp_env <<< "${config_entry}"
+CONFIG_SUMMARY=(
+    "A1:baseline (无量化)"
+    "A2:8bit PyTorch, 无 pipeline"
+    "A3:8bit PyTorch, 有 pipeline"
+    "A4:4bit PyTorch, 无 pipeline"
+    "A5:4bit Triton, 无 pipeline"
+    "A6:4bit Triton, 有 pipeline"
+    "A7:mixed-C Triton, 有 pipeline"
+)
 
-    # 收集所有 run 的结果
+for entry in "${CONFIG_SUMMARY[@]}"; do
+    IFS=':' read -r config_id label <<< "${entry}"
+
     total_rps=0; total_tps=0; total_ttft=0; total_p99=0; total_e2e=0; count=0
 
     for run_idx in $(seq 1 "${NUM_RUNS}"); do
@@ -282,11 +296,11 @@ for config_entry in "${CONFIGS[@]}"; do
         avg_ttft=$(echo "scale=1; ${total_ttft} / ${count}" | bc)
         avg_p99=$(echo "scale=1; ${total_p99} / ${count}" | bc)
         avg_e2e=$(echo "scale=1; ${total_e2e} / ${count}" | bc)
-        printf "%-8s %-6s %10s %10s %10s %10s %10s\n" \
-            "${config_id}" "${quant_label}" "${avg_rps}" "${avg_tps}" "${avg_ttft}" "${avg_p99}" "${avg_e2e}"
+        printf "%-8s %-30s %10s %10s %10s %10s %10s\n" \
+            "${config_id}" "${label}" "${avg_rps}" "${avg_tps}" "${avg_ttft}" "${avg_p99}" "${avg_e2e}"
     else
-        printf "%-8s %-6s %10s %10s %10s %10s %10s\n" \
-            "${config_id}" "${quant_label}" "N/A" "N/A" "N/A" "N/A" "N/A"
+        printf "%-8s %-30s %10s %10s %10s %10s %10s\n" \
+            "${config_id}" "${label}" "N/A" "N/A" "N/A" "N/A" "N/A"
     fi
 done
 
@@ -295,8 +309,8 @@ log_info "所有结果保存在: ${RESULTS_DIR}/"
 ls -la "${RESULTS_DIR}/" 2>/dev/null
 
 # ---- 生成 JSON 汇总 ----
-python3 << 'PYTHON_SUMMARY'
-import json, os, sys
+RESULTS_DIR="${RESULTS_DIR}" NUM_RUNS="${NUM_RUNS}" python3 << 'PYTHON_SUMMARY'
+import json, os, sys, math
 from pathlib import Path
 
 results_dir = Path(os.environ.get("RESULTS_DIR", "results/ablation_experiment"))
@@ -315,7 +329,12 @@ configs = [
 
 num_runs = int(os.environ.get("NUM_RUNS", "3"))
 
-summary = {"experiment": "ablation", "params": {"concurrency": 8, "num_requests": 32, "prompt_type": "medium", "num_runs": num_runs}, "configs": []}
+summary = {
+    "experiment": "ablation_v2",
+    "design": "runtime_config_toggle_3_starts",
+    "params": {"concurrency": 8, "num_requests": 32, "prompt_type": "medium", "num_runs": num_runs},
+    "configs": []
+}
 
 for config_id, label in configs:
     runs = []
@@ -336,8 +355,6 @@ for config_id, label in configs:
         avg["failed"] = max(r.get("failed", 0) for r in runs)
         avg["num_runs"] = len(runs)
 
-        # 计算标准差 (仅对 req/s 和 TTFT)
-        import math
         for key in ["requests_per_sec", "mean_ttft_ms"]:
             values = [r.get(key, 0) for r in runs]
             if len(values) > 1:
@@ -349,7 +366,7 @@ for config_id, label in configs:
             "id": config_id, "label": label, "results": avg, "runs": runs
         })
 
-output_file = results_dir / "ablation_summary.json"
+output_file = results_dir / "ablation_v2_summary.json"
 with open(output_file, "w") as f:
     json.dump(summary, f, indent=2)
 
