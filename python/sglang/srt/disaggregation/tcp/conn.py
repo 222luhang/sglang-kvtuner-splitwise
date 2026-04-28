@@ -1162,6 +1162,12 @@ class TCPKVSender(CommonKVSender):
             return
         self._send_queue.put(None)
         self._send_thread.join(timeout=120)
+        if self._send_thread.is_alive():
+            logger.error(
+                f"[TCPKVSender] room={self.bootstrap_room} "
+                f"send thread did not finish within 120s"
+            )
+            self._send_error[0] = RuntimeError("send thread join timed out")
 
     def send(
         self,
@@ -1661,6 +1667,12 @@ class TCPKVReceiver(CommonKVReceiver):
                 # Compute the number of received pages from the tensor size.
                 recv_pages = tensor.numel() * tensor.element_size() // item_len
                 if _effective_indices is None and recv_pages != len(dst_kv_indices):
+                    if recv_pages > len(dst_kv_indices):
+                        raise RuntimeError(
+                            f"[_recv_kv] room={self.bootstrap_room} recv_pages={recv_pages} "
+                            f"> dst_pages={len(dst_kv_indices)}: sender sent more pages "
+                            f"than decode allocated"
+                        )
                     # Sender transmitted only incremental pages (prefix cached).
                     # Use the *tail* of dst_kv_indices for the write target.
                     _effective_indices = dst_kv_indices[-recv_pages:]
@@ -1717,6 +1729,12 @@ class TCPKVReceiver(CommonKVReceiver):
                 # --- Prefix-caching adaptation (non-quantized path) ---
                 recv_pages = len(data) // item_len
                 if _effective_indices is None and recv_pages != len(dst_kv_indices):
+                    if recv_pages > len(dst_kv_indices):
+                        raise RuntimeError(
+                            f"[_recv_kv] room={self.bootstrap_room} recv_pages={recv_pages} "
+                            f"> dst_pages={len(dst_kv_indices)}: sender sent more pages "
+                            f"than decode allocated"
+                        )
                     _effective_indices = dst_kv_indices[-recv_pages:]
                     logger.warning(
                         f"[_recv_kv] room={self.bootstrap_room} prefix-cache detected: "
