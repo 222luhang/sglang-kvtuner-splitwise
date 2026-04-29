@@ -1,19 +1,22 @@
 #!/bin/bash
 # ============================================================================
-# 消融实验 v2 — 运行时配置切换，最小化服务重启
+# 消融实验 v3 — 按 pipeline 分组，消除切换干扰
 #
-# 设计: 仅 2 次服务启动
-#   Start 1: 无量化 baseline → A1 (1 config)
-#   Start 2: 4bit 量化 → A4/A5/A6/A7 (4 configs, 运行时切换 Triton/Pipeline)
+# 设计: 4 次服务启动，同组内 PIPELINE_SEND 不变
+#   Start 1: 无量化 baseline → A1
+#   Start 2: 4bit 无 pipeline → A4→A5  (PIPELINE_SEND=0 全程)
+#   Start 3: 4bit 有 pipeline → A6→A7  (PIPELINE_SEND=1 全程)
+#   Start 4: 8bit 量化 → A2→A3
 #
-# 运行时切换通过 /tmp/sglang_ablation.cfg 实现 (SSH 写入两台机器)
+# v3 vs v2 改进: 不在同一 service start 内切换 PIPELINE_SEND，
+# 避免 send thread 初始化和 GPU 状态切换干扰后续请求。
 #
 # 7 配置 × 3 次重复, 固定 conc=8, 32 requests, medium prompt
 #
 # 配置矩阵:
 #   A1: baseline (无量化)
-#   A2: 8bit 量化, PyTorch, 无异步 pipeline   ← 需要 8bit 量化启动
-#   A3: 8bit 量化, PyTorch, 有异步 pipeline   ← 需要 8bit 量化启动
+#   A2: 8bit 量化, PyTorch, 无异步 pipeline
+#   A3: 8bit 量化, PyTorch, 有异步 pipeline
 #   A4: 4bit 量化, PyTorch, 无异步 pipeline
 #   A5: 4bit 量化, Triton,  无异步 pipeline
 #   A6: 4bit 量化, Triton,  有异步 pipeline (当前默认)
@@ -184,7 +187,7 @@ run_config() {
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
-echo "║     消融实验 v2 — 运行时配置切换 (2 次服务启动)          ║"
+echo "║     消融实验 v3 — 按 pipeline 分组 (4 次服务启动)          ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 echo "  配置数: 7 (A1-A7)"
@@ -204,8 +207,8 @@ start_services
 run_config "A1" "baseline (无量化)" "PIPELINE_SEND=0
 DISABLE_TRITON=0"
 
-# ==== Start 2: 4bit 量化 (A4-A7) ====
-log_step "===== Start 2/2: 4bit 量化 (A4→A5→A6→A7) ====="
+# ==== Start 2: 无 pipeline 组 (A4→A5) ====
+log_step "===== Start 2/4: 4bit 无 pipeline (A4→A5) ====="
 ENABLE_TRANSFER_QUANT="true"
 TRANSFER_QUANT_BITS="4"
 KVTUNER_LAYER_BITS=""
@@ -219,6 +222,13 @@ DISABLE_TRITON=1"
 run_config "A5" "4bit Triton, 无 pipeline" "PIPELINE_SEND=0
 DISABLE_TRITON=0"
 
+# ==== Start 3: 有 pipeline 组 (A6→A7) ====
+log_step "===== Start 3/4: 4bit 有 pipeline (A6→A7) ====="
+ENABLE_TRANSFER_QUANT="true"
+TRANSFER_QUANT_BITS="4"
+KVTUNER_LAYER_BITS=""
+start_services
+
 # A6: 4bit Triton, 有 pipeline (当前默认)
 run_config "A6" "4bit Triton, 有 pipeline" "PIPELINE_SEND=1
 DISABLE_TRITON=0"
@@ -228,8 +238,9 @@ MIXED_C_BITS="[4,4,4,4,4,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,4,4,4,4,4]"
 run_config "A7" "mixed-C Triton, 有 pipeline" "PIPELINE_SEND=1
 DISABLE_TRITON=0"
 
-# ==== Start 3: 8bit 量化 (A2-A3) ====
-log_step "===== Start 3/3: 8bit 量化 (A2→A3) ====="
+# ==== Start 4: 8bit 量化无 pipeline (A2) ====
+log_step "===== Start 4/4: 8bit 无 pipeline (A2) → 有 pipeline (A3) ====="
+# A2: 8bit 无 pipeline 单独一个 start，避免被 A1 的无量化状态干扰
 ENABLE_TRANSFER_QUANT="true"
 TRANSFER_QUANT_BITS="8"
 KVTUNER_LAYER_BITS=""
@@ -239,7 +250,8 @@ start_services
 run_config "A2" "8bit PyTorch, 无 pipeline" "PIPELINE_SEND=0
 DISABLE_TRITON=0"
 
-# A3: 8bit PyTorch, 有 pipeline
+# A3: 8bit PyTorch, 有 pipeline — 同 start 内切换 pipeline 仅影响 8bit 路径，
+# 8bit 始终走 PyTorch，不受 DISABLE_TRITON 影响，干扰较小
 run_config "A3" "8bit PyTorch, 有 pipeline" "PIPELINE_SEND=1
 DISABLE_TRITON=0"
 
@@ -330,8 +342,8 @@ configs = [
 num_runs = int(os.environ.get("NUM_RUNS", "3"))
 
 summary = {
-    "experiment": "ablation_v2",
-    "design": "runtime_config_toggle_3_starts",
+    "experiment": "ablation_v3",
+    "design": "pipeline_grouped_4_starts",
     "params": {"concurrency": 8, "num_requests": 32, "prompt_type": "medium", "num_runs": num_runs},
     "configs": []
 }
@@ -366,7 +378,7 @@ for config_id, label in configs:
             "id": config_id, "label": label, "results": avg, "runs": runs
         })
 
-output_file = results_dir / "ablation_v2_summary.json"
+output_file = results_dir / "ablation_v3_summary.json"
 with open(output_file, "w") as f:
     json.dump(summary, f, indent=2)
 

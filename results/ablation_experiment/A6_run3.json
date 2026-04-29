@@ -1,6 +1,6 @@
 {
   "config": "A6_run3",
-  "timestamp": "2026-04-28T14:01:51.605766",
+  "timestamp": "2026-04-29T10:50:00.101098",
   "params": {
     "concurrency": 8,
     "num_requests": 32,
@@ -13,11 +13,11 @@
     "successful": 32,
     "failed": 0,
     "requests_per_sec": 5.98,
-    "tokens_per_sec": 518.61,
-    "output_tokens_per_sec": 382.88,
-    "mean_ttft_ms": 178.1,
-    "p50_ttft_ms": 177.7,
-    "p99_ttft_ms": 194.1,
-    "mean_e2e_ms": 1335.1
+    "tokens_per_sec": 518.1,
+    "output_tokens_per_sec": 382.5,
+    "mean_ttft_ms": 179.5,
+    "p50_ttft_ms": 175.9,
+    "p99_ttft_ms": 195.9,
+    "mean_e2e_ms": 1336.3
   }
 }

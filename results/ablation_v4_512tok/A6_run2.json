@@ -1,0 +1,23 @@
+{
+  "config": "A6_run2",
+  "timestamp": "2026-04-29T15:01:02.927359",
+  "params": {
+    "concurrency": 4,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "prompt_tokens": 512,
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 10.78,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 2.97,
+    "tokens_per_sec": 1512.11,
+    "output_tokens_per_sec": 186.25,
+    "mean_ttft_ms": 172.8,
+    "p50_ttft_ms": 167.5,
+    "p99_ttft_ms": 186.0,
+    "mean_e2e_ms": 1321.5
+  }
+}

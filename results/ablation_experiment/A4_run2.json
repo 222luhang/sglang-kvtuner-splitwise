@@ -1,6 +1,6 @@
 {
   "config": "A4_run2",
-  "timestamp": "2026-04-28T14:00:34.803209",
+  "timestamp": "2026-04-29T10:47:53.378393",
   "params": {
     "concurrency": 8,
     "num_requests": 32,
@@ -12,12 +12,12 @@
     "total_time_s": 5.27,
     "successful": 32,
     "failed": 0,
-    "requests_per_sec": 6.07,
-    "tokens_per_sec": 525.93,
-    "output_tokens_per_sec": 388.29,
-    "mean_ttft_ms": 160.0,
-    "p50_ttft_ms": 160.3,
-    "p99_ttft_ms": 175.6,
-    "mean_e2e_ms": 1316.4
+    "requests_per_sec": 6.08,
+    "tokens_per_sec": 526.76,
+    "output_tokens_per_sec": 388.9,
+    "mean_ttft_ms": 158.2,
+    "p50_ttft_ms": 156.7,
+    "p99_ttft_ms": 166.6,
+    "mean_e2e_ms": 1314.4
   }
 }

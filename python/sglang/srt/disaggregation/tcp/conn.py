@@ -93,18 +93,24 @@ _DEBUG_QUANT = False
 # Runtime config file for ablation experiments — allows toggling pipeline/triton
 # without restarting the server.  Falls back to env vars when the file is absent.
 _CONFIG_PATH = "/tmp/sglang_ablation.cfg"
+_config_cache: dict = {}
+_config_cache_mtime: float = 0.0
 
 
 def _read_config(key: str, default: str) -> str:
+    global _config_cache, _config_cache_mtime
     try:
-        with open(_CONFIG_PATH) as f:
-            for line in f:
-                k, _, v = line.partition("=")
-                if k.strip() == key:
-                    return v.strip()
+        mtime = os.path.getmtime(_CONFIG_PATH)
+        if mtime != _config_cache_mtime:
+            _config_cache.clear()
+            _config_cache_mtime = mtime
+            with open(_CONFIG_PATH) as f:
+                for line in f:
+                    k, _, v = line.partition("=")
+                    _config_cache[k.strip()] = v.strip()
     except FileNotFoundError:
         pass
-    return default
+    return _config_cache.get(key, default)
 
 
 def _pipeline_send_enabled() -> bool:
@@ -115,9 +121,15 @@ def _triton_available() -> bool:
     return _HAS_TRITON and not _read_config("DISABLE_TRITON", "0") == "1"
 
 
+def _quant_disabled() -> bool:
+    """Runtime toggle: set QUANT_DISABLE=1 in config file to skip quantization."""
+    return _read_config("QUANT_DISABLE", "0") == "1"
+
+
 logger.warning(
     f"[conn.py] _pipeline_send_enabled()={_pipeline_send_enabled()}, "
     f"_triton_available()={_triton_available()}, "
+    f"_quant_disabled()={_quant_disabled()}, "
     f"_HAS_TRITON={_HAS_TRITON}, "
     f"config_path={_CONFIG_PATH}"
 )
@@ -1405,6 +1417,8 @@ class TCPKVSender(CommonKVSender):
 
     def _get_layer_quant_bits(self, layer_id: int) -> Optional[int]:
         """Return quantization bits for a given layer, or the global default."""
+        if _quant_disabled():
+            return None
         if self._transfer_quant_bits is None:
             return None
         if self._transfer_quant_layer_map and layer_id in self._transfer_quant_layer_map:

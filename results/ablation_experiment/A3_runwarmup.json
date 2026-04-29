@@ -1,6 +1,6 @@
 {
   "config": "A3_runwarmup",
-  "timestamp": "2026-04-28T14:03:55.199525",
+  "timestamp": "2026-04-29T10:52:06.789822",
   "params": {
     "concurrency": 8,
     "num_requests": 32,
@@ -9,15 +9,15 @@
     "max_new_tokens": 64
   },
   "results": {
-    "total_time_s": 5.4,
+    "total_time_s": 5.37,
     "successful": 32,
     "failed": 0,
-    "requests_per_sec": 5.93,
-    "tokens_per_sec": 513.7,
-    "output_tokens_per_sec": 379.26,
-    "mean_ttft_ms": 191.0,
-    "p50_ttft_ms": 190.8,
-    "p99_ttft_ms": 197.4,
-    "mean_e2e_ms": 1347.3
+    "requests_per_sec": 5.96,
+    "tokens_per_sec": 516.42,
+    "output_tokens_per_sec": 381.26,
+    "mean_ttft_ms": 184.8,
+    "p50_ttft_ms": 187.8,
+    "p99_ttft_ms": 194.7,
+    "mean_e2e_ms": 1341.4
   }
 }

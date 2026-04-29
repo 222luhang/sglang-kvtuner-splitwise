@@ -1,0 +1,23 @@
+{
+  "config": "A5_runwarmup",
+  "timestamp": "2026-04-29T14:58:56.032759",
+  "params": {
+    "concurrency": 4,
+    "num_requests": 32,
+    "prompt_type": "medium",
+    "prompt_tokens": 512,
+    "max_new_tokens": 64
+  },
+  "results": {
+    "total_time_s": 10.75,
+    "successful": 32,
+    "failed": 0,
+    "requests_per_sec": 2.98,
+    "tokens_per_sec": 1514.56,
+    "output_tokens_per_sec": 185.5,
+    "mean_ttft_ms": 161.7,
+    "p50_ttft_ms": 157.2,
+    "p99_ttft_ms": 186.9,
+    "mean_e2e_ms": 1304.3
+  }
+}
