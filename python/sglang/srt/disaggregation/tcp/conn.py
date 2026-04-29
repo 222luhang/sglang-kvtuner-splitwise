@@ -911,7 +911,9 @@ class _PendingTransfer:
 
     def _finish(self, conn: socket.socket, success: bool) -> None:
         status = KVPoll.Success if success else KVPoll.Failed
-        logger.warning(f"[_PendingTransfer._finish] room={self.room} success={success}")
+        logger.warning(
+            f"[TIMING] room={self.room} side=sender transfer_done ts={time.perf_counter():.6f} success={success}"
+        )
         self.kv_mgr.update_status(self.room, status)
         with self.kv_mgr._pending_lock:
             self.kv_mgr._pending_transfers.pop(self.room, None)
@@ -1205,8 +1207,8 @@ class TCPKVSender(CommonKVSender):
         state_indices: Optional[List[int]] = None,
     ) -> None:
         logger.warning(
-            f"[TCPKVSender.send] room={self.bootstrap_room} "
-            f"kv_indices={len(kv_indices)} _layer_sent={self._layer_sent}"
+            f"[TIMING] room={self.bootstrap_room} side=prefill send_entry ts={time.perf_counter():.6f} "
+            f"layer_sent={self._layer_sent}"
         )
         """
         Complete the transfer after the forward pass.
@@ -1277,6 +1279,11 @@ class TCPKVSender(CommonKVSender):
         """
         if self._pipeline_aborted:
             return
+
+        if layer_id == 0:
+            logger.warning(
+                f"[TIMING] room={self.bootstrap_room} side=prefill first_send_layer ts={time.perf_counter():.6f}"
+            )
 
         # Accept both torch.Tensor and np.ndarray
         if isinstance(src_indices, torch.Tensor):

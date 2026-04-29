@@ -1,0 +1,8725 @@
+{
+  "sender_summaries": [],
+  "receiver_summaries": [
+    {
+      "total_ms": 391.24,
+      "layers": 28.0,
+      "total_recv_ms": 8.48,
+      "total_dequant_ms": 62.66,
+      "total_write_ms": 6.98,
+      "room": "1777430159170377"
+    },
+    {
+      "total_ms": 469.31,
+      "layers": 28.0,
+      "total_recv_ms": 61.44,
+      "total_dequant_ms": 197.22,
+      "total_write_ms": 190.44,
+      "room": "1777430159170468"
+    },
+    {
+      "total_ms": 488.19,
+      "layers": 28.0,
+      "total_recv_ms": 59.52,
+      "total_dequant_ms": 190.44,
+      "total_write_ms": 207.77,
+      "room": "1777430159170448"
+    },
+    {
+      "total_ms": 527.74,
+      "layers": 28.0,
+      "total_recv_ms": 66.86,
+      "total_dequant_ms": 212.84,
+      "total_write_ms": 228.85,
+      "room": "1777430159170424"
+    },
+    {
+      "total_ms": 546.02,
+      "layers": 28.0,
+      "total_recv_ms": 62.85,
+      "total_dequant_ms": 230.85,
+      "total_write_ms": 231.84,
+      "room": "1777430159170436"
+    },
+    {
+      "total_ms": 553.72,
+      "layers": 28.0,
+      "total_recv_ms": 66.74,
+      "total_dequant_ms": 231.04,
+      "total_write_ms": 228.14,
+      "room": "1777430159170399"
+    },
+    {
+      "total_ms": 575.58,
+      "layers": 28.0,
+      "total_recv_ms": 62.04,
+      "total_dequant_ms": 255.16,
+      "total_write_ms": 235.98,
+      "room": "1777430159170459"
+    },
+    {
+      "total_ms": 580.3,
+      "layers": 28.0,
+      "total_recv_ms": 67.25,
+      "total_dequant_ms": 278.55,
+      "total_write_ms": 208.5,
+      "room": "1777430159170414"
+    }
+  ],
+  "sender_layers": [
+    {
+      "layer": 0.0,
+      "gather_ms": 0.15,
+      "quant_ms": 0.58,
+      "send_ms": 0.05,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.09,
+      "quant_ms": 0.92,
+      "send_ms": 0.03,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.07,
+      "quant_ms": 1.27,
+      "send_ms": 0.03,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.09,
+      "quant_ms": 0.53,
+      "send_ms": 0.16,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.14,
+      "quant_ms": 0.8,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.29,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.36,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.28,
+      "send_ms": 0.03,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.33,
+      "send_ms": 0.03,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.3,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.31,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.3,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.3,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.33,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.36,
+      "send_ms": 0.06,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.29,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.35,
+      "send_ms": 0.06,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.3,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.26,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.33,
+      "send_ms": 0.06,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.34,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.27,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.27,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.26,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.34,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.32,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.3,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.27,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.32,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.28,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.24,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.34,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.27,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.26,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.26,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.29,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.35,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.23,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.3,
+      "quant_ms": 0.34,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.23,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.24,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.22,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.29,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.35,
+      "send_ms": 3.19,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.37,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.31,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 4.13,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.29,
+      "quant_ms": 0.42,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.34,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.35,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.31,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.28,
+      "send_ms": 31.67,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.34,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 6.76,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.32,
+      "send_ms": 19.84,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.3,
+      "quant_ms": 0.35,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.32,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.27,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.33,
+      "quant_ms": 0.3,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.32,
+      "quant_ms": 0.33,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.29,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.22,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.35,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.33,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.29,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.29,
+      "quant_ms": 0.35,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.34,
+      "send_ms": 117.64,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.32,
+      "quant_ms": 0.33,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.27,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.27,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.31,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.32,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "ts": 2751995.962871,
+      "success": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "ts": 2751995.964092,
+      "success": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "ts": 2751995.96488,
+      "success": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "ts": 2751995.965601,
+      "success": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "ts": 2751995.966403,
+      "success": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "ts": 2751995.967147,
+      "success": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "ts": 2751995.96781,
+      "success": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "ts": 2751995.968614,
+      "success": "True",
+      "room": "1777430159170468"
+    }
+  ],
+  "sender_pipeline_layers": [
+    {
+      "layer": 0.0,
+      "gather_ms": 0.15,
+      "quant_ms": 0.58,
+      "send_ms": 0.05,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.09,
+      "quant_ms": 0.92,
+      "send_ms": 0.03,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.07,
+      "quant_ms": 1.27,
+      "send_ms": 0.03,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.09,
+      "quant_ms": 0.53,
+      "send_ms": 0.16,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.14,
+      "quant_ms": 0.8,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.29,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.36,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.28,
+      "send_ms": 0.03,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.33,
+      "send_ms": 0.03,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.3,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.31,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.3,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.07,
+      "quant_ms": 0.3,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.33,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.06,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 576.0,
+      "nbits": 4.0,
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.36,
+      "send_ms": 0.06,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.29,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 0.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.35,
+      "send_ms": 0.06,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.3,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.26,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 1.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.33,
+      "send_ms": 0.06,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 2.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.34,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.27,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.27,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 3.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.26,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.34,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 4.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.32,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 5.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.3,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.27,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 6.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.32,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.28,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.24,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 7.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.34,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.27,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.26,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 8.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.26,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 9.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 10.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.29,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 11.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.35,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 12.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.23,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.27,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 13.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.3,
+      "quant_ms": 0.34,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.23,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.24,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.22,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 14.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.29,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 15.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.35,
+      "send_ms": 3.19,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.37,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 16.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.31,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 4.13,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.29,
+      "quant_ms": 0.42,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.34,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 17.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.35,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 18.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.27,
+      "quant_ms": 0.31,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.28,
+      "send_ms": 31.67,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.34,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 6.76,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.32,
+      "send_ms": 19.84,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 19.0,
+      "gather_ms": 0.3,
+      "quant_ms": 0.35,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.32,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.27,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 20.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.33,
+      "quant_ms": 0.3,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.26,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 21.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.32,
+      "quant_ms": 0.33,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.29,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.22,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 22.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.35,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 23.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.33,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.29,
+      "quant_ms": 0.28,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.29,
+      "quant_ms": 0.35,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.28,
+      "quant_ms": 0.34,
+      "send_ms": 117.64,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.32,
+      "quant_ms": 0.33,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.27,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 24.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.29,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.27,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.25,
+      "send_ms": 0.05,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.27,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 25.0,
+      "gather_ms": 0.26,
+      "quant_ms": 0.24,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.31,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.24,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.23,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.23,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.26,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 26.0,
+      "gather_ms": 0.22,
+      "quant_ms": 0.21,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.32,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.25,
+      "send_ms": 0.01,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.22,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.28,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.23,
+      "quant_ms": 0.23,
+      "send_ms": 0.04,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.25,
+      "quant_ms": 0.23,
+      "send_ms": 0.02,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 27.0,
+      "gather_ms": 0.24,
+      "quant_ms": 0.3,
+      "send_ms": 0.03,
+      "bytes": 10368.0,
+      "nbits": 4.0,
+      "room": "1777430159170468"
+    }
+  ],
+  "receiver_layers": [
+    {
+      "layer": 0.0,
+      "kv": "K",
+      "recv_ms": 1.3,
+      "dequant_ms": 1.64,
+      "write_ms": 0.18,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 0.0,
+      "kv": "V",
+      "recv_ms": 0.21,
+      "dequant_ms": 2.11,
+      "write_ms": 0.14,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 1.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 0.98,
+      "write_ms": 0.05,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 1.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 1.7,
+      "write_ms": 0.78,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 2.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 1.09,
+      "write_ms": 0.15,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 2.0,
+      "kv": "V",
+      "recv_ms": 0.14,
+      "dequant_ms": 1.03,
+      "write_ms": 0.14,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 3.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.48,
+      "write_ms": 0.07,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 3.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.45,
+      "write_ms": 0.14,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 4.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.5,
+      "write_ms": 0.08,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 4.0,
+      "kv": "V",
+      "recv_ms": 0.13,
+      "dequant_ms": 0.6,
+      "write_ms": 0.08,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 5.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.49,
+      "write_ms": 0.08,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 5.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.46,
+      "write_ms": 0.04,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 6.0,
+      "kv": "K",
+      "recv_ms": 0.12,
+      "dequant_ms": 0.36,
+      "write_ms": 0.03,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 6.0,
+      "kv": "V",
+      "recv_ms": 0.11,
+      "dequant_ms": 0.63,
+      "write_ms": 0.14,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 7.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.83,
+      "write_ms": 0.14,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 7.0,
+      "kv": "V",
+      "recv_ms": 0.13,
+      "dequant_ms": 0.56,
+      "write_ms": 0.03,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 8.0,
+      "kv": "K",
+      "recv_ms": 0.07,
+      "dequant_ms": 0.49,
+      "write_ms": 0.03,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 8.0,
+      "kv": "V",
+      "recv_ms": 0.13,
+      "dequant_ms": 1.0,
+      "write_ms": 0.19,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 9.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.58,
+      "write_ms": 0.04,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 9.0,
+      "kv": "V",
+      "recv_ms": 0.14,
+      "dequant_ms": 0.37,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 10.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.19,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 10.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.18,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 11.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.16,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 11.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.19,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 12.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.17,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 12.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.15,
+      "write_ms": 0.01,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 13.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.13,
+      "write_ms": 0.01,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 13.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.12,
+      "write_ms": 0.01,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 14.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.32,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 14.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.41,
+      "write_ms": 0.11,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 15.0,
+      "kv": "K",
+      "recv_ms": 0.12,
+      "dequant_ms": 0.52,
+      "write_ms": 0.03,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 15.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.62,
+      "write_ms": 0.04,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 16.0,
+      "kv": "K",
+      "recv_ms": 0.23,
+      "dequant_ms": 0.51,
+      "write_ms": 0.03,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 16.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.56,
+      "write_ms": 0.03,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 17.0,
+      "kv": "K",
+      "recv_ms": 0.12,
+      "dequant_ms": 0.48,
+      "write_ms": 0.13,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 17.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.37,
+      "write_ms": 0.13,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 18.0,
+      "kv": "K",
+      "recv_ms": 0.11,
+      "dequant_ms": 0.4,
+      "write_ms": 0.11,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 18.0,
+      "kv": "V",
+      "recv_ms": 0.12,
+      "dequant_ms": 0.47,
+      "write_ms": 0.08,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 19.0,
+      "kv": "K",
+      "recv_ms": 0.13,
+      "dequant_ms": 0.64,
+      "write_ms": 0.12,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 19.0,
+      "kv": "V",
+      "recv_ms": 0.12,
+      "dequant_ms": 0.6,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 20.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.62,
+      "write_ms": 0.12,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 20.0,
+      "kv": "V",
+      "recv_ms": 0.13,
+      "dequant_ms": 0.64,
+      "write_ms": 0.03,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 21.0,
+      "kv": "K",
+      "recv_ms": 0.1,
+      "dequant_ms": 0.5,
+      "write_ms": 0.13,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 21.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.83,
+      "write_ms": 0.13,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 22.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.67,
+      "write_ms": 0.03,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 22.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.65,
+      "write_ms": 0.05,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 23.0,
+      "kv": "K",
+      "recv_ms": 0.12,
+      "dequant_ms": 1.13,
+      "write_ms": 0.05,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 23.0,
+      "kv": "V",
+      "recv_ms": 0.12,
+      "dequant_ms": 0.67,
+      "write_ms": 0.03,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 24.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.78,
+      "write_ms": 0.13,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 0.0,
+      "kv": "K",
+      "recv_ms": 41.67,
+      "dequant_ms": 1.74,
+      "write_ms": 0.91,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 24.0,
+      "kv": "V",
+      "recv_ms": 0.12,
+      "dequant_ms": 1.68,
+      "write_ms": 1.94,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 0.0,
+      "kv": "K",
+      "recv_ms": 40.58,
+      "dequant_ms": 1.93,
+      "write_ms": 3.99,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 25.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 2.59,
+      "write_ms": 0.12,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 0.0,
+      "kv": "K",
+      "recv_ms": 38.88,
+      "dequant_ms": 1.94,
+      "write_ms": 4.67,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 0.0,
+      "kv": "K",
+      "recv_ms": 41.53,
+      "dequant_ms": 3.13,
+      "write_ms": 4.91,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 0.0,
+      "kv": "K",
+      "recv_ms": 38.47,
+      "dequant_ms": 0.27,
+      "write_ms": 6.7,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 0.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 4.55,
+      "write_ms": 3.82,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 0.0,
+      "kv": "K",
+      "recv_ms": 39.09,
+      "dequant_ms": 4.66,
+      "write_ms": 4.95,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 25.0,
+      "kv": "V",
+      "recv_ms": 0.59,
+      "dequant_ms": 4.22,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 0.0,
+      "kv": "V",
+      "recv_ms": 0.54,
+      "dequant_ms": 3.56,
+      "write_ms": 3.71,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 1.0,
+      "kv": "K",
+      "recv_ms": 0.64,
+      "dequant_ms": 3.4,
+      "write_ms": 1.93,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 0.0,
+      "kv": "K",
+      "recv_ms": 38.11,
+      "dequant_ms": 5.74,
+      "write_ms": 8.75,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 0.0,
+      "kv": "V",
+      "recv_ms": 1.36,
+      "dequant_ms": 2.99,
+      "write_ms": 3.28,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 0.0,
+      "kv": "V",
+      "recv_ms": 0.22,
+      "dequant_ms": 5.33,
+      "write_ms": 4.03,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 0.0,
+      "kv": "V",
+      "recv_ms": 0.54,
+      "dequant_ms": 5.72,
+      "write_ms": 4.96,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 26.0,
+      "kv": "K",
+      "recv_ms": 0.82,
+      "dequant_ms": 6.08,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 0.0,
+      "kv": "V",
+      "recv_ms": 0.59,
+      "dequant_ms": 2.45,
+      "write_ms": 4.76,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 0.0,
+      "kv": "V",
+      "recv_ms": 1.28,
+      "dequant_ms": 1.36,
+      "write_ms": 3.39,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 1.0,
+      "kv": "K",
+      "recv_ms": 0.19,
+      "dequant_ms": 3.22,
+      "write_ms": 6.04,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 1.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 2.9,
+      "write_ms": 5.2,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 1.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 3.31,
+      "write_ms": 3.73,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 1.0,
+      "kv": "K",
+      "recv_ms": 0.76,
+      "dequant_ms": 4.1,
+      "write_ms": 2.05,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 26.0,
+      "kv": "V",
+      "recv_ms": 0.13,
+      "dequant_ms": 8.92,
+      "write_ms": 0.26,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 1.0,
+      "kv": "V",
+      "recv_ms": 0.07,
+      "dequant_ms": 3.38,
+      "write_ms": 1.6,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 1.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 4.82,
+      "write_ms": 5.72,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 1.0,
+      "kv": "V",
+      "recv_ms": 0.43,
+      "dequant_ms": 3.74,
+      "write_ms": 10.25,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 1.0,
+      "kv": "K",
+      "recv_ms": 0.76,
+      "dequant_ms": 2.24,
+      "write_ms": 7.34,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 1.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 2.51,
+      "write_ms": 2.26,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 1.0,
+      "kv": "V",
+      "recv_ms": 0.9,
+      "dequant_ms": 5.79,
+      "write_ms": 3.82,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 27.0,
+      "kv": "K",
+      "recv_ms": 2.21,
+      "dequant_ms": 4.4,
+      "write_ms": 0.02,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 1.0,
+      "kv": "V",
+      "recv_ms": 0.19,
+      "dequant_ms": 2.92,
+      "write_ms": 5.91,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 2.0,
+      "kv": "K",
+      "recv_ms": 0.24,
+      "dequant_ms": 1.86,
+      "write_ms": 4.51,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 1.0,
+      "kv": "V",
+      "recv_ms": 0.17,
+      "dequant_ms": 2.07,
+      "write_ms": 8.86,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 2.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 2.22,
+      "write_ms": 6.21,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 27.0,
+      "kv": "V",
+      "recv_ms": 0.14,
+      "dequant_ms": 4.72,
+      "write_ms": 0.37,
+      "bytes": 288.0,
+      "quant": "True",
+      "room": "1777430159170377"
+    },
+    {
+      "layer": 2.0,
+      "kv": "V",
+      "recv_ms": 1.11,
+      "dequant_ms": 3.45,
+      "write_ms": 0.46,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 3.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.29,
+      "write_ms": 0.14,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 2.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 3.69,
+      "write_ms": 5.64,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 2.0,
+      "kv": "K",
+      "recv_ms": 0.46,
+      "dequant_ms": 4.6,
+      "write_ms": 4.75,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 1.0,
+      "kv": "V",
+      "recv_ms": 0.59,
+      "dequant_ms": 3.13,
+      "write_ms": 8.55,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 2.0,
+      "kv": "K",
+      "recv_ms": 0.09,
+      "dequant_ms": 4.01,
+      "write_ms": 5.04,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 2.0,
+      "kv": "K",
+      "recv_ms": 0.07,
+      "dequant_ms": 2.34,
+      "write_ms": 6.82,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 2.0,
+      "kv": "V",
+      "recv_ms": 0.71,
+      "dequant_ms": 0.32,
+      "write_ms": 0.77,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 2.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 3.46,
+      "write_ms": 8.24,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 3.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 2.95,
+      "write_ms": 6.12,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 2.0,
+      "kv": "K",
+      "recv_ms": 0.93,
+      "dequant_ms": 4.12,
+      "write_ms": 2.49,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 2.0,
+      "kv": "V",
+      "recv_ms": 0.61,
+      "dequant_ms": 3.08,
+      "write_ms": 4.41,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 2.0,
+      "kv": "V",
+      "recv_ms": 0.7,
+      "dequant_ms": 3.98,
+      "write_ms": 4.82,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 3.0,
+      "kv": "K",
+      "recv_ms": 1.42,
+      "dequant_ms": 2.04,
+      "write_ms": 4.48,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 2.0,
+      "kv": "V",
+      "recv_ms": 0.37,
+      "dequant_ms": 6.45,
+      "write_ms": 4.87,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 4.0,
+      "kv": "K",
+      "recv_ms": 0.72,
+      "dequant_ms": 4.55,
+      "write_ms": 3.03,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 3.0,
+      "kv": "K",
+      "recv_ms": 0.58,
+      "dequant_ms": 4.93,
+      "write_ms": 6.15,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 2.0,
+      "kv": "V",
+      "recv_ms": 0.13,
+      "dequant_ms": 3.57,
+      "write_ms": 5.32,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 3.0,
+      "kv": "K",
+      "recv_ms": 0.06,
+      "dequant_ms": 1.48,
+      "write_ms": 6.73,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 3.0,
+      "kv": "K",
+      "recv_ms": 0.44,
+      "dequant_ms": 2.32,
+      "write_ms": 6.1,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 3.0,
+      "kv": "K",
+      "recv_ms": 0.33,
+      "dequant_ms": 1.94,
+      "write_ms": 4.16,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 3.0,
+      "kv": "V",
+      "recv_ms": 0.14,
+      "dequant_ms": 3.47,
+      "write_ms": 1.38,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 4.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.29,
+      "write_ms": 0.16,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 4.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.24,
+      "write_ms": 0.14,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 4.0,
+      "kv": "V",
+      "recv_ms": 0.36,
+      "dequant_ms": 2.61,
+      "write_ms": 6.16,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 3.0,
+      "kv": "V",
+      "recv_ms": 0.8,
+      "dequant_ms": 2.98,
+      "write_ms": 5.46,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 3.0,
+      "kv": "V",
+      "recv_ms": 2.79,
+      "dequant_ms": 5.13,
+      "write_ms": 7.39,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 3.0,
+      "kv": "K",
+      "recv_ms": 0.1,
+      "dequant_ms": 5.74,
+      "write_ms": 4.89,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 3.0,
+      "kv": "V",
+      "recv_ms": 1.5,
+      "dequant_ms": 5.96,
+      "write_ms": 3.48,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 3.0,
+      "kv": "V",
+      "recv_ms": 0.78,
+      "dequant_ms": 3.7,
+      "write_ms": 6.15,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 5.0,
+      "kv": "K",
+      "recv_ms": 0.42,
+      "dequant_ms": 4.26,
+      "write_ms": 3.32,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 4.0,
+      "kv": "K",
+      "recv_ms": 0.16,
+      "dequant_ms": 3.53,
+      "write_ms": 2.95,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 5.0,
+      "kv": "K",
+      "recv_ms": 0.55,
+      "dequant_ms": 4.78,
+      "write_ms": 2.78,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 3.0,
+      "kv": "V",
+      "recv_ms": 0.1,
+      "dequant_ms": 3.05,
+      "write_ms": 4.58,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 4.0,
+      "kv": "K",
+      "recv_ms": 0.74,
+      "dequant_ms": 2.4,
+      "write_ms": 3.49,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 4.0,
+      "kv": "K",
+      "recv_ms": 0.29,
+      "dequant_ms": 5.23,
+      "write_ms": 5.93,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 4.0,
+      "kv": "K",
+      "recv_ms": 1.13,
+      "dequant_ms": 2.72,
+      "write_ms": 4.46,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 4.0,
+      "kv": "V",
+      "recv_ms": 0.8,
+      "dequant_ms": 2.1,
+      "write_ms": 0.45,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 5.0,
+      "kv": "V",
+      "recv_ms": 0.79,
+      "dequant_ms": 3.64,
+      "write_ms": 3.39,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 4.0,
+      "kv": "V",
+      "recv_ms": 0.05,
+      "dequant_ms": 2.68,
+      "write_ms": 3.83,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 4.0,
+      "kv": "V",
+      "recv_ms": 1.07,
+      "dequant_ms": 4.99,
+      "write_ms": 4.23,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 5.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 4.51,
+      "write_ms": 6.38,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 4.0,
+      "kv": "K",
+      "recv_ms": 0.59,
+      "dequant_ms": 3.6,
+      "write_ms": 4.12,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 4.0,
+      "kv": "V",
+      "recv_ms": 0.96,
+      "dequant_ms": 5.41,
+      "write_ms": 0.67,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 5.0,
+      "kv": "K",
+      "recv_ms": 0.14,
+      "dequant_ms": 5.1,
+      "write_ms": 2.65,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 6.0,
+      "kv": "K",
+      "recv_ms": 0.14,
+      "dequant_ms": 3.24,
+      "write_ms": 3.24,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 6.0,
+      "kv": "K",
+      "recv_ms": 0.96,
+      "dequant_ms": 4.58,
+      "write_ms": 4.44,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 5.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 3.24,
+      "write_ms": 6.64,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 5.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 4.26,
+      "write_ms": 4.79,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 4.0,
+      "kv": "V",
+      "recv_ms": 1.04,
+      "dequant_ms": 5.0,
+      "write_ms": 3.8,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 6.0,
+      "kv": "V",
+      "recv_ms": 0.06,
+      "dequant_ms": 2.5,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 7.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.27,
+      "write_ms": 0.12,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 5.0,
+      "kv": "V",
+      "recv_ms": 0.21,
+      "dequant_ms": 1.74,
+      "write_ms": 5.8,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 5.0,
+      "kv": "K",
+      "recv_ms": 2.53,
+      "dequant_ms": 4.9,
+      "write_ms": 5.89,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 5.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 1.01,
+      "write_ms": 6.01,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 5.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 3.14,
+      "write_ms": 4.01,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 6.0,
+      "kv": "V",
+      "recv_ms": 0.1,
+      "dequant_ms": 5.55,
+      "write_ms": 5.58,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 5.0,
+      "kv": "K",
+      "recv_ms": 1.01,
+      "dequant_ms": 2.82,
+      "write_ms": 6.21,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 5.0,
+      "kv": "V",
+      "recv_ms": 0.81,
+      "dequant_ms": 2.69,
+      "write_ms": 2.54,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 6.0,
+      "kv": "K",
+      "recv_ms": 0.29,
+      "dequant_ms": 2.82,
+      "write_ms": 4.75,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 7.0,
+      "kv": "V",
+      "recv_ms": 0.5,
+      "dequant_ms": 3.28,
+      "write_ms": 7.9,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 7.0,
+      "kv": "K",
+      "recv_ms": 0.22,
+      "dequant_ms": 2.34,
+      "write_ms": 3.25,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 5.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 2.24,
+      "write_ms": 3.73,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 6.0,
+      "kv": "K",
+      "recv_ms": 0.12,
+      "dequant_ms": 6.45,
+      "write_ms": 4.67,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 6.0,
+      "kv": "K",
+      "recv_ms": 1.14,
+      "dequant_ms": 6.59,
+      "write_ms": 1.2,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 6.0,
+      "kv": "V",
+      "recv_ms": 0.54,
+      "dequant_ms": 2.32,
+      "write_ms": 3.63,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 6.0,
+      "kv": "K",
+      "recv_ms": 0.49,
+      "dequant_ms": 3.2,
+      "write_ms": 3.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 8.0,
+      "kv": "K",
+      "recv_ms": 0.24,
+      "dequant_ms": 3.94,
+      "write_ms": 4.05,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 6.0,
+      "kv": "V",
+      "recv_ms": 0.71,
+      "dequant_ms": 2.75,
+      "write_ms": 2.44,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 7.0,
+      "kv": "V",
+      "recv_ms": 0.05,
+      "dequant_ms": 3.69,
+      "write_ms": 4.88,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 6.0,
+      "kv": "V",
+      "recv_ms": 1.18,
+      "dequant_ms": 3.06,
+      "write_ms": 2.27,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 7.0,
+      "kv": "K",
+      "recv_ms": 1.16,
+      "dequant_ms": 0.84,
+      "write_ms": 2.83,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 6.0,
+      "kv": "V",
+      "recv_ms": 0.66,
+      "dequant_ms": 2.05,
+      "write_ms": 2.56,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 6.0,
+      "kv": "K",
+      "recv_ms": 0.12,
+      "dequant_ms": 4.61,
+      "write_ms": 2.9,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 7.0,
+      "kv": "V",
+      "recv_ms": 0.32,
+      "dequant_ms": 3.12,
+      "write_ms": 1.88,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 7.0,
+      "kv": "K",
+      "recv_ms": 0.81,
+      "dequant_ms": 3.38,
+      "write_ms": 2.74,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 7.0,
+      "kv": "K",
+      "recv_ms": 0.78,
+      "dequant_ms": 1.56,
+      "write_ms": 4.43,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 8.0,
+      "kv": "V",
+      "recv_ms": 1.46,
+      "dequant_ms": 4.57,
+      "write_ms": 2.73,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 6.0,
+      "kv": "V",
+      "recv_ms": 0.37,
+      "dequant_ms": 3.22,
+      "write_ms": 3.48,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 8.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 4.58,
+      "write_ms": 4.14,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 7.0,
+      "kv": "K",
+      "recv_ms": 0.33,
+      "dequant_ms": 4.3,
+      "write_ms": 3.99,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 8.0,
+      "kv": "K",
+      "recv_ms": 1.55,
+      "dequant_ms": 2.76,
+      "write_ms": 2.19,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 7.0,
+      "kv": "V",
+      "recv_ms": 1.11,
+      "dequant_ms": 2.16,
+      "write_ms": 2.35,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 7.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 4.09,
+      "write_ms": 3.19,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 9.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 2.94,
+      "write_ms": 5.89,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 7.0,
+      "kv": "K",
+      "recv_ms": 1.03,
+      "dequant_ms": 2.04,
+      "write_ms": 4.43,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 8.0,
+      "kv": "K",
+      "recv_ms": 0.47,
+      "dequant_ms": 3.22,
+      "write_ms": 1.89,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 8.0,
+      "kv": "K",
+      "recv_ms": 0.15,
+      "dequant_ms": 3.14,
+      "write_ms": 1.09,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 8.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 3.48,
+      "write_ms": 2.91,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 7.0,
+      "kv": "V",
+      "recv_ms": 0.12,
+      "dequant_ms": 3.96,
+      "write_ms": 5.51,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 8.0,
+      "kv": "V",
+      "recv_ms": 0.68,
+      "dequant_ms": 5.14,
+      "write_ms": 7.53,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 7.0,
+      "kv": "V",
+      "recv_ms": 0.32,
+      "dequant_ms": 2.68,
+      "write_ms": 6.15,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 8.0,
+      "kv": "V",
+      "recv_ms": 0.07,
+      "dequant_ms": 2.59,
+      "write_ms": 3.63,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 9.0,
+      "kv": "V",
+      "recv_ms": 0.19,
+      "dequant_ms": 3.83,
+      "write_ms": 5.77,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 8.0,
+      "kv": "V",
+      "recv_ms": 0.57,
+      "dequant_ms": 3.53,
+      "write_ms": 1.8,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 9.0,
+      "kv": "K",
+      "recv_ms": 1.35,
+      "dequant_ms": 2.35,
+      "write_ms": 4.01,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 8.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 3.53,
+      "write_ms": 3.5,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 9.0,
+      "kv": "K",
+      "recv_ms": 0.23,
+      "dequant_ms": 2.71,
+      "write_ms": 5.3,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 10.0,
+      "kv": "K",
+      "recv_ms": 0.85,
+      "dequant_ms": 1.3,
+      "write_ms": 4.18,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 9.0,
+      "kv": "K",
+      "recv_ms": 1.47,
+      "dequant_ms": 2.22,
+      "write_ms": 3.57,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 8.0,
+      "kv": "V",
+      "recv_ms": 0.61,
+      "dequant_ms": 1.43,
+      "write_ms": 4.32,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 9.0,
+      "kv": "K",
+      "recv_ms": 0.23,
+      "dequant_ms": 4.99,
+      "write_ms": 3.8,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 8.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 3.57,
+      "write_ms": 7.27,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 9.0,
+      "kv": "V",
+      "recv_ms": 0.46,
+      "dequant_ms": 4.22,
+      "write_ms": 4.58,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 10.0,
+      "kv": "V",
+      "recv_ms": 0.56,
+      "dequant_ms": 3.96,
+      "write_ms": 1.75,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 9.0,
+      "kv": "K",
+      "recv_ms": 0.52,
+      "dequant_ms": 1.35,
+      "write_ms": 4.12,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 9.0,
+      "kv": "V",
+      "recv_ms": 0.77,
+      "dequant_ms": 3.81,
+      "write_ms": 6.76,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 9.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 4.84,
+      "write_ms": 1.98,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 10.0,
+      "kv": "K",
+      "recv_ms": 0.85,
+      "dequant_ms": 2.44,
+      "write_ms": 3.43,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 9.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 5.88,
+      "write_ms": 4.91,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 9.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.22,
+      "write_ms": 3.65,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 8.0,
+      "kv": "V",
+      "recv_ms": 0.39,
+      "dequant_ms": 4.93,
+      "write_ms": 5.06,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 11.0,
+      "kv": "K",
+      "recv_ms": 0.27,
+      "dequant_ms": 2.42,
+      "write_ms": 6.0,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 10.0,
+      "kv": "K",
+      "recv_ms": 0.06,
+      "dequant_ms": 3.84,
+      "write_ms": 2.79,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 10.0,
+      "kv": "K",
+      "recv_ms": 1.82,
+      "dequant_ms": 3.83,
+      "write_ms": 3.09,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 10.0,
+      "kv": "K",
+      "recv_ms": 0.12,
+      "dequant_ms": 2.36,
+      "write_ms": 4.42,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 10.0,
+      "kv": "V",
+      "recv_ms": 0.05,
+      "dequant_ms": 3.24,
+      "write_ms": 2.91,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 10.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 6.25,
+      "write_ms": 3.7,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 9.0,
+      "kv": "K",
+      "recv_ms": 2.16,
+      "dequant_ms": 3.44,
+      "write_ms": 2.67,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 10.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 2.74,
+      "write_ms": 3.71,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 10.0,
+      "kv": "V",
+      "recv_ms": 0.37,
+      "dequant_ms": 2.27,
+      "write_ms": 4.03,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 11.0,
+      "kv": "V",
+      "recv_ms": 0.14,
+      "dequant_ms": 3.08,
+      "write_ms": 5.72,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 11.0,
+      "kv": "K",
+      "recv_ms": 0.52,
+      "dequant_ms": 4.16,
+      "write_ms": 2.1,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 10.0,
+      "kv": "V",
+      "recv_ms": 0.25,
+      "dequant_ms": 4.59,
+      "write_ms": 4.62,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 9.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 3.51,
+      "write_ms": 4.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 11.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 2.07,
+      "write_ms": 3.83,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 10.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 6.68,
+      "write_ms": 2.18,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 12.0,
+      "kv": "K",
+      "recv_ms": 1.83,
+      "dequant_ms": 3.18,
+      "write_ms": 2.34,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 11.0,
+      "kv": "K",
+      "recv_ms": 0.5,
+      "dequant_ms": 4.45,
+      "write_ms": 4.42,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 11.0,
+      "kv": "V",
+      "recv_ms": 0.24,
+      "dequant_ms": 2.92,
+      "write_ms": 4.25,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 11.0,
+      "kv": "K",
+      "recv_ms": 0.27,
+      "dequant_ms": 3.1,
+      "write_ms": 1.34,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 12.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 2.81,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 11.0,
+      "kv": "K",
+      "recv_ms": 0.2,
+      "dequant_ms": 3.68,
+      "write_ms": 4.98,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 10.0,
+      "kv": "K",
+      "recv_ms": 0.74,
+      "dequant_ms": 5.09,
+      "write_ms": 2.37,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 11.0,
+      "kv": "V",
+      "recv_ms": 0.74,
+      "dequant_ms": 2.91,
+      "write_ms": 4.55,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 12.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.6,
+      "write_ms": 1.94,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 12.0,
+      "kv": "V",
+      "recv_ms": 0.34,
+      "dequant_ms": 2.6,
+      "write_ms": 6.32,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 11.0,
+      "kv": "V",
+      "recv_ms": 1.1,
+      "dequant_ms": 4.14,
+      "write_ms": 6.35,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 11.0,
+      "kv": "V",
+      "recv_ms": 0.88,
+      "dequant_ms": 5.15,
+      "write_ms": 2.57,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 12.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 4.8,
+      "write_ms": 2.44,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 11.0,
+      "kv": "V",
+      "recv_ms": 1.2,
+      "dequant_ms": 3.38,
+      "write_ms": 6.21,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 13.0,
+      "kv": "K",
+      "recv_ms": 0.68,
+      "dequant_ms": 2.58,
+      "write_ms": 4.31,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 10.0,
+      "kv": "V",
+      "recv_ms": 0.06,
+      "dequant_ms": 3.84,
+      "write_ms": 6.9,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 13.0,
+      "kv": "K",
+      "recv_ms": 0.06,
+      "dequant_ms": 3.92,
+      "write_ms": 7.86,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 12.0,
+      "kv": "K",
+      "recv_ms": 0.07,
+      "dequant_ms": 5.75,
+      "write_ms": 2.93,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 12.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 2.74,
+      "write_ms": 4.88,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 12.0,
+      "kv": "K",
+      "recv_ms": 0.89,
+      "dequant_ms": 4.81,
+      "write_ms": 3.58,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 12.0,
+      "kv": "K",
+      "recv_ms": 0.13,
+      "dequant_ms": 2.93,
+      "write_ms": 5.6,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 13.0,
+      "kv": "V",
+      "recv_ms": 0.2,
+      "dequant_ms": 3.08,
+      "write_ms": 3.72,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 13.0,
+      "kv": "V",
+      "recv_ms": 0.22,
+      "dequant_ms": 4.73,
+      "write_ms": 4.92,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 11.0,
+      "kv": "K",
+      "recv_ms": 0.29,
+      "dequant_ms": 2.93,
+      "write_ms": 9.04,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 12.0,
+      "kv": "V",
+      "recv_ms": 0.32,
+      "dequant_ms": 2.49,
+      "write_ms": 6.76,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 12.0,
+      "kv": "V",
+      "recv_ms": 0.22,
+      "dequant_ms": 4.23,
+      "write_ms": 5.4,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 13.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 2.44,
+      "write_ms": 9.02,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 13.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 2.35,
+      "write_ms": 2.2,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 12.0,
+      "kv": "V",
+      "recv_ms": 0.26,
+      "dequant_ms": 2.8,
+      "write_ms": 6.22,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 11.0,
+      "kv": "V",
+      "recv_ms": 0.09,
+      "dequant_ms": 2.51,
+      "write_ms": 4.5,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 14.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 2.46,
+      "write_ms": 8.23,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 13.0,
+      "kv": "V",
+      "recv_ms": 0.27,
+      "dequant_ms": 2.56,
+      "write_ms": 3.19,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 14.0,
+      "kv": "K",
+      "recv_ms": 0.89,
+      "dequant_ms": 5.51,
+      "write_ms": 5.8,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 13.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 2.35,
+      "write_ms": 4.74,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 14.0,
+      "kv": "V",
+      "recv_ms": 0.1,
+      "dequant_ms": 3.62,
+      "write_ms": 3.04,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 12.0,
+      "kv": "K",
+      "recv_ms": 0.07,
+      "dequant_ms": 3.84,
+      "write_ms": 5.24,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 13.0,
+      "kv": "K",
+      "recv_ms": 0.8,
+      "dequant_ms": 7.38,
+      "write_ms": 6.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 14.0,
+      "kv": "V",
+      "recv_ms": 1.08,
+      "dequant_ms": 2.4,
+      "write_ms": 4.73,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 13.0,
+      "kv": "V",
+      "recv_ms": 0.09,
+      "dequant_ms": 7.64,
+      "write_ms": 5.93,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 14.0,
+      "kv": "K",
+      "recv_ms": 1.02,
+      "dequant_ms": 4.06,
+      "write_ms": 5.5,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 13.0,
+      "kv": "V",
+      "recv_ms": 0.21,
+      "dequant_ms": 3.44,
+      "write_ms": 1.83,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 15.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 1.93,
+      "write_ms": 2.73,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 12.0,
+      "kv": "V",
+      "recv_ms": 0.5,
+      "dequant_ms": 2.89,
+      "write_ms": 3.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 15.0,
+      "kv": "K",
+      "recv_ms": 0.62,
+      "dequant_ms": 3.02,
+      "write_ms": 4.71,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 13.0,
+      "kv": "V",
+      "recv_ms": 0.51,
+      "dequant_ms": 6.13,
+      "write_ms": 3.4,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 14.0,
+      "kv": "K",
+      "recv_ms": 0.32,
+      "dequant_ms": 3.38,
+      "write_ms": 5.17,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 14.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 3.2,
+      "write_ms": 1.4,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 14.0,
+      "kv": "V",
+      "recv_ms": 0.26,
+      "dequant_ms": 4.68,
+      "write_ms": 4.22,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 14.0,
+      "kv": "K",
+      "recv_ms": 0.27,
+      "dequant_ms": 2.25,
+      "write_ms": 4.37,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 13.0,
+      "kv": "K",
+      "recv_ms": 1.07,
+      "dequant_ms": 2.42,
+      "write_ms": 4.59,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 15.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 4.7,
+      "write_ms": 3.96,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 15.0,
+      "kv": "V",
+      "recv_ms": 1.77,
+      "dequant_ms": 3.09,
+      "write_ms": 4.8,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 14.0,
+      "kv": "V",
+      "recv_ms": 0.08,
+      "dequant_ms": 4.39,
+      "write_ms": 0.42,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 14.0,
+      "kv": "V",
+      "recv_ms": 0.46,
+      "dequant_ms": 4.02,
+      "write_ms": 0.12,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 15.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.25,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 14.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 2.77,
+      "write_ms": 4.42,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 13.0,
+      "kv": "V",
+      "recv_ms": 0.79,
+      "dequant_ms": 4.48,
+      "write_ms": 0.18,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 16.0,
+      "kv": "K",
+      "recv_ms": 0.83,
+      "dequant_ms": 5.38,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 15.0,
+      "kv": "K",
+      "recv_ms": 0.1,
+      "dequant_ms": 3.67,
+      "write_ms": 5.48,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 16.0,
+      "kv": "K",
+      "recv_ms": 0.06,
+      "dequant_ms": 6.27,
+      "write_ms": 3.5,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 15.0,
+      "kv": "K",
+      "recv_ms": 0.31,
+      "dequant_ms": 6.88,
+      "write_ms": 3.66,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 16.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 3.56,
+      "write_ms": 3.76,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 15.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 5.21,
+      "write_ms": 5.66,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 15.0,
+      "kv": "V",
+      "recv_ms": 0.69,
+      "dequant_ms": 2.98,
+      "write_ms": 3.91,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 15.0,
+      "kv": "V",
+      "recv_ms": 0.97,
+      "dequant_ms": 5.48,
+      "write_ms": 6.96,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 15.0,
+      "kv": "V",
+      "recv_ms": 0.72,
+      "dequant_ms": 2.37,
+      "write_ms": 0.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 14.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 3.09,
+      "write_ms": 9.15,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 16.0,
+      "kv": "V",
+      "recv_ms": 1.31,
+      "dequant_ms": 2.59,
+      "write_ms": 4.55,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 16.0,
+      "kv": "K",
+      "recv_ms": 0.08,
+      "dequant_ms": 0.3,
+      "write_ms": 5.28,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 15.0,
+      "kv": "V",
+      "recv_ms": 0.05,
+      "dequant_ms": 1.86,
+      "write_ms": 6.98,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 17.0,
+      "kv": "K",
+      "recv_ms": 0.28,
+      "dequant_ms": 2.64,
+      "write_ms": 6.08,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 14.0,
+      "kv": "V",
+      "recv_ms": 0.08,
+      "dequant_ms": 3.69,
+      "write_ms": 3.56,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 16.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 2.03,
+      "write_ms": 7.01,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 16.0,
+      "kv": "K",
+      "recv_ms": 2.46,
+      "dequant_ms": 2.87,
+      "write_ms": 0.74,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 16.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.28,
+      "write_ms": 0.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 17.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.19,
+      "write_ms": 0.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 17.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.2,
+      "write_ms": 0.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 18.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.19,
+      "write_ms": 0.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 18.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.16,
+      "write_ms": 0.15,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 17.0,
+      "kv": "V",
+      "recv_ms": 0.05,
+      "dequant_ms": 2.11,
+      "write_ms": 2.1,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 18.0,
+      "kv": "K",
+      "recv_ms": 0.33,
+      "dequant_ms": 0.32,
+      "write_ms": 0.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 18.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.22,
+      "write_ms": 0.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 19.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.16,
+      "write_ms": 0.12,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 17.0,
+      "kv": "K",
+      "recv_ms": 0.26,
+      "dequant_ms": 4.36,
+      "write_ms": 9.02,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 16.0,
+      "kv": "K",
+      "recv_ms": 1.37,
+      "dequant_ms": 5.4,
+      "write_ms": 9.88,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 16.0,
+      "kv": "V",
+      "recv_ms": 1.0,
+      "dequant_ms": 4.98,
+      "write_ms": 6.5,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 17.0,
+      "kv": "V",
+      "recv_ms": 0.13,
+      "dequant_ms": 3.95,
+      "write_ms": 2.27,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 15.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 8.06,
+      "write_ms": 5.52,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 19.0,
+      "kv": "K",
+      "recv_ms": 2.75,
+      "dequant_ms": 5.09,
+      "write_ms": 2.45,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 16.0,
+      "kv": "V",
+      "recv_ms": 0.06,
+      "dequant_ms": 3.63,
+      "write_ms": 5.07,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 17.0,
+      "kv": "K",
+      "recv_ms": 0.32,
+      "dequant_ms": 4.44,
+      "write_ms": 4.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 18.0,
+      "kv": "K",
+      "recv_ms": 1.21,
+      "dequant_ms": 2.85,
+      "write_ms": 1.01,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 18.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.27,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 19.0,
+      "kv": "V",
+      "recv_ms": 1.74,
+      "dequant_ms": 4.81,
+      "write_ms": 6.63,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 16.0,
+      "kv": "V",
+      "recv_ms": 0.19,
+      "dequant_ms": 9.22,
+      "write_ms": 9.1,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 15.0,
+      "kv": "V",
+      "recv_ms": 0.25,
+      "dequant_ms": 3.18,
+      "write_ms": 5.35,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 19.0,
+      "kv": "V",
+      "recv_ms": 0.84,
+      "dequant_ms": 4.01,
+      "write_ms": 3.67,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 19.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 2.77,
+      "write_ms": 3.55,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 20.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 3.66,
+      "write_ms": 4.42,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 16.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 2.6,
+      "write_ms": 3.33,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 17.0,
+      "kv": "K",
+      "recv_ms": 2.33,
+      "dequant_ms": 5.42,
+      "write_ms": 4.28,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 17.0,
+      "kv": "V",
+      "recv_ms": 2.0,
+      "dequant_ms": 4.88,
+      "write_ms": 5.32,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 17.0,
+      "kv": "K",
+      "recv_ms": 0.44,
+      "dequant_ms": 4.5,
+      "write_ms": 5.61,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 20.0,
+      "kv": "K",
+      "recv_ms": 0.43,
+      "dequant_ms": 3.65,
+      "write_ms": 6.61,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 17.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 2.45,
+      "write_ms": 2.67,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 17.0,
+      "kv": "V",
+      "recv_ms": 0.07,
+      "dequant_ms": 3.23,
+      "write_ms": 4.3,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 18.0,
+      "kv": "K",
+      "recv_ms": 0.06,
+      "dequant_ms": 6.03,
+      "write_ms": 0.86,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 19.0,
+      "kv": "V",
+      "recv_ms": 1.11,
+      "dequant_ms": 5.35,
+      "write_ms": 7.54,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 20.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 6.41,
+      "write_ms": 6.48,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 16.0,
+      "kv": "V",
+      "recv_ms": 1.88,
+      "dequant_ms": 6.24,
+      "write_ms": 4.65,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 18.0,
+      "kv": "K",
+      "recv_ms": 0.08,
+      "dequant_ms": 4.56,
+      "write_ms": 2.25,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 18.0,
+      "kv": "K",
+      "recv_ms": 0.89,
+      "dequant_ms": 4.66,
+      "write_ms": 2.64,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 20.0,
+      "kv": "V",
+      "recv_ms": 0.31,
+      "dequant_ms": 4.23,
+      "write_ms": 8.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 18.0,
+      "kv": "V",
+      "recv_ms": 0.7,
+      "dequant_ms": 3.46,
+      "write_ms": 5.51,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 20.0,
+      "kv": "K",
+      "recv_ms": 0.39,
+      "dequant_ms": 5.16,
+      "write_ms": 4.73,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 21.0,
+      "kv": "K",
+      "recv_ms": 0.17,
+      "dequant_ms": 3.71,
+      "write_ms": 4.75,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 17.0,
+      "kv": "K",
+      "recv_ms": 0.62,
+      "dequant_ms": 2.03,
+      "write_ms": 6.91,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 18.0,
+      "kv": "V",
+      "recv_ms": 0.06,
+      "dequant_ms": 3.95,
+      "write_ms": 5.18,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 18.0,
+      "kv": "V",
+      "recv_ms": 0.27,
+      "dequant_ms": 3.51,
+      "write_ms": 6.25,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 21.0,
+      "kv": "K",
+      "recv_ms": 0.82,
+      "dequant_ms": 2.57,
+      "write_ms": 5.98,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 20.0,
+      "kv": "V",
+      "recv_ms": 1.0,
+      "dequant_ms": 2.4,
+      "write_ms": 3.54,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 19.0,
+      "kv": "K",
+      "recv_ms": 0.72,
+      "dequant_ms": 4.97,
+      "write_ms": 6.61,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 21.0,
+      "kv": "V",
+      "recv_ms": 2.24,
+      "dequant_ms": 2.66,
+      "write_ms": 4.78,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 21.0,
+      "kv": "V",
+      "recv_ms": 0.83,
+      "dequant_ms": 3.03,
+      "write_ms": 4.43,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 17.0,
+      "kv": "V",
+      "recv_ms": 0.48,
+      "dequant_ms": 4.35,
+      "write_ms": 8.9,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 21.0,
+      "kv": "K",
+      "recv_ms": 0.07,
+      "dequant_ms": 4.12,
+      "write_ms": 6.27,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 22.0,
+      "kv": "K",
+      "recv_ms": 0.97,
+      "dequant_ms": 3.77,
+      "write_ms": 2.72,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 19.0,
+      "kv": "K",
+      "recv_ms": 1.93,
+      "dequant_ms": 7.04,
+      "write_ms": 5.49,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 19.0,
+      "kv": "K",
+      "recv_ms": 0.22,
+      "dequant_ms": 6.65,
+      "write_ms": 6.27,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 19.0,
+      "kv": "V",
+      "recv_ms": 0.51,
+      "dequant_ms": 3.13,
+      "write_ms": 5.56,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 19.0,
+      "kv": "V",
+      "recv_ms": 0.19,
+      "dequant_ms": 0.35,
+      "write_ms": 0.14,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 18.0,
+      "kv": "K",
+      "recv_ms": 0.41,
+      "dequant_ms": 5.07,
+      "write_ms": 0.12,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 21.0,
+      "kv": "V",
+      "recv_ms": 0.35,
+      "dequant_ms": 3.99,
+      "write_ms": 3.16,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 22.0,
+      "kv": "V",
+      "recv_ms": 0.36,
+      "dequant_ms": 3.73,
+      "write_ms": 2.38,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 22.0,
+      "kv": "K",
+      "recv_ms": 0.65,
+      "dequant_ms": 3.43,
+      "write_ms": 5.99,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 20.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 2.55,
+      "write_ms": 3.8,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 22.0,
+      "kv": "V",
+      "recv_ms": 0.25,
+      "dequant_ms": 3.85,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 23.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.3,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 23.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.2,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 24.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.18,
+      "write_ms": 0.1,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 24.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.16,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 18.0,
+      "kv": "V",
+      "recv_ms": 0.81,
+      "dequant_ms": 3.37,
+      "write_ms": 5.21,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 20.0,
+      "kv": "V",
+      "recv_ms": 0.34,
+      "dequant_ms": 2.7,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 23.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 4.11,
+      "write_ms": 2.93,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 20.0,
+      "kv": "K",
+      "recv_ms": 0.29,
+      "dequant_ms": 1.95,
+      "write_ms": 10.27,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 19.0,
+      "kv": "V",
+      "recv_ms": 1.42,
+      "dequant_ms": 3.95,
+      "write_ms": 8.82,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 20.0,
+      "kv": "V",
+      "recv_ms": 0.21,
+      "dequant_ms": 0.58,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 21.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.2,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 21.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 0.18,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 22.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 3.72,
+      "write_ms": 9.2,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 25.0,
+      "kv": "K",
+      "recv_ms": 0.01,
+      "dequant_ms": 5.7,
+      "write_ms": 2.33,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 23.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 4.71,
+      "write_ms": 2.77,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 20.0,
+      "kv": "K",
+      "recv_ms": 0.06,
+      "dequant_ms": 4.62,
+      "write_ms": 1.69,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 22.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 1.44,
+      "write_ms": 3.21,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 21.0,
+      "kv": "K",
+      "recv_ms": 1.21,
+      "dequant_ms": 3.75,
+      "write_ms": 3.37,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 19.0,
+      "kv": "K",
+      "recv_ms": 0.67,
+      "dequant_ms": 5.9,
+      "write_ms": 2.63,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 22.0,
+      "kv": "V",
+      "recv_ms": 0.09,
+      "dequant_ms": 20.56,
+      "write_ms": 2.34,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 21.0,
+      "kv": "V",
+      "recv_ms": 0.54,
+      "dequant_ms": 19.18,
+      "write_ms": 2.6,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 25.0,
+      "kv": "V",
+      "recv_ms": 0.06,
+      "dequant_ms": 21.32,
+      "write_ms": 3.36,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 22.0,
+      "kv": "V",
+      "recv_ms": 0.64,
+      "dequant_ms": 21.18,
+      "write_ms": 4.74,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 19.0,
+      "kv": "V",
+      "recv_ms": 0.05,
+      "dequant_ms": 19.44,
+      "write_ms": 4.35,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 24.0,
+      "kv": "K",
+      "recv_ms": 0.66,
+      "dequant_ms": 21.33,
+      "write_ms": 4.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 20.0,
+      "kv": "V",
+      "recv_ms": 0.1,
+      "dequant_ms": 21.33,
+      "write_ms": 5.5,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 26.0,
+      "kv": "K",
+      "recv_ms": 0.72,
+      "dequant_ms": 2.74,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 22.0,
+      "kv": "K",
+      "recv_ms": 2.09,
+      "dequant_ms": 2.89,
+      "write_ms": 0.12,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 23.0,
+      "kv": "K",
+      "recv_ms": 0.84,
+      "dequant_ms": 2.72,
+      "write_ms": 3.9,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 22.0,
+      "kv": "V",
+      "recv_ms": 0.01,
+      "dequant_ms": 1.39,
+      "write_ms": 2.77,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 20.0,
+      "kv": "K",
+      "recv_ms": 0.69,
+      "dequant_ms": 4.68,
+      "write_ms": 2.39,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 24.0,
+      "kv": "V",
+      "recv_ms": 0.26,
+      "dequant_ms": 4.39,
+      "write_ms": 4.45,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 23.0,
+      "kv": "K",
+      "recv_ms": 0.31,
+      "dequant_ms": 7.28,
+      "write_ms": 5.3,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 21.0,
+      "kv": "K",
+      "recv_ms": 0.03,
+      "dequant_ms": 4.9,
+      "write_ms": 4.18,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 23.0,
+      "kv": "K",
+      "recv_ms": 0.39,
+      "dequant_ms": 2.19,
+      "write_ms": 2.63,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 23.0,
+      "kv": "V",
+      "recv_ms": 0.1,
+      "dequant_ms": 2.52,
+      "write_ms": 4.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 26.0,
+      "kv": "V",
+      "recv_ms": 1.47,
+      "dequant_ms": 5.41,
+      "write_ms": 6.94,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 23.0,
+      "kv": "V",
+      "recv_ms": 0.15,
+      "dequant_ms": 2.81,
+      "write_ms": 4.69,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 20.0,
+      "kv": "V",
+      "recv_ms": 0.06,
+      "dequant_ms": 3.06,
+      "write_ms": 8.51,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 25.0,
+      "kv": "K",
+      "recv_ms": 0.06,
+      "dequant_ms": 3.88,
+      "write_ms": 5.57,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 21.0,
+      "kv": "V",
+      "recv_ms": 0.34,
+      "dequant_ms": 4.62,
+      "write_ms": 3.91,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 23.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 3.79,
+      "write_ms": 4.94,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 24.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 2.15,
+      "write_ms": 6.25,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 27.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 1.91,
+      "write_ms": 5.53,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 21.0,
+      "kv": "K",
+      "recv_ms": 0.26,
+      "dequant_ms": 4.19,
+      "write_ms": 1.77,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 25.0,
+      "kv": "V",
+      "recv_ms": 0.07,
+      "dequant_ms": 4.32,
+      "write_ms": 3.83,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 22.0,
+      "kv": "K",
+      "recv_ms": 0.81,
+      "dequant_ms": 4.48,
+      "write_ms": 2.46,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 24.0,
+      "kv": "V",
+      "recv_ms": 0.41,
+      "dequant_ms": 1.5,
+      "write_ms": 5.1,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 24.0,
+      "kv": "K",
+      "recv_ms": 0.07,
+      "dequant_ms": 3.71,
+      "write_ms": 6.25,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 24.0,
+      "kv": "K",
+      "recv_ms": 0.4,
+      "dequant_ms": 4.17,
+      "write_ms": 4.22,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 27.0,
+      "kv": "V",
+      "recv_ms": 0.26,
+      "dequant_ms": 4.47,
+      "write_ms": 2.61,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170468"
+    },
+    {
+      "layer": 22.0,
+      "kv": "V",
+      "recv_ms": 1.0,
+      "dequant_ms": 2.12,
+      "write_ms": 2.87,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 25.0,
+      "kv": "K",
+      "recv_ms": 0.89,
+      "dequant_ms": 5.67,
+      "write_ms": 0.99,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 26.0,
+      "kv": "K",
+      "recv_ms": 0.12,
+      "dequant_ms": 4.02,
+      "write_ms": 4.94,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 21.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 5.3,
+      "write_ms": 5.37,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 26.0,
+      "kv": "V",
+      "recv_ms": 0.06,
+      "dequant_ms": 0.67,
+      "write_ms": 0.13,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 27.0,
+      "kv": "K",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.2,
+      "write_ms": 0.79,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 24.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 5.61,
+      "write_ms": 4.34,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 22.0,
+      "kv": "K",
+      "recv_ms": 1.26,
+      "dequant_ms": 2.96,
+      "write_ms": 0.31,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 24.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 7.05,
+      "write_ms": 5.63,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 23.0,
+      "kv": "K",
+      "recv_ms": 0.62,
+      "dequant_ms": 3.95,
+      "write_ms": 2.61,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 22.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 1.93,
+      "write_ms": 3.49,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 25.0,
+      "kv": "K",
+      "recv_ms": 1.05,
+      "dequant_ms": 1.89,
+      "write_ms": 2.37,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 25.0,
+      "kv": "K",
+      "recv_ms": 0.05,
+      "dequant_ms": 2.68,
+      "write_ms": 4.65,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 27.0,
+      "kv": "V",
+      "recv_ms": 0.16,
+      "dequant_ms": 5.07,
+      "write_ms": 3.27,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170448"
+    },
+    {
+      "layer": 25.0,
+      "kv": "V",
+      "recv_ms": 0.35,
+      "dequant_ms": 7.42,
+      "write_ms": 5.37,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 23.0,
+      "kv": "V",
+      "recv_ms": 0.55,
+      "dequant_ms": 5.07,
+      "write_ms": 3.35,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 25.0,
+      "kv": "V",
+      "recv_ms": 0.06,
+      "dequant_ms": 2.67,
+      "write_ms": 2.4,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 26.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 2.49,
+      "write_ms": 2.2,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 23.0,
+      "kv": "K",
+      "recv_ms": 0.26,
+      "dequant_ms": 5.21,
+      "write_ms": 2.55,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 25.0,
+      "kv": "V",
+      "recv_ms": 1.42,
+      "dequant_ms": 3.89,
+      "write_ms": 3.2,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 26.0,
+      "kv": "V",
+      "recv_ms": 0.13,
+      "dequant_ms": 16.09,
+      "write_ms": 1.74,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 23.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 14.73,
+      "write_ms": 2.6,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 24.0,
+      "kv": "K",
+      "recv_ms": 0.31,
+      "dequant_ms": 18.45,
+      "write_ms": 4.06,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 24.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 1.83,
+      "write_ms": 0.14,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 24.0,
+      "kv": "V",
+      "recv_ms": 0.02,
+      "dequant_ms": 0.27,
+      "write_ms": 0.14,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 26.0,
+      "kv": "K",
+      "recv_ms": 0.17,
+      "dequant_ms": 18.6,
+      "write_ms": 4.53,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 26.0,
+      "kv": "K",
+      "recv_ms": 0.06,
+      "dequant_ms": 14.93,
+      "write_ms": 6.06,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 27.0,
+      "kv": "K",
+      "recv_ms": 0.07,
+      "dequant_ms": 1.4,
+      "write_ms": 4.67,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 25.0,
+      "kv": "K",
+      "recv_ms": 0.23,
+      "dequant_ms": 2.02,
+      "write_ms": 3.36,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 24.0,
+      "kv": "V",
+      "recv_ms": 0.07,
+      "dequant_ms": 3.13,
+      "write_ms": 4.95,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 26.0,
+      "kv": "V",
+      "recv_ms": 0.3,
+      "dequant_ms": 3.9,
+      "write_ms": 1.93,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 26.0,
+      "kv": "V",
+      "recv_ms": 0.59,
+      "dequant_ms": 2.42,
+      "write_ms": 3.23,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 27.0,
+      "kv": "V",
+      "recv_ms": 0.25,
+      "dequant_ms": 2.62,
+      "write_ms": 3.09,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170424"
+    },
+    {
+      "layer": 27.0,
+      "kv": "K",
+      "recv_ms": 0.58,
+      "dequant_ms": 1.11,
+      "write_ms": 2.37,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 27.0,
+      "kv": "K",
+      "recv_ms": 0.22,
+      "dequant_ms": 19.16,
+      "write_ms": 1.02,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 27.0,
+      "kv": "V",
+      "recv_ms": 0.03,
+      "dequant_ms": 0.88,
+      "write_ms": 0.11,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170436"
+    },
+    {
+      "layer": 25.0,
+      "kv": "K",
+      "recv_ms": 0.06,
+      "dequant_ms": 20.6,
+      "write_ms": 3.06,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 25.0,
+      "kv": "V",
+      "recv_ms": 0.5,
+      "dequant_ms": 20.71,
+      "write_ms": 2.84,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 27.0,
+      "kv": "V",
+      "recv_ms": 0.07,
+      "dequant_ms": 16.65,
+      "write_ms": 3.95,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170399"
+    },
+    {
+      "layer": 25.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 0.82,
+      "write_ms": 2.86,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 26.0,
+      "kv": "K",
+      "recv_ms": 0.39,
+      "dequant_ms": 2.4,
+      "write_ms": 1.73,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 26.0,
+      "kv": "K",
+      "recv_ms": 0.33,
+      "dequant_ms": 1.56,
+      "write_ms": 1.74,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 26.0,
+      "kv": "V",
+      "recv_ms": 0.04,
+      "dequant_ms": 0.92,
+      "write_ms": 2.32,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 27.0,
+      "kv": "K",
+      "recv_ms": 0.04,
+      "dequant_ms": 18.38,
+      "write_ms": 0.85,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 26.0,
+      "kv": "V",
+      "recv_ms": 0.05,
+      "dequant_ms": 18.87,
+      "write_ms": 1.35,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 27.0,
+      "kv": "K",
+      "recv_ms": 0.12,
+      "dequant_ms": 0.68,
+      "write_ms": 0.82,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    },
+    {
+      "layer": 27.0,
+      "kv": "V",
+      "recv_ms": 0.06,
+      "dequant_ms": 0.94,
+      "write_ms": 2.77,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170459"
+    },
+    {
+      "layer": 27.0,
+      "kv": "V",
+      "recv_ms": 0.09,
+      "dequant_ms": 0.73,
+      "write_ms": 1.9,
+      "bytes": 5184.0,
+      "quant": "True",
+      "room": "1777430159170414"
+    }
+  ],
+  "prefill_markers": {
+    "1777430159170377": {
+      "first_send_layer": {
+        "room": "1777430159170377",
+        "ts": "2751995.527470"
+      },
+      "send_entry": {
+        "room": "1777430159170377",
+        "ts": "2751995.962335",
+        "layer_sent": "True"
+      },
+      "prefill_compute_ms": -434.86
+    },
+    "1777430159170399": {
+      "first_send_layer": {
+        "room": "1777430159170399",
+        "ts": "2751995.618159"
+      },
+      "send_entry": {
+        "room": "1777430159170399",
+        "ts": "2751995.963633",
+        "layer_sent": "True"
+      },
+      "prefill_compute_ms": -345.47
+    },
+    "1777430159170414": {
+      "first_send_layer": {
+        "room": "1777430159170414",
+        "ts": "2751995.619122"
+      },
+      "send_entry": {
+        "room": "1777430159170414",
+        "ts": "2751995.964439",
+        "layer_sent": "True"
+      },
+      "prefill_compute_ms": -345.32
+    },
+    "1777430159170424": {
+      "first_send_layer": {
+        "room": "1777430159170424",
+        "ts": "2751995.619886"
+      },
+      "send_entry": {
+        "room": "1777430159170424",
+        "ts": "2751995.965205",
+        "layer_sent": "True"
+      },
+      "prefill_compute_ms": -345.32
+    },
+    "1777430159170436": {
+      "first_send_layer": {
+        "room": "1777430159170436",
+        "ts": "2751995.620629"
+      },
+      "send_entry": {
+        "room": "1777430159170436",
+        "ts": "2751995.965935",
+        "layer_sent": "True"
+      },
+      "prefill_compute_ms": -345.31
+    },
+    "1777430159170448": {
+      "first_send_layer": {
+        "room": "1777430159170448",
+        "ts": "2751995.621399"
+      },
+      "send_entry": {
+        "room": "1777430159170448",
+        "ts": "2751995.966660",
+        "layer_sent": "True"
+      },
+      "prefill_compute_ms": -345.26
+    },
+    "1777430159170459": {
+      "first_send_layer": {
+        "room": "1777430159170459",
+        "ts": "2751995.622122"
+      },
+      "send_entry": {
+        "room": "1777430159170459",
+        "ts": "2751995.967402",
+        "layer_sent": "True"
+      },
+      "prefill_compute_ms": -345.28
+    },
+    "1777430159170468": {
+      "first_send_layer": {
+        "room": "1777430159170468",
+        "ts": "2751995.622795"
+      },
+      "send_entry": {
+        "room": "1777430159170468",
+        "ts": "2751995.968100",
+        "layer_sent": "True"
+      },
+      "prefill_compute_ms": -345.3
+    }
+  }
+}
