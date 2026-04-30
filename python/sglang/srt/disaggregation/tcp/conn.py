@@ -114,7 +114,7 @@ def _read_config(key: str, default: str) -> str:
 
 
 def _pipeline_send_enabled() -> bool:
-    return _read_config("PIPELINE_SEND", os.environ.get("SGLANG_TCP_PIPELINE_SEND", "1")) != "0"
+    return False
 
 
 def _triton_available() -> bool:
