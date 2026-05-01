@@ -114,11 +114,11 @@ def _read_config(key: str, default: str) -> str:
 
 
 def _pipeline_send_enabled() -> bool:
-    return False
+    return True
 
 
 def _triton_available() -> bool:
-    return _HAS_TRITON and not _read_config("DISABLE_TRITON", "0") == "1"
+    return True
 
 
 def _quant_disabled() -> bool:
