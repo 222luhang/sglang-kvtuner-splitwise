@@ -58,6 +58,7 @@ _launch_args() {
 --dist-init-addr ${host}:${DIST_INIT_PORT} \
 --nnodes 1 --node-rank 0 \
 --disable-custom-all-reduce \
+--disable-radix-cache \
 --log-level ${LOG_LEVEL} \
 $([ "${DISABLE_OVERLAP}" = "true" ] && echo "--disable-overlap-schedule") \
 $([ "${ENABLE_KVTUNER}" = "true" ] && echo "--enable-kvtuner-quant --kvtuner-layer-config ${KVTUNER_LAYER_CONFIG} --disable-cuda-graph") \
