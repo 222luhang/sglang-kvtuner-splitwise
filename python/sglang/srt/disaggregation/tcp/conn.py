@@ -1642,6 +1642,10 @@ class TCPKVReceiver(CommonKVReceiver):
         total_dequant_ms = 0.0
         total_write_ms = 0.0
 
+        # Per-request CUDA stream for dequant to avoid device-wide
+        # torch.cuda.synchronize() blocking other concurrent requests.
+        _dequant_stream = None
+
         while True:
             t_recv = time.perf_counter()
             layer_id, data = _recv_layer_data(conn)
@@ -1701,16 +1705,18 @@ class TCPKVReceiver(CommonKVReceiver):
             dequant_ms = 0.0
             if is_quantized:
                 gpu_device = torch.device("cuda", self.kv_mgr.kv_args.gpu_id)
+                if _dequant_stream is None:
+                    _dequant_stream = torch.cuda.Stream(device=gpu_device)
                 t_dequant = time.perf_counter()
                 nbits = _struct.unpack(_WIRE_HEADER_FMT, data[:_WIRE_HEADER_SIZE])[0]
-                if _triton_available() and nbits == 4:
-                    tensor = _triton_dequant_4bit_from_bytes(data, gpu_device)
-                else:
-                    tensor = dequantize_on_gpu(data, gpu_device)
-                # Sync: dequantize_on_gpu uses PyTorch ops (current stream),
-                # but _write_gpu_tensor_to_pages uses cuMemcpyDtoD (NULL stream).
-                # Ensure dequantized data is fully materialized before scatter.
-                torch.cuda.synchronize()
+                with torch.cuda.stream(_dequant_stream):
+                    if _triton_available() and nbits == 4:
+                        tensor = _triton_dequant_4bit_from_bytes(data, gpu_device)
+                    else:
+                        tensor = dequantize_on_gpu(data, gpu_device)
+                # Synchronize only this request's stream before cuMemcpyDtoD
+                # (which runs on the CUDA default stream).
+                _dequant_stream.synchronize()
                 dequant_ms = (time.perf_counter() - t_dequant) * 1000
                 total_dequant_ms += dequant_ms
 

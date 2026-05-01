@@ -230,7 +230,6 @@ def dequantize_4bit_on_gpu(
         GS=GS, HALF_GS=HALF_GS,
     )
 
-    torch.cuda.synchronize()
     return output[:num_elements].to(dtype).contiguous()
 
 
